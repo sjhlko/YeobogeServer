@@ -17,8 +17,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        String username = request.getEmail();
-        String password = request.getPassword();
+        String username = request.email();
+        String password = request.password();
         authenticate(username, password);
 
         return generateToken(username);
@@ -33,6 +33,9 @@ public class AuthServiceImpl implements AuthService {
     private LoginResponse generateToken(String username) {
         String accessToken = jwtProvider.generateAccessToken(username);
         String refreshToken = jwtProvider.generateRefreshToken(username);
-        return new LoginResponse(accessToken, refreshToken);
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

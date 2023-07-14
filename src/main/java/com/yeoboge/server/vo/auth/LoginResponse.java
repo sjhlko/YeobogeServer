@@ -1,15 +1,6 @@
 package com.yeoboge.server.vo.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class LoginResponse {
-    private String accessToken;
-    private String refreshToken;
-}
+@Builder
+public record LoginResponse(String accessToken, String refreshToken) { }

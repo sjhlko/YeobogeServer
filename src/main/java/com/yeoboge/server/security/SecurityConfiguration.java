@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -24,7 +23,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
     private final UserDetailsService userDetailsService;
     private final JwtTokenFilter jwtTokenFilter;
-    private final JwtProviderImpl jwtProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,17 +33,8 @@ public class SecurityConfiguration {
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(authenticationProcessingFilter(http), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
-    }
-
-    private AbstractAuthenticationProcessingFilter authenticationProcessingFilter(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter authenticationFilter =
-                new CustomAuthenticationFilter(authenticationManager(http), jwtProvider);
-        authenticationFilter.setFilterProcessesUrl("/auths/login");
-        return authenticationFilter;
     }
 
     @Bean

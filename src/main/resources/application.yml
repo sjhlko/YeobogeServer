@@ -12,6 +12,7 @@ spring:
       hibernate:
         format_sql: true
     database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
 jwt:
   sign:
     key: ${JWT_SIGN_KEY}

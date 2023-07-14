@@ -1,4 +1,4 @@
-package com.yeoboge.server.dto.request;
+package com.yeoboge.server.vo.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,8 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-//@AllArgsConstructor
-public class LoginRequest {
-    private String email;
-    private String password;
+@AllArgsConstructor
+public class LoginResponse {
+    private String accessToken;
+    private String refreshToken;
 }

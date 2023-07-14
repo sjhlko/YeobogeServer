@@ -1,6 +1,5 @@
 package com.yeoboge.server.security;
 
-import com.yeoboge.server.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,7 +25,7 @@ import java.io.IOException;
 public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String HEADER_PREFIX = "Bearer ";
 
-    private final CustomUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -34,7 +34,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain chain)
             throws ServletException, IOException {
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        log.info("Jwt Token Filter processed");
 
         if (header == null || !header.startsWith(HEADER_PREFIX)) {
             chain.doFilter(request, response);

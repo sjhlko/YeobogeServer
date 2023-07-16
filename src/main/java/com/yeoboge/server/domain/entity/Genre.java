@@ -1,10 +1,9 @@
-package com.yeoboge.server.entity;
+package com.yeoboge.server.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Getter
 @Builder
 @Entity
 @NoArgsConstructor

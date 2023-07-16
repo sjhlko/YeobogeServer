@@ -1,5 +1,6 @@
 package com.yeoboge.server.handler;
 
+import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;
@@ -18,6 +19,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception) {
         ErrorCode errorCode = AuthenticationErrorCode.BAD_CREDENTIAL;
         return handleExceptionInternal(errorCode);
+    }
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<?> AppExceptionHandler(AppException e){
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                .body(Response.error(new ErrorResponse(e.getErrorCode().toString(), e.getErrorCode().getMessage())));
     }
 
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {

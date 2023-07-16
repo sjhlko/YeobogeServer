@@ -13,6 +13,9 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 jwt:
   sign:
     key: ${JWT_SIGN_KEY}

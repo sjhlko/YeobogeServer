@@ -4,6 +4,8 @@ import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.security.JwtProvider;
@@ -31,6 +33,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME, "Email is already existed");
+        }
+
         List<Genre> favoriteGenres = genreRepository.findAllById(request.favoriteGenreIds());
         User newUser = request.toEntity(
                 encodePassword(request.password()),

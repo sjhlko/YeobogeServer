@@ -1,4 +1,4 @@
-package com.yeoboge.server.vo;
+package com.yeoboge.server.domain.vo.response;
 
 import lombok.Builder;
 

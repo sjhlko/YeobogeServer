@@ -1,6 +1,6 @@
-package com.yeoboge.server.entity;
+package com.yeoboge.server.domain.entity;
 
-import com.yeoboge.server.entity.converter.UserRoleConverter;
+import com.yeoboge.server.domain.entity.converter.UserRoleConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.yeoboge.server.entity;
+package com.yeoboge.server.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

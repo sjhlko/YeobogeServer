@@ -1,7 +1,7 @@
 package com.yeoboge.server.controller;
 
-import com.yeoboge.server.vo.auth.LoginRequest;
-import com.yeoboge.server.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.auth.LoginRequest;
+import com.yeoboge.server.domain.vo.auth.LoginResponse;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

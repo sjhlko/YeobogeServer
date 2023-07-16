@@ -1,8 +1,8 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.security.JwtProvider;
-import com.yeoboge.server.vo.auth.LoginRequest;
-import com.yeoboge.server.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.auth.LoginRequest;
+import com.yeoboge.server.domain.vo.auth.LoginResponse;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

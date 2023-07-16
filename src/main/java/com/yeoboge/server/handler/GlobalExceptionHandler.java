@@ -2,7 +2,7 @@ package com.yeoboge.server.handler;
 
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
-import com.yeoboge.server.vo.ErrorResponse;
+import com.yeoboge.server.domain.vo.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;

@@ -2,8 +2,8 @@ package com.yeoboge.server.service;
 
 import com.yeoboge.server.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
-import com.yeoboge.server.vo.auth.LoginRequest;
-import com.yeoboge.server.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.auth.LoginRequest;
+import com.yeoboge.server.domain.vo.auth.LoginResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

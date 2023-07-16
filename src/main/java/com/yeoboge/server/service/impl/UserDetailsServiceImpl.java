@@ -1,7 +1,7 @@
 package com.yeoboge.server.service.impl;
 
-import com.yeoboge.server.entity.CustomUserDetails;
-import com.yeoboge.server.entity.User;
+import com.yeoboge.server.domain.entity.CustomUserDetails;
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

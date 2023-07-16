@@ -1,6 +1,6 @@
-package com.yeoboge.server.entity.converter;
+package com.yeoboge.server.domain.entity.converter;
 
-import com.yeoboge.server.entity.Role;
+import com.yeoboge.server.domain.entity.Role;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

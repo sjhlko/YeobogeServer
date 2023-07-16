@@ -3,7 +3,7 @@ package com.yeoboge.server.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
-import com.yeoboge.server.vo.ErrorResponse;
+import com.yeoboge.server.domain.vo.response.ErrorResponse;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

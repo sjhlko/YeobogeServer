@@ -1,4 +1,4 @@
-package com.yeoboge.server.vo.auth;
+package com.yeoboge.server.domain.vo.auth;
 
 import lombok.Builder;
 

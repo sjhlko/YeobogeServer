@@ -7,6 +7,7 @@ package:
   services:
     - docker:dind
   before_script:
-    - docker -v
+    - docker login registry.gitlab.com -u $GITLAB_USER -p $GITLAB_PASSWORD
   script:
-    - docker -v
+    - docker build -t registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME .
+    - docker push registry.gitlab.com/$GITLAB_USER/$PROJECT_NAME

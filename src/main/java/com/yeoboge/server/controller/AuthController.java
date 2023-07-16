@@ -2,6 +2,7 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
 import com.yeoboge.server.domain.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
-        return authService.login(request);
+    public Response<LoginResponse> login(@RequestBody LoginRequest request) {
+        return Response.success(authService.login(request));
     }
 }

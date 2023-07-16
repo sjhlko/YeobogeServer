@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim as builder
+FROM gradle:7.5.1-jdk17-alpine as builder
 LABEL authors="yoonsoobin"
 
 WORKDIR /build

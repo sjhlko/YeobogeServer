@@ -1,0 +1,12 @@
+stages:
+  - dockerbuild-push
+
+package:
+  image: docker:latest
+  stage: dockerbuild-push
+  services:
+    - docker:dind
+  before_script:
+    - docker -v
+  script:
+    - docker -v

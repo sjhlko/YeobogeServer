@@ -1,4 +1,4 @@
-package com.yeoboge.server.security;
+package com.yeoboge.server.config.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yeoboge.server.domain.vo.response.Response;

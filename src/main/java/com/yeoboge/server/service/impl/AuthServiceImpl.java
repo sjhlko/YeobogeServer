@@ -10,7 +10,7 @@ import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.RefreshTokenRepository;
 import com.yeoboge.server.repository.UserRepository;
-import com.yeoboge.server.security.JwtProvider;
+import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
 import com.yeoboge.server.domain.vo.auth.LoginResponse;
 import com.yeoboge.server.service.AuthService;

@@ -1,5 +1,6 @@
-package com.yeoboge.server.security;
+package com.yeoboge.server.config.security.filter;
 
+import com.yeoboge.server.config.security.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

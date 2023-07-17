@@ -1,4 +1,4 @@
-package com.yeoboge.server.security;
+package com.yeoboge.server.config.security;
 
 public interface JwtProvider {
     String generateAccessToken(Long userId);

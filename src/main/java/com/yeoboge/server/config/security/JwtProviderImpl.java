@@ -1,4 +1,4 @@
-package com.yeoboge.server.security;
+package com.yeoboge.server.config.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

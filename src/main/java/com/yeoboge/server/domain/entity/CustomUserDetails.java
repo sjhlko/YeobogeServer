@@ -1,4 +1,4 @@
-package com.yeoboge.server.entity;
+package com.yeoboge.server.domain.entity;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

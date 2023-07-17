@@ -1,4 +1,4 @@
-package com.yeoboge.server.entity;
+package com.yeoboge.server.domain.entity;
 
 public enum Role {
     USER,

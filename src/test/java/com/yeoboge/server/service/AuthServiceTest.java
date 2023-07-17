@@ -97,6 +97,7 @@ public class AuthServiceTest {
     @DisplayName("로그인 성공 단위 테스트")
     public void loginSuccess() {
         // given
+        long userId = 1L;
         String username = "test@gmail.com";
         String password = "pass1234";
         String expectedAccessToken = "expected_access_token";
@@ -108,8 +109,9 @@ public class AuthServiceTest {
                 .build();
 
         // when
-        when(jwtProvider.generateAccessToken(username)).thenReturn(expectedAccessToken);
-        when(jwtProvider.generateRefreshToken(username)).thenReturn(expectedRefreshToken);
+        when(userRepository.findIdByEmail(username)).thenReturn(userId);
+        when(jwtProvider.generateAccessToken(userId)).thenReturn(expectedAccessToken);
+        when(jwtProvider.generateRefreshToken(userId)).thenReturn(expectedRefreshToken);
 
         LoginResponse actual = authService.login(request);
 

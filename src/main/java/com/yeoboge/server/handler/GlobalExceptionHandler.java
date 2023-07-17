@@ -18,21 +18,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode errorCode = AuthenticationErrorCode.BAD_CREDENTIAL;
         return handleExceptionInternal(errorCode);
     }
+
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> AppExceptionHandler(AppException e){
-        return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(Response.error(new ErrorResponse(e.getErrorCode().toString(), e.getErrorCode().getMessage())));
+        return handleExceptionInternal(e.getErrorCode());
     }
 
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(makeErrorResponse(errorCode));
+                .body(makeResponse(errorCode));
     }
 
-    private ErrorResponse makeErrorResponse(ErrorCode errorCode) {
-        return ErrorResponse.builder()
+    private Response<?> makeResponse(ErrorCode errorCode) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(errorCode.name())
                 .message(errorCode.getMessage())
                 .build();
+        return Response.error(errorResponse);
     }
 }

@@ -1,12 +1,14 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
+import com.yeoboge.server.domain.entity.RefreshToken;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
+import com.yeoboge.server.repository.RefreshTokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.security.JwtProvider;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
@@ -24,6 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private final RefreshTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
 
@@ -71,6 +74,9 @@ public class AuthServiceImpl implements AuthService {
     private LoginResponse generateToken(long userId) {
         String accessToken = jwtProvider.generateAccessToken(userId);
         String refreshToken = jwtProvider.generateRefreshToken(userId);
+
+        tokenRepository.save(new RefreshToken(refreshToken, userId));
+
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

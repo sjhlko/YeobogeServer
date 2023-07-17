@@ -7,8 +7,9 @@ import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
+import com.yeoboge.server.repository.RefreshTokenRepository;
 import com.yeoboge.server.repository.UserRepository;
-import com.yeoboge.server.security.JwtProvider;
+import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
 import com.yeoboge.server.domain.vo.auth.LoginResponse;
@@ -40,11 +41,13 @@ public class AuthServiceTest {
     @Mock
     private AuthenticationManager authManager;
     @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
     private UserRepository userRepository;
     @Mock
     private GenreRepository genreRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private RefreshTokenRepository tokenRepository;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")
@@ -97,6 +100,7 @@ public class AuthServiceTest {
     @DisplayName("로그인 성공 단위 테스트")
     public void loginSuccess() {
         // given
+        long userId = 1L;
         String username = "test@gmail.com";
         String password = "pass1234";
         String expectedAccessToken = "expected_access_token";
@@ -108,8 +112,9 @@ public class AuthServiceTest {
                 .build();
 
         // when
-        when(jwtProvider.generateAccessToken(username)).thenReturn(expectedAccessToken);
-        when(jwtProvider.generateRefreshToken(username)).thenReturn(expectedRefreshToken);
+        when(userRepository.findIdByEmail(username)).thenReturn(userId);
+        when(jwtProvider.generateAccessToken(userId)).thenReturn(expectedAccessToken);
+        when(jwtProvider.generateRefreshToken(userId)).thenReturn(expectedRefreshToken);
 
         LoginResponse actual = authService.login(request);
 

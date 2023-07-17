@@ -1,14 +1,16 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
+import com.yeoboge.server.domain.entity.RefreshToken;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
+import com.yeoboge.server.repository.RefreshTokenRepository;
 import com.yeoboge.server.repository.UserRepository;
-import com.yeoboge.server.security.JwtProvider;
+import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
 import com.yeoboge.server.domain.vo.auth.LoginResponse;
 import com.yeoboge.server.service.AuthService;
@@ -24,6 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private final RefreshTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
 
@@ -53,7 +56,9 @@ public class AuthServiceImpl implements AuthService {
         String password = request.password();
         authenticate(username, password);
 
-        return generateToken(username);
+        Long userId = userRepository.findIdByEmail(username);
+
+        return generateToken(userId);
     }
 
     private String encodePassword(String password) {
@@ -66,9 +71,12 @@ public class AuthServiceImpl implements AuthService {
         authManager.authenticate(authToken);
     }
 
-    private LoginResponse generateToken(String username) {
-        String accessToken = jwtProvider.generateAccessToken(username);
-        String refreshToken = jwtProvider.generateRefreshToken(username);
+    private LoginResponse generateToken(long userId) {
+        String accessToken = jwtProvider.generateAccessToken(userId);
+        String refreshToken = jwtProvider.generateRefreshToken(userId);
+
+        tokenRepository.save(new RefreshToken(refreshToken, userId));
+
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

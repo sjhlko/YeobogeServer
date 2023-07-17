@@ -23,32 +23,32 @@ public class JwtProviderImpl implements JwtProvider {
     private String key;
 
     @Override
-    public String generateAccessToken(String username) {
-        return generateToken(new HashMap<>(), username, ACCESS_TOKEN_EXPIRED_TIME);
+    public String generateAccessToken(Long userId) {
+        return generateToken(new HashMap<>(), userId, ACCESS_TOKEN_EXPIRED_TIME);
     }
 
     @Override
-    public String generateRefreshToken(String username) {
-        return generateToken(new HashMap<>(), username, REFRESH_TOKEN_EXPIRED_TIME);
+    public String generateRefreshToken(Long userId) {
+        return generateToken(new HashMap<>(), userId, REFRESH_TOKEN_EXPIRED_TIME);
     }
 
     @Override
-    public boolean isValid(String token, String username) {
-        final String extractedUsername = parseUsername(token);
-        return username.equals(extractedUsername) && !isTokenExpired(token);
+    public boolean isValid(String token, Long userId) {
+        final Long extractedUserId = parseUserId(token);
+        return userId == extractedUserId && !isTokenExpired(token);
     }
 
     @Override
-    public String parseUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long parseUserId(String token) {
+        return Long.parseLong(extractClaim(token, Claims::getSubject));
     }
 
-    private String generateToken(Map<String, Object> extraClaims, String username, long expiredTime) {
+    private String generateToken(Map<String, Object> extraClaims, Long userId, long expiredTime) {
         Date now = new Date();
 
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(username)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expiredTime))
                 .signWith(SignatureAlgorithm.HS256, key)

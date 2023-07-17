@@ -53,7 +53,9 @@ public class AuthServiceImpl implements AuthService {
         String password = request.password();
         authenticate(username, password);
 
-        return generateToken(username);
+        Long userId = userRepository.findIdByEmail(username);
+
+        return generateToken(userId);
     }
 
     private String encodePassword(String password) {
@@ -66,9 +68,9 @@ public class AuthServiceImpl implements AuthService {
         authManager.authenticate(authToken);
     }
 
-    private LoginResponse generateToken(String username) {
-        String accessToken = jwtProvider.generateAccessToken(username);
-        String refreshToken = jwtProvider.generateRefreshToken(username);
+    private LoginResponse generateToken(long userId) {
+        String accessToken = jwtProvider.generateAccessToken(userId);
+        String refreshToken = jwtProvider.generateRefreshToken(userId);
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

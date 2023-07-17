@@ -1,8 +1,8 @@
 package com.yeoboge.server.security;
 
 public interface JwtProvider {
-    String generateAccessToken(String username);
-    String generateRefreshToken(String username);
-    boolean isValid(String token, String username);
-    String parseUsername(String token);
+    String generateAccessToken(Long userId);
+    String generateRefreshToken(Long userId);
+    boolean isValid(String token, Long userId);
+    Long parseUserId(String token);
 }

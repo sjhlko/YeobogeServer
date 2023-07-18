@@ -13,6 +13,10 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher

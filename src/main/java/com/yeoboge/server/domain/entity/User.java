@@ -32,4 +32,16 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     Set<Genre> favoriteGenres;
+
+    public static User updatePassword(User user, String password){
+        return User.builder()
+                .id(user.getId())
+                .password(password)
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .favoriteGenres(user.getFavoriteGenres())
+                .role(user.getRole())
+                .userCode(user.getUserCode())
+                .build();
+    }
 }

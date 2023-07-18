@@ -1,6 +1,7 @@
-package com.yeoboge.server.security;
+package com.yeoboge.server.config.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;
@@ -41,7 +42,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
                 .message(errorCode.getMessage())
                 .build();
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(body);
+        String json = mapper.writeValueAsString(Response.error(body));
 
         response.getWriter().write(json);
     }

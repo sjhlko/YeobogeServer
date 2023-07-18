@@ -20,6 +20,14 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${EMAIL}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
 jwt:
   sign:
     key: ${JWT_SIGN_KEY}

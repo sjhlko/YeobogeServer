@@ -1,13 +1,48 @@
 stages:
-  - dockerbuild-push
+  - publish
+  - deploy
 
-package:
+variables:
+  TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
+  TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMI_REF_NAME:$CI_COMMIT_SHORT_SHA
+
+publish:
   image: docker:latest
-  stage: dockerbuild-push
+  stage: publish
   services:
     - docker:dind
   before_script:
-    - docker login registry.gitlab.com -u $GITLAB_USER -p $GITLAB_PASSWORD
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t registry.gitlab.com/$GITLAB_PUBLIC_USER/$PROJECT_NAME .
-    - docker push registry.gitlab.com/$GITLAB_PUBLIC_USER/$PROJECT_NAME
+    - docker build -t $TAG_LATEST -t $TAG_COMMIT .
+    - docker push $TAG_LATEST
+    - docker push $TAG_COMMIT
+
+deploy:
+  image: alpine:latest
+  stage: deploy
+  tags: 
+    - deployment
+  before_script:
+    - chmod og= $ID_RSA
+    - apk update && apk install openssh-client
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rmi $TAG_LATEST"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_LATEST"
+  script:
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run --name $CI_PROJECT_NAME -d \
+      -p 8080:8080 --restart unless-stopped \
+      -e DATABASE_URI=$DATABASE_URI \
+      -e DATABASE_USER=$DATABASE_USER \
+      -e DATABASE_PASSWORD=$DATABASE_PASSWORD \
+      -e REDIS_HOST=$SERVER_IP \
+      -e REDIS_PORT=6379 \
+      -e JWT_SIGN_KEY=$JWT_SIGN_KEY \
+      $TAG_LATEST"
+  environment:
+    name: production
+    url: http://$SERVER_IP
+  only:
+    - main

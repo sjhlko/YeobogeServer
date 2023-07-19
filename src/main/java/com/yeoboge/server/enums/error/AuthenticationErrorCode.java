@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum AuthenticationErrorCode implements ErrorCode {
     EXISTED_USERNAME(HttpStatus.BAD_REQUEST, "Email is already existed"),
+    EMAIL_INVALID(HttpStatus.BAD_REQUEST, "Email doesn't exist"),
     BAD_CREDENTIAL(HttpStatus.UNAUTHORIZED, "Username or password is invalid"),
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "Token is invalid");
 

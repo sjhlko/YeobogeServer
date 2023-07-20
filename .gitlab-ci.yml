@@ -7,10 +7,10 @@ variables:
   TAG_COMMIT: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
 publish:
-  image: docker:latest
+  image: docker:24.0.4
   stage: publish
   services:
-    - docker:dind
+    - docker:24.0.4-dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
@@ -19,8 +19,10 @@ publish:
     - docker push $TAG_COMMIT
 
 deploy:
-  image: alpine:latest
+  image: docker:24.0.4
   stage: deploy
+  services:
+    - docker:24.0.4-dind
   tags: 
     - deployment
   before_script:

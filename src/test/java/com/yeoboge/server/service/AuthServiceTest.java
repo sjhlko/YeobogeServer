@@ -7,7 +7,7 @@ import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
-import com.yeoboge.server.repository.RefreshTokenRepository;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
@@ -47,7 +47,7 @@ public class AuthServiceTest {
     @Mock
     private GenreRepository genreRepository;
     @Mock
-    private RefreshTokenRepository tokenRepository;
+    private TokenRepository tokenRepository;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")

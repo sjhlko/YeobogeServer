@@ -23,7 +23,7 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<?, ?> redisTemplate() {
-        RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());

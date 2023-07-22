@@ -14,7 +14,8 @@ publish:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t $TAG_LATEST -t $TAG_COMMIT .
+    - docker pull $TAG_LATEST || true
+    - docker build --cache-from $TAG_LATEST -t $TAG_LATEST -t $TAG_COMMIT .
     - docker push $TAG_LATEST
     - docker push $TAG_COMMIT
 
@@ -33,17 +34,17 @@ deploy:
     - docker rmi $TAG_LATEST
     - docker pull $TAG_LATEST
   script:
-    - docker run --name $CI_PROJECT_NAME -d \
-      -p 8080:8080 --restart unless-stopped \
-      -e DATABASE_URI=$DATABASE_URI \
-      -e DATABASE_USER=$DATABASE_USER \
-      -e DATABASE_PASSWORD=$DATABASE_PASSWORD \
-      -e EMAIL=$EMAIL_USER \
+    - docker run --name $CI_PROJECT_NAME -d
+      -p 8080:8080 --restart unless-stopped
+      -e DATABASE_URI=$DATABASE_URI
+      -e DATABASE_USERNAME=$DATABASE_USERNAME
+      -e DATABASE_PASSWORD=$DATABASE_PASSWORD
+      -e EMAIL=$EMAIL_USER
       -e EMAIL_PASSWORD=$EMAIL_PASSWORD
-      -e REDIS_HOST=$SERVER_IP \
-      -e REDIS_PORT=6379 \
-      -e JWT_SIGN_KEY=$JWT_SIGN_KEY \
-      $TAG_LATEST"
+      -e REDIS_HOST=$SERVER_IP
+      -e REDIS_PORT=6379
+      -e JWT_SIGN_KEY=$JWT_SIGN_KEY
+      $TAG_LATEST
   environment:
     name: production
     url: http://$SERVER_IP

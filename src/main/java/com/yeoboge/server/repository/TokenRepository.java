@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface TokenRepository {
     void save(final Token token);
+    void delete(final String accessToken);
     Optional<String> findByToken(final String accessToken);
 }

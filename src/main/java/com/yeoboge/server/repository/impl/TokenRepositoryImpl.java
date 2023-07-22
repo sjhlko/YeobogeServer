@@ -25,6 +25,11 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
+    public void delete(String accessToken) {
+        redisTemplate.delete(accessToken);
+    }
+
+    @Override
     public Optional<String> findByToken(final String token) {
         String refreshToken = (String) redisTemplate.opsForValue().get(token);
 

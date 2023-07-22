@@ -1,15 +1,11 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
-import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.LoginResponse;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
-import com.yeoboge.server.domain.vo.auth.TempPasswordResponse;
+import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +23,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Response<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Response<Tokens> login(@RequestBody LoginRequest request) {
         return Response.success(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public Response<Tokens> test(@RequestBody Tokens tokens) {
+        return Response.success(authService.refreshTokens(tokens));
     }
 
     @GetMapping("/temp-password")

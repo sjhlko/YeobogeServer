@@ -62,14 +62,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TempPasswordResponse makeTempPassword(String email) {
+    public TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = MakeTempPassword.getTempPassword();
-        User existedUser = userRepository.findUserByEmail(email)
+        User existedUser = userRepository.findUserByEmail(request.email())
                 .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
         MakeEmail makeEmail = new MakeEmail(tempPassword);
-        makeEmail.sendEmail(email,javaMailSender);
+        makeEmail.sendEmail(updatedUser,javaMailSender);
         return TempPasswordResponse.builder()
                 .message("이메일 발송됨")
                 .build();

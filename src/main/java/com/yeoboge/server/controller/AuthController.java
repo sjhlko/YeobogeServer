@@ -4,11 +4,13 @@ import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auths")
@@ -32,9 +34,9 @@ public class AuthController {
         return Response.success(authService.refreshTokens(tokens));
     }
 
-    @GetMapping("/temp-password")
-    public Response<TempPasswordResponse> resetPassword(@RequestParam String email) throws MessagingException {
-        TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(email);
+    @PostMapping("/temp-password")
+    public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
+        TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
     }
 }

@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -106,10 +108,7 @@ public class AuthServiceTest {
         String expectedAccessToken = "expected_access_token";
         String expectedRefreshToken = "expected_refresh_token";
         LoginRequest request = new LoginRequest(username, password);
-        Tokens expected = Tokens.builder()
-                .accessToken(expectedAccessToken)
-                .refreshToken(expectedRefreshToken)
-                .build();
+        Tokens expected = makeTokens(expectedAccessToken, expectedRefreshToken);
 
         // when
         when(userRepository.findIdByEmail(username)).thenReturn(userId);
@@ -138,6 +137,80 @@ public class AuthServiceTest {
                 .isInstanceOf(BadCredentialsException.class);
     }
 
+    @Test
+    @DisplayName("액세스 토큰 재발급 성공 단위 테스트")
+    public void refreshTokensSuccess() {
+        // given
+        String prevAccessToken = "previous_access_token";
+        String prevRefreshToken = "previous_refresh_token";
+        String newAccessToken = "new_access_token";
+        String newRefreshToken = "new_refresh_token";
+        Tokens expected = makeTokens(newAccessToken, newRefreshToken);
+        Long userId = 1L;
+
+        // when
+        when(tokenRepository.findByToken(prevAccessToken)).thenReturn(Optional.of(prevRefreshToken));
+        when(jwtProvider.parseUserId(prevRefreshToken)).thenReturn(userId);
+        when(jwtProvider.generateAccessToken(userId)).thenReturn(newAccessToken);
+        when(jwtProvider.generateRefreshToken(userId)).thenReturn(newRefreshToken);
+
+        Tokens actual = authService.refreshTokens(makeTokens(prevAccessToken, prevRefreshToken));
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("잘못된 액세스 토큰 재발급 실패 단위 테스트")
+    public void refreshTokensFailByWrongToken() {
+        // given
+        String nonExistedAccessToken = "non_existed_access_token";
+        String refreshToken = "refresh_token";
+        Tokens tokens = makeTokens(nonExistedAccessToken, refreshToken);
+
+        // when
+        when(tokenRepository.findByToken(nonExistedAccessToken)).thenReturn(Optional.empty());
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰 검증 실패 단위 테스트")
+    public void refreshTokensFailByDifferentToken() {
+        // given
+        String accessToken = "access_token";
+        String wrongRefreshToken = "wrong_refresh_token";
+        String actualRefreshToken = "actual_refresh_token";
+        Tokens tokens = makeTokens(accessToken, wrongRefreshToken);
+
+        // when
+        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(actualRefreshToken));
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("만료된 리프레시 토큰 재발급 실패 단위 테스트")
+    public void refreshTokensFailByExpiredToken() {
+        // given
+        String accessToken = "access_token";
+        String expiredRefreshToken = "expired_refresh_token";
+        Tokens tokens = makeTokens(accessToken, expiredRefreshToken);
+
+        // when
+        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(expiredRefreshToken));
+        when(jwtProvider.parseUserId(expiredRefreshToken))
+                .thenThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID));
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
     private RegisterRequest makeRegisterRequest() {
         String email = "test@gmail.com";
         String password = "password";
@@ -149,6 +222,13 @@ public class AuthServiceTest {
                 .password(password)
                 .nickname(nickname)
                 .favoriteGenreIds(favoriteGenres)
+                .build();
+    }
+
+    private Tokens makeTokens(String accessToken, String refreshToken) {
+        return Tokens.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

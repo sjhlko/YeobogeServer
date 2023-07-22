@@ -7,7 +7,6 @@ import com.yeoboge.server.domain.entity.Token;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
-import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
@@ -38,9 +37,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME, "Email is already existed");
-        }
+        if (userRepository.existsByEmail(request.email()))
+            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
 
         List<Genre> favoriteGenres = genreRepository.findAllById(request.favoriteGenreIds());
         User newUser = request.toEntity(
@@ -67,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
     public TempPasswordResponse makeTempPassword(String email) {
         String tempPassword = MakeTempPassword.getTempPassword();
         User existedUser = userRepository.findUserByEmail(email)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.EMAIL_INVALID,AuthenticationErrorCode.EMAIL_INVALID.getMessage()));
+                .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
         MakeEmail makeEmail = new MakeEmail(tempPassword);
@@ -81,15 +79,10 @@ public class AuthServiceImpl implements AuthService {
     public Tokens refreshTokens(Tokens tokens) {
         String accessToken = tokens.accessToken();
         String refreshToken = tokenRepository.findByToken(accessToken)
-                .orElseThrow(() -> {
-                    ErrorCode code = AuthenticationErrorCode.TOKEN_INVALID;
-                    throw new AppException(code, code.getMessage());
-                });
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));
 
-        if (!refreshToken.equals(tokens.refreshToken())) {
-            ErrorCode code = AuthenticationErrorCode.TOKEN_INVALID;
-            throw new AppException(code, code.getMessage());
-        }
+        if (!refreshToken.equals(tokens.refreshToken()))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
 
         tokenRepository.delete(accessToken);
         Long userId = jwtProvider.parseUserId(refreshToken);

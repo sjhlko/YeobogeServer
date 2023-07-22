@@ -3,7 +3,10 @@ package com.yeoboge.server.domain.entity;
 import com.yeoboge.server.domain.entity.converter.UserRoleConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
@@ -12,6 +15,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE user SET deleted_at = current_timestamp WHERE user_id = ? ")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +29,7 @@ public class User {
     private String userCode;
     @Convert(converter = UserRoleConverter.class)
     private Role role;
+    private LocalDateTime deletedAt;
 
     @ManyToMany
     @JoinTable(

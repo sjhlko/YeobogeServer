@@ -38,4 +38,10 @@ public class AuthController {
         UpdatePasswordResponse updatePasswordResponse = authService.updatePassword(request,authentication.getPrincipal());
         return Response.success(updatePasswordResponse);
     }
+
+    @DeleteMapping("/unregister")
+    public Response<UnregisterResponse> unregister(Authentication authentication) {
+        UnregisterResponse unregisterResponse  = authService.unregister(authentication.getPrincipal());
+        return Response.success(unregisterResponse);
+    }
 }

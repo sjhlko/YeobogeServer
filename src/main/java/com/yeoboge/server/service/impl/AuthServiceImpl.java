@@ -89,6 +89,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    @Override
+    public UnregisterResponse unregister(Object principal) {
+        User user = userRepository.findById((Long) principal)
+                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND,AuthenticationErrorCode.USER_NOT_FOUND.getMessage()));
+        userRepository.delete(user);
+        return UnregisterResponse.builder()
+                .message("회원 탈퇴 성공")
+                .build();
+    }
+
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }

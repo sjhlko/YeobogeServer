@@ -23,12 +23,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Response<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Response<Tokens> login(@RequestBody LoginRequest request) {
         return Response.success(authService.login(request));
     }
 
+    @PostMapping("/refresh")
+    public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
+        return Response.success(authService.refreshTokens(tokens));
+    }
+
     @PatchMapping("/temp-password")
-    public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
+    public Response<TempPasswordResponse> resetPassword(@RequestBody GetResetPasswordEmailRequest request) {
         TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
     }

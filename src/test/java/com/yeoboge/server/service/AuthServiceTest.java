@@ -12,7 +12,7 @@ import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.auth.Tokens;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,7 +106,7 @@ public class AuthServiceTest {
         String expectedAccessToken = "expected_access_token";
         String expectedRefreshToken = "expected_refresh_token";
         LoginRequest request = new LoginRequest(username, password);
-        LoginResponse expected = LoginResponse.builder()
+        Tokens expected = Tokens.builder()
                 .accessToken(expectedAccessToken)
                 .refreshToken(expectedRefreshToken)
                 .build();
@@ -116,7 +116,7 @@ public class AuthServiceTest {
         when(jwtProvider.generateAccessToken(userId)).thenReturn(expectedAccessToken);
         when(jwtProvider.generateRefreshToken(userId)).thenReturn(expectedRefreshToken);
 
-        LoginResponse actual = authService.login(request);
+        Tokens actual = authService.login(request);
 
         // then
         assertThat(actual).isEqualTo(expected);

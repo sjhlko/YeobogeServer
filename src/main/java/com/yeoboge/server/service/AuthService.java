@@ -10,4 +10,5 @@ public interface AuthService {
     TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request);
     UpdatePasswordResponse updatePassword(UpdatePasswordRequest request, Object principal);
     UnregisterResponse unregister(Authentication authentication, String authorizationHeader);
+    Tokens refreshTokens(Tokens tokens);
 }

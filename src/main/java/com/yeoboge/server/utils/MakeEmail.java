@@ -23,11 +23,9 @@ public class MakeEmail {
             mimeMessageHelper.setSubject("🎲여보게 임시 비밀번호 발급 이메일입니다.🎲");
             mimeMessageHelper.setText(html,true);
             javaMailSender.send(mimeMessage);
-
         } catch (MessagingException e){
-            throw new AppException(EmailErrorCode.EMAIL_SENDING_ERROR,EmailErrorCode.EMAIL_SENDING_ERROR.getMessage());
+            throw new AppException(EmailErrorCode.EMAIL_SENDING_ERROR);
         }
-
     }
     public MakeEmail(String password) {
         this.bodyMessage = "여보게 임시 비밀번호 발급 이메일입니다. \n 임시 비밀번호는 "+password+" 입니다.";

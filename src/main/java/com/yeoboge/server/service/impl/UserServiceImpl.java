@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponse getProfile(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND,AuthenticationErrorCode.USER_NOT_FOUND.getMessage()));
+                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         return UserDetailResponse.of(user);
 
     }

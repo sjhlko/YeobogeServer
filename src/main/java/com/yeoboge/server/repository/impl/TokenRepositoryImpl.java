@@ -27,7 +27,7 @@ public class TokenRepositoryImpl implements TokenRepository {
     @Override
     public void delete(final String accessToken) {
         if(Boolean.FALSE.equals(redisTemplate.delete(accessToken)))
-            throw new AppException(AuthenticationErrorCode.CAN_NOT_UNREGISTER,AuthenticationErrorCode.CAN_NOT_UNREGISTER.getMessage());
+            throw new AppException(AuthenticationErrorCode.CAN_NOT_UNREGISTER);
     }
 
     @Override

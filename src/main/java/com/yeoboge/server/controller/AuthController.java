@@ -1,18 +1,16 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
-import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.LoginResponse;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
-import com.yeoboge.server.domain.vo.auth.TempPasswordResponse;
+import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auths")
@@ -31,9 +29,9 @@ public class AuthController {
         return Response.success(authService.login(request));
     }
 
-    @GetMapping("/temp-password")
-    public Response<TempPasswordResponse> resetPassword(@RequestParam String email) throws MessagingException {
-        TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(email);
+    @PostMapping("/temp-password")
+    public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
+        TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
     }
 }

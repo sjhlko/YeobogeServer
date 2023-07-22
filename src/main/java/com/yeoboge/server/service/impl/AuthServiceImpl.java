@@ -5,10 +5,7 @@ import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.RefreshToken;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.LoginResponse;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
-import com.yeoboge.server.domain.vo.auth.TempPasswordResponse;
+import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
@@ -66,9 +63,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TempPasswordResponse makeTempPassword(String email) {
+    public TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = MakeTempPassword.getTempPassword();
-        User existedUser = userRepository.findUserByEmail(email)
+        User existedUser = userRepository.findUserByEmail(request.email())
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.EMAIL_INVALID,AuthenticationErrorCode.EMAIL_INVALID.getMessage()));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);

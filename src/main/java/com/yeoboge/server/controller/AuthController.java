@@ -32,4 +32,10 @@ public class AuthController {
         TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
     }
+
+    @PatchMapping("/new-password")
+    public Response<UpdatePasswordResponse> updatePassword(@RequestBody UpdatePasswordRequest request, Authentication authentication) {
+        UpdatePasswordResponse updatePasswordResponse = authService.updatePassword(request,authentication.getPrincipal());
+        return Response.success(updatePasswordResponse);
+    }
 }

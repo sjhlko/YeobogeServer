@@ -76,6 +76,19 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    @Override
+    public UpdatePasswordResponse updatePassword(UpdatePasswordRequest request, Object principal) {
+        User existedUser = userRepository.findById((Long) principal)
+                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND,AuthenticationErrorCode.USER_NOT_FOUND.getMessage()));
+        if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
+            throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH,AuthenticationErrorCode.PASSWORD_NOT_MATCH.getMessage());
+        User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
+        userRepository.save(updatedUser);
+        return UpdatePasswordResponse.builder()
+                .message("비밀번호 변경 성공")
+                .build();
+    }
+
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }

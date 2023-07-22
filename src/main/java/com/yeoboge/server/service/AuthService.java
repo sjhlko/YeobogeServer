@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 
 public interface AuthService {
     RegisterResponse register(RegisterRequest request);
-    LoginResponse login(LoginRequest request);
+    Tokens login(LoginRequest request);
     TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request);
     UpdatePasswordResponse updatePassword(UpdatePasswordRequest request, Object principal);
     UnregisterResponse unregister(Authentication authentication, String authorizationHeader);

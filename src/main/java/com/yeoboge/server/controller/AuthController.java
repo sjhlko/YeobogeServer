@@ -33,7 +33,7 @@ public class AuthController {
     }
 
     @PatchMapping("/temp-password")
-    public Response<TempPasswordResponse> resetPassword(@RequestBody GetResetPasswordEmailRequest request) {
+    public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
         TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
     }

@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
         MakeEmail makeEmail = new MakeEmail(tempPassword);
-        makeEmail.sendEmail(email,javaMailSender);
+        makeEmail.sendEmail(updatedUser,javaMailSender);
         return TempPasswordResponse.builder()
                 .message("이메일 발송됨")
                 .build();

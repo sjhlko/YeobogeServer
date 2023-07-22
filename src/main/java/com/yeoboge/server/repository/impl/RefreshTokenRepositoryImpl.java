@@ -1,6 +1,8 @@
 package com.yeoboge.server.repository.impl;
 
 import com.yeoboge.server.domain.entity.RefreshToken;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +24,12 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
         ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(token.getRefreshToken(), token.getUserId());
         redisTemplate.expire(token.getRefreshToken(), TIME_TO_LIVE, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void delete(String accessToken) {
+        if(Boolean.FALSE.equals(redisTemplate.delete(accessToken)))
+            throw new AppException(AuthenticationErrorCode.CAN_NOT_UNREGISTER,AuthenticationErrorCode.CAN_NOT_UNREGISTER.getMessage());
     }
 
     @Override

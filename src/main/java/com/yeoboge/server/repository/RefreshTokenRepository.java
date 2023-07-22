@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface RefreshTokenRepository {
     void save(final RefreshToken refreshToken);
+    void delete(final String accessToken);
     Optional<RefreshToken> findIdByToken(final String refreshToken);
 }

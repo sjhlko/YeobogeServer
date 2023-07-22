@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,10 +91,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UnregisterResponse unregister(Object principal) {
-        User user = userRepository.findById((Long) principal)
+    public UnregisterResponse unregister(Authentication authentication, String authorizationHeader) {
+        User user = userRepository.findById((Long) authentication.getPrincipal())
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND,AuthenticationErrorCode.USER_NOT_FOUND.getMessage()));
         userRepository.delete(user);
+        tokenRepository.delete(authorizationHeader.substring(7));
         return UnregisterResponse.builder()
                 .message("회원 탈퇴 성공")
                 .build();

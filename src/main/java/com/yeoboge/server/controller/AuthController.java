@@ -40,8 +40,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/unregister")
-    public Response<UnregisterResponse> unregister(Authentication authentication) {
-        UnregisterResponse unregisterResponse  = authService.unregister(authentication.getPrincipal());
+    public Response<UnregisterResponse> unregister(Authentication authentication, @RequestHeader("Authorization") String authorizationHeader) {
+        UnregisterResponse unregisterResponse  = authService.unregister(authentication,authorizationHeader);
         return Response.success(unregisterResponse);
     }
 }

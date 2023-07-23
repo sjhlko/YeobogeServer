@@ -17,11 +17,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
+    private static final String[] SKIP_AUTHENTICATION_URI = {
+            "/auths/register",
+            "/auths/email-duplicate",
+            "/auths/login",
+            "/auths/temp-password"
+    };
     private static final String HEADER_PREFIX = "Bearer ";
 
     private final JwtProvider jwtProvider;
@@ -32,6 +39,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain chain)
             throws ServletException, IOException {
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (isNonAuthenticatedUri(request.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (header == null || !header.startsWith(HEADER_PREFIX)) {
             chain.doFilter(request, response);
@@ -56,5 +68,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isNonAuthenticatedUri(String uri) {
+        return Set.of(SKIP_AUTHENTICATION_URI).contains(uri);
     }
 }

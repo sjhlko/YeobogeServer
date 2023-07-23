@@ -1,6 +1,8 @@
 package com.yeoboge.server.config.security.filter;
 
+import com.yeoboge.server.config.security.HttpEndpointChecker;
 import com.yeoboge.server.config.security.JwtProvider;
+import com.yeoboge.server.domain.vo.auth.Tokens;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +32,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             "/auths/temp-password"
     };
     private static final String HEADER_PREFIX = "Bearer ";
+    private static final int TOKEN_SPLIT_INDEX = 7;
 
+    private final HttpEndpointChecker endpointChecker;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -40,17 +44,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (isNonAuthenticatedUri(request.getRequestURI())) {
+        if (canSkipFilter(request, header)) {
             chain.doFilter(request, response);
             return;
         }
 
-        if (header == null || !header.startsWith(HEADER_PREFIX)) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        final String token = header.substring(7);
+        final String token = header.substring(TOKEN_SPLIT_INDEX);
         long userId = jwtProvider.parseUserId(token);
 
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
@@ -68,6 +67,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean canSkipFilter(HttpServletRequest request, String header) {
+        return isNonAuthenticatedUri(request.getRequestURI()) ||
+                !endpointChecker.isEndpointExist(request) ||
+                header == null || !header.startsWith(HEADER_PREFIX);
     }
 
     private boolean isNonAuthenticatedUri(String uri) {

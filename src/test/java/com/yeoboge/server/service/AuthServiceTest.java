@@ -99,6 +99,38 @@ public class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("중복 이메일 확인 단위 테스트")
+    public void checkEmailAvailableSuccess() {
+        // given
+        String email = "not@existed.com";
+        MessageResponse expected = MessageResponse.builder()
+                .message(email + ": 사용 가능한 이메일")
+                .build();
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        MessageResponse actual = authService.checkEmailDuplication(email);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("이미 존재하는 이메일로 중복 확인 단위 테스트")
+    public void checkEmailAvailableFail() {
+        // given
+        String email = "already@existed.com";
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+
+        // then
+        assertThatThrownBy(() -> authService.checkEmailDuplication(email))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
     @DisplayName("로그인 성공 단위 테스트")
     public void loginSuccess() {
         // given

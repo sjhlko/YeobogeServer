@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
@@ -28,10 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -135,6 +135,40 @@ public class AuthServiceTest {
         // then
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    @DisplayName("로그아웃 성공 단위 테스트")
+    public void logoutSuccess() {
+        // given
+        String header = "Bearer access_token";
+        String accessToken = "access_token";
+        MessageResponse expected = MessageResponse.builder()
+                .message("로그아웃 성공")
+                .build();
+
+        // when
+        doNothing().when(tokenRepository).delete(accessToken);
+
+        MessageResponse actual = authService.logout(header);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 단위 테스트")
+    public void logoutFail() {
+        // given
+        String header = "Bearer invalid_access_token";
+        String invalidToken = "invalid_access_token";
+
+        // when
+        doThrow(AppException.class).when(tokenRepository).delete(invalidToken);
+
+        // then
+        assertThatThrownBy(() -> authService.logout(header))
+                .isInstanceOf(AppException.class);
     }
 
     @Test

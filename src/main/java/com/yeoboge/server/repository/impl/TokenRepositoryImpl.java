@@ -1,6 +1,8 @@
 package com.yeoboge.server.repository.impl;
 
 import com.yeoboge.server.domain.entity.Token;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -25,8 +27,9 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
-    public void delete(String accessToken) {
-        redisTemplate.delete(accessToken);
+    public void delete(final String accessToken) {
+        if (Boolean.FALSE.equals(redisTemplate.delete(accessToken)))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
     }
 
     @Override

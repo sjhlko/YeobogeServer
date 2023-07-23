@@ -2,15 +2,13 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.vo.auth.*;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auths")
@@ -20,8 +18,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Response<RegisterResponse>> register(@RequestBody RegisterRequest request) {
-        Response<RegisterResponse> response = Response.success(authService.register(request));
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return Response.created(authService.register(request));
+    }
+
+    @GetMapping("/email-duplicate")
+    public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
+        return Response.success(authService.checkEmailDuplication(email));
     }
 
     @PostMapping("/login")
@@ -29,14 +31,31 @@ public class AuthController {
         return Response.success(authService.login(request));
     }
 
+    @PatchMapping("/logout")
+    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
+        return Response.success(authService.logout(header));
+    }
+
     @PostMapping("/refresh")
-    public Response<Tokens> test(@RequestBody Tokens tokens) {
+    public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
         return Response.success(authService.refreshTokens(tokens));
     }
 
-    @PostMapping("/temp-password")
+    @PatchMapping("/temp-password")
     public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
         TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
         return Response.success(tempPasswordResponse);
+    }
+
+    @PatchMapping("/new-password")
+    public Response<UpdatePasswordResponse> updatePassword(@RequestBody UpdatePasswordRequest request, Authentication authentication) {
+        UpdatePasswordResponse updatePasswordResponse = authService.updatePassword(request,authentication.getPrincipal());
+        return Response.success(updatePasswordResponse);
+    }
+
+    @DeleteMapping("/unregister")
+    public Response<UnregisterResponse> unregister(Authentication authentication, @RequestHeader("Authorization") String authorizationHeader) {
+        UnregisterResponse unregisterResponse  = authService.unregister(authentication,authorizationHeader);
+        return Response.success(unregisterResponse);
     }
 }

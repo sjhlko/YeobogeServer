@@ -6,6 +6,7 @@ import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Token;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.*;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private static final int TOKEN_SPLIT_INDEX = 7;
+
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
@@ -51,6 +55,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public MessageResponse checkEmailDuplication(String email) {
+        if (userRepository.existsByEmail(email))
+            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
+
+        return MessageResponse.builder()
+                .message(email + ": 사용 가능한 이메일")
+                .build();
+    }
+
+    @Override
     public Tokens login(LoginRequest request) {
         String username = request.email();
         String password = request.password();
@@ -59,6 +73,17 @@ public class AuthServiceImpl implements AuthService {
         Long userId = userRepository.findIdByEmail(username);
 
         return generateToken(userId);
+    }
+
+    @Override
+    public MessageResponse logout(String header) {
+        String accessToken = header.substring(TOKEN_SPLIT_INDEX);
+
+        tokenRepository.delete(accessToken);
+
+        return MessageResponse.builder()
+                .message("로그아웃 성공")
+                .build();
     }
 
     @Override
@@ -72,6 +97,30 @@ public class AuthServiceImpl implements AuthService {
         makeEmail.sendEmail(updatedUser,javaMailSender);
         return TempPasswordResponse.builder()
                 .message("이메일 발송됨")
+                .build();
+    }
+
+    @Override
+    public UpdatePasswordResponse updatePassword(UpdatePasswordRequest request, Object principal) {
+        User existedUser = userRepository.findById((Long) principal)
+                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
+            throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
+        User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
+        userRepository.save(updatedUser);
+        return UpdatePasswordResponse.builder()
+                .message("비밀번호 변경 성공")
+                .build();
+    }
+
+    @Override
+    public UnregisterResponse unregister(Authentication authentication, String authorizationHeader) {
+        User user = userRepository.findById((Long) authentication.getPrincipal())
+                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        userRepository.delete(user);
+        tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
+        return UnregisterResponse.builder()
+                .message("회원 탈퇴 성공")
                 .build();
     }
 

@@ -30,6 +30,8 @@ public class User {
     @Convert(converter = UserRoleConverter.class)
     private Role role;
     private LocalDateTime deletedAt;
+    @Column(columnDefinition = "TEXT")
+    private String profileImagePath;
 
     @ManyToMany
     @JoinTable(
@@ -50,4 +52,5 @@ public class User {
                 .userCode(user.getUserCode())
                 .build();
     }
+
 }

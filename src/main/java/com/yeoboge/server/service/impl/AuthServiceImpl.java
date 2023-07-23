@@ -6,6 +6,7 @@ import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Token;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.*;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
@@ -28,6 +29,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private static final int TOKEN_SPLIT_INDEX = 7;
+
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
@@ -63,6 +66,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public MessageResponse logout(String header) {
+        String accessToken = header.substring(TOKEN_SPLIT_INDEX);
+
+        tokenRepository.delete(accessToken);
+
+        return MessageResponse.builder()
+                .message("로그아웃 성공")
+                .build();
+    }
+
+    @Override
     public TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = MakeTempPassword.getTempPassword();
         User existedUser = userRepository.findUserByEmail(request.email())
@@ -94,7 +108,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findById((Long) authentication.getPrincipal())
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
-        tokenRepository.delete(authorizationHeader.substring(7));
+        tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
         return UnregisterResponse.builder()
                 .message("회원 탈퇴 성공")
                 .build();

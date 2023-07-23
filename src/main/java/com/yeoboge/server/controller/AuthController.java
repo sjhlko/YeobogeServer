@@ -2,6 +2,7 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.vo.auth.*;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,11 @@ public class AuthController {
     @PostMapping("/login")
     public Response<Tokens> login(@RequestBody LoginRequest request) {
         return Response.success(authService.login(request));
+    }
+
+    @PatchMapping("/logout")
+    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
+        return Response.success(authService.logout(header));
     }
 
     @PostMapping("/refresh")

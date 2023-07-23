@@ -27,7 +27,10 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             /* Auth 관련 url */
-            "/auths/**"
+            "/auths/register",
+            "/auths/email-duplicate",
+            "/auths/login",
+            "/auths/temp-password"
     };
 
     private final UserDetailsService userDetailsService;

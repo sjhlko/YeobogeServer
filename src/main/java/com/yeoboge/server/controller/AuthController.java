@@ -23,6 +23,11 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @GetMapping("/email-duplicate")
+    public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
+        return Response.success(authService.checkEmailDuplication(email));
+    }
+
     @PostMapping("/login")
     public Response<Tokens> login(@RequestBody LoginRequest request) {
         return Response.success(authService.login(request));

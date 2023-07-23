@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 
 public interface AuthService {
     RegisterResponse register(RegisterRequest request);
+
+    MessageResponse checkEmailDuplication(String email);
     Tokens login(LoginRequest request);
     MessageResponse logout(String header);
     TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request);

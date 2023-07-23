@@ -55,6 +55,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public MessageResponse checkEmailDuplication(String email) {
+        if (userRepository.existsByEmail(email))
+            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
+
+        return MessageResponse.builder()
+                .message(email + ": 사용 가능한 이메일")
+                .build();
+    }
+
+    @Override
     public Tokens login(LoginRequest request) {
         String username = request.email();
         String password = request.password();

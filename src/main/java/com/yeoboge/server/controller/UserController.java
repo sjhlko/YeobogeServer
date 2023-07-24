@@ -1,8 +1,9 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
+import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.response.Response;
-import com.yeoboge.server.domain.vo.user.ProfileImgResponse;
+import com.yeoboge.server.domain.vo.user.UpdateUser;
 import com.yeoboge.server.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -20,9 +21,9 @@ public class UserController {
         return Response.success(userService.getProfile(Long.parseLong(authentication.getName())));
     }
 
-    @PatchMapping ("/profile-img")
-    public Response<ProfileImgResponse> uploadFile(@RequestPart("file")MultipartFile file, Authentication authentication) {
-        ProfileImgResponse profileImgResponse = userService.changeProfileImg(file,Long.parseLong(authentication.getName()));
+    @PatchMapping ("")
+    public Response<UpdateUser> updateUser(@RequestPart("file")MultipartFile file, @RequestPart("data") UserUpdateRequest request, Authentication authentication) {
+        UpdateUser profileImgResponse = userService.updateUser(file,request,Long.parseLong(authentication.getName()));
         return Response.success(profileImgResponse);
     }
 

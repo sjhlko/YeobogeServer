@@ -1,8 +1,9 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
+import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.user.ProfileImgResponse;
+import com.yeoboge.server.domain.vo.user.UpdateUser;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.UserRepository;
@@ -24,13 +25,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ProfileImgResponse changeProfileImg(MultipartFile file, Long id) {
+    public UpdateUser updateUser(MultipartFile file, UserUpdateRequest request, Long id) {
         User existedUser = userRepository.findById(id)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND,AuthenticationErrorCode.USER_NOT_FOUND.getMessage()));
-        User updatedUser = User.updateProfileImagePath(existedUser, s3FileUploadService.uploadFile(file));
+        User updatedUser = new User();
+        if(!file.isEmpty()) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file),request.nickname());
+        else if(request.isChanged())
+            updatedUser = User.updateUserProfile(existedUser, null ,request.nickname());
+        else updatedUser = User.updateUserProfile(existedUser, existedUser.getProfileImagePath() ,request.nickname());
         userRepository.save(updatedUser);
-        return ProfileImgResponse.builder()
-                .url(updatedUser.getProfileImagePath())
+        return UpdateUser.builder()
+                .message("프로필 변경 성공")
                 .build();
 
     }

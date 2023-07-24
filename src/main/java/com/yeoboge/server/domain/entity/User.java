@@ -54,12 +54,12 @@ public class User {
                 .build();
     }
 
-    public static User updateProfileImagePath(User user, String path){
+    public static User updateUserProfile(User user, String path, String nickname){
         return User.builder()
                 .id(user.getId())
                 .password(user.getPassword())
                 .email(user.getEmail())
-                .nickname(user.getNickname())
+                .nickname(nickname)
                 .favoriteGenres(user.getFavoriteGenres())
                 .role(user.getRole())
                 .profileImagePath(path)

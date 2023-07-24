@@ -2,6 +2,7 @@ package com.yeoboge.server.config.security;
 
 import com.yeoboge.server.config.security.filter.JwtExceptionFilter;
 import com.yeoboge.server.config.security.filter.JwtTokenFilter;
+import com.yeoboge.server.handler.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -27,9 +30,13 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             /* Auth 관련 url */
-            "/auths/**"
+            "/auths/register",
+            "/auths/email-duplicate",
+            "/auths/login",
+            "/auths/temp-password"
     };
 
+    private final HttpEndpointChecker endpointChecker;
     private final UserDetailsService userDetailsService;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final JwtTokenFilter jwtTokenFilter;
@@ -42,6 +49,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtTokenFilter.class);
         return http.build();
@@ -66,5 +76,15 @@ public class SecurityConfig {
         authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint(endpointChecker);
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return new CustomAccessDeniedHandler(endpointChecker);
     }
 }

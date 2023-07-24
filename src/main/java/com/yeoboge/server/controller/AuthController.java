@@ -2,10 +2,10 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.vo.auth.*;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +18,27 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Response<RegisterResponse>> register(@RequestBody RegisterRequest request) {
-        Response<RegisterResponse> response = Response.success(authService.register(request));
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return Response.created(authService.register(request));
+    }
+
+    @GetMapping("/email-duplicate")
+    public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
+        return Response.success(authService.checkEmailDuplication(email));
     }
 
     @PostMapping("/login")
-    public Response<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Response<Tokens> login(@RequestBody LoginRequest request) {
         return Response.success(authService.login(request));
+    }
+
+    @PatchMapping("/logout")
+    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
+        return Response.success(authService.logout(header));
+    }
+
+    @PostMapping("/refresh")
+    public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
+        return Response.success(authService.refreshTokens(tokens));
     }
 
     @PatchMapping("/temp-password")

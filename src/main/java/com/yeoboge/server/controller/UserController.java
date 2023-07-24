@@ -20,7 +20,7 @@ public class UserController {
         return Response.success(userService.getProfile(Long.parseLong(authentication.getName())));
     }
 
-    @PostMapping("/profile-img")
+    @PatchMapping ("/profile-img")
     public Response<ProfileImgResponse> uploadFile(@RequestPart("file")MultipartFile file, Authentication authentication) {
         ProfileImgResponse profileImgResponse = userService.changeProfileImg(file,Long.parseLong(authentication.getName()));
         return Response.success(profileImgResponse);

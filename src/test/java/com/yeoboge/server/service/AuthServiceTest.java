@@ -5,14 +5,16 @@ import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
-import com.yeoboge.server.repository.RefreshTokenRepository;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
 import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.LoginResponse;
+import com.yeoboge.server.domain.vo.auth.Tokens;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,11 +27,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -47,7 +49,7 @@ public class AuthServiceTest {
     @Mock
     private GenreRepository genreRepository;
     @Mock
-    private RefreshTokenRepository tokenRepository;
+    private TokenRepository tokenRepository;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")
@@ -97,6 +99,38 @@ public class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("중복 이메일 확인 단위 테스트")
+    public void checkEmailAvailableSuccess() {
+        // given
+        String email = "not@existed.com";
+        MessageResponse expected = MessageResponse.builder()
+                .message(email + ": 사용 가능한 이메일")
+                .build();
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        MessageResponse actual = authService.checkEmailDuplication(email);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("이미 존재하는 이메일로 중복 확인 단위 테스트")
+    public void checkEmailAvailableFail() {
+        // given
+        String email = "already@existed.com";
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+
+        // then
+        assertThatThrownBy(() -> authService.checkEmailDuplication(email))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
     @DisplayName("로그인 성공 단위 테스트")
     public void loginSuccess() {
         // given
@@ -106,17 +140,14 @@ public class AuthServiceTest {
         String expectedAccessToken = "expected_access_token";
         String expectedRefreshToken = "expected_refresh_token";
         LoginRequest request = new LoginRequest(username, password);
-        LoginResponse expected = LoginResponse.builder()
-                .accessToken(expectedAccessToken)
-                .refreshToken(expectedRefreshToken)
-                .build();
+        Tokens expected = makeTokens(expectedAccessToken, expectedRefreshToken);
 
         // when
         when(userRepository.findIdByEmail(username)).thenReturn(userId);
         when(jwtProvider.generateAccessToken(userId)).thenReturn(expectedAccessToken);
         when(jwtProvider.generateRefreshToken(userId)).thenReturn(expectedRefreshToken);
 
-        LoginResponse actual = authService.login(request);
+        Tokens actual = authService.login(request);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -138,6 +169,114 @@ public class AuthServiceTest {
                 .isInstanceOf(BadCredentialsException.class);
     }
 
+    @Test
+    @DisplayName("로그아웃 성공 단위 테스트")
+    public void logoutSuccess() {
+        // given
+        String header = "Bearer access_token";
+        String accessToken = "access_token";
+        MessageResponse expected = MessageResponse.builder()
+                .message("로그아웃 성공")
+                .build();
+
+        // when
+        doNothing().when(tokenRepository).delete(accessToken);
+
+        MessageResponse actual = authService.logout(header);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 단위 테스트")
+    public void logoutFail() {
+        // given
+        String header = "Bearer invalid_access_token";
+        String invalidToken = "invalid_access_token";
+
+        // when
+        doThrow(AppException.class).when(tokenRepository).delete(invalidToken);
+
+        // then
+        assertThatThrownBy(() -> authService.logout(header))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("액세스 토큰 재발급 성공 단위 테스트")
+    public void refreshTokensSuccess() {
+        // given
+        String prevAccessToken = "previous_access_token";
+        String prevRefreshToken = "previous_refresh_token";
+        String newAccessToken = "new_access_token";
+        String newRefreshToken = "new_refresh_token";
+        Tokens expected = makeTokens(newAccessToken, newRefreshToken);
+        Long userId = 1L;
+
+        // when
+        when(tokenRepository.findByToken(prevAccessToken)).thenReturn(Optional.of(prevRefreshToken));
+        when(jwtProvider.parseUserId(prevRefreshToken)).thenReturn(userId);
+        when(jwtProvider.generateAccessToken(userId)).thenReturn(newAccessToken);
+        when(jwtProvider.generateRefreshToken(userId)).thenReturn(newRefreshToken);
+
+        Tokens actual = authService.refreshTokens(makeTokens(prevAccessToken, prevRefreshToken));
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("잘못된 액세스 토큰 재발급 실패 단위 테스트")
+    public void refreshTokensFailByWrongToken() {
+        // given
+        String nonExistedAccessToken = "non_existed_access_token";
+        String refreshToken = "refresh_token";
+        Tokens tokens = makeTokens(nonExistedAccessToken, refreshToken);
+
+        // when
+        when(tokenRepository.findByToken(nonExistedAccessToken)).thenReturn(Optional.empty());
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰 검증 실패 단위 테스트")
+    public void refreshTokensFailByDifferentToken() {
+        // given
+        String accessToken = "access_token";
+        String wrongRefreshToken = "wrong_refresh_token";
+        String actualRefreshToken = "actual_refresh_token";
+        Tokens tokens = makeTokens(accessToken, wrongRefreshToken);
+
+        // when
+        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(actualRefreshToken));
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("만료된 리프레시 토큰 재발급 실패 단위 테스트")
+    public void refreshTokensFailByExpiredToken() {
+        // given
+        String accessToken = "access_token";
+        String expiredRefreshToken = "expired_refresh_token";
+        Tokens tokens = makeTokens(accessToken, expiredRefreshToken);
+
+        // when
+        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(expiredRefreshToken));
+        when(jwtProvider.parseUserId(expiredRefreshToken))
+                .thenThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID));
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(tokens))
+                .isInstanceOf(AppException.class);
+    }
+
     private RegisterRequest makeRegisterRequest() {
         String email = "test@gmail.com";
         String password = "password";
@@ -149,6 +288,13 @@ public class AuthServiceTest {
                 .password(password)
                 .nickname(nickname)
                 .favoriteGenreIds(favoriteGenres)
+                .build();
+    }
+
+    private Tokens makeTokens(String accessToken, String refreshToken) {
+        return Tokens.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

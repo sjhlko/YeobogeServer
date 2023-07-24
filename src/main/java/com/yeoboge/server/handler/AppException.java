@@ -11,4 +11,9 @@ import lombok.NoArgsConstructor;
 public class AppException extends RuntimeException{
     private ErrorCode errorCode;
     private String message;
+
+    public AppException(ErrorCode code) {
+        this.errorCode = code;
+        this.message = code.getMessage();
+    }
 }

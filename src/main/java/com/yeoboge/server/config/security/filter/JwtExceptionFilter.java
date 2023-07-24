@@ -1,16 +1,12 @@
 package com.yeoboge.server.config.security.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
-import com.yeoboge.server.enums.error.ErrorCode;
-import com.yeoboge.server.domain.vo.response.ErrorResponse;
+import com.yeoboge.server.utils.JsonResponseUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,23 +23,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try {
             chain.doFilter(request, response);
         } catch (JwtException exception) {
-            writeErrorResponse(response);
+            JsonResponseUtils.writeHttpErrorResponse(response, AuthenticationErrorCode.TOKEN_INVALID);
         }
-    }
-
-    private void writeErrorResponse(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        ErrorCode errorCode = AuthenticationErrorCode.TOKEN_INVALID;
-        ErrorResponse body = ErrorResponse.builder()
-                .code(errorCode.name())
-                .message(errorCode.getMessage())
-                .build();
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(Response.error(body));
-
-        response.getWriter().write(json);
     }
 }

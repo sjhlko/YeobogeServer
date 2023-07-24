@@ -48,7 +48,21 @@ public class User {
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .favoriteGenres(user.getFavoriteGenres())
+                .profileImagePath(user.getProfileImagePath())
                 .role(user.getRole())
+                .userCode(user.getUserCode())
+                .build();
+    }
+
+    public static User updateProfileImagePath(User user, String path){
+        return User.builder()
+                .id(user.getId())
+                .password(user.getPassword())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .favoriteGenres(user.getFavoriteGenres())
+                .role(user.getRole())
+                .profileImagePath(path)
                 .userCode(user.getUserCode())
                 .build();
     }

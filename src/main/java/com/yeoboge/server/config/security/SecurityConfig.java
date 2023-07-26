@@ -33,6 +33,7 @@ public class SecurityConfig {
             "/auths/register",
             "/auths/email-duplicate",
             "/auths/login",
+            "/auths/refresh",
             "/auths/temp-password"
     };
 

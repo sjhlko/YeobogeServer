@@ -29,6 +29,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             "/auths/register",
             "/auths/email-duplicate",
             "/auths/login",
+            "/auths/refresh",
             "/auths/temp-password"
     };
     private static final String HEADER_PREFIX = "Bearer ";

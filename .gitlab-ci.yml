@@ -47,6 +47,7 @@ deploy:
       -e EMAIL_PASSWORD=$EMAIL_PASSWORD
       -e REDIS_HOST=$SERVER_IP
       -e REDIS_PORT=6379
+      -e REDIS_PASSWORD=$REDIS_PASSWORD
       -e JWT_SIGN_KEY=$JWT_SIGN_KEY
       $TAG_LATEST
   environment:

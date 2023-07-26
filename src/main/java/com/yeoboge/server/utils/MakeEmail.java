@@ -1,5 +1,6 @@
 package com.yeoboge.server.utils;
 
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.error.EmailErrorCode;
 import com.yeoboge.server.handler.AppException;
 import jakarta.mail.MessagingException;
@@ -12,27 +13,25 @@ public class MakeEmail {
     final String subject= "🎲여보게 임시 비밀번호 발급 이메일입니다.🎲";
     final String sender = "heyboardgame@gmail.com";
     private String bodyMessage = " ";
-    public void sendEmail(String receiver, JavaMailSender javaMailSender){
+    public void sendEmail(User receiver, JavaMailSender javaMailSender){
         String html = makeHtml(receiver);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, this.bodyEncoding);
-            mimeMessageHelper.setTo(receiver);
+            mimeMessageHelper.setTo(receiver.getEmail());
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setSubject("🎲여보게 임시 비밀번호 발급 이메일입니다.🎲");
             mimeMessageHelper.setText(html,true);
             javaMailSender.send(mimeMessage);
-
         } catch (MessagingException e){
-            throw new AppException(EmailErrorCode.EMAIL_SENDING_ERROR,EmailErrorCode.EMAIL_SENDING_ERROR.getMessage());
+            throw new AppException(EmailErrorCode.EMAIL_SENDING_ERROR);
         }
-
     }
     public MakeEmail(String password) {
         this.bodyMessage = "여보게 임시 비밀번호 발급 이메일입니다. \n 임시 비밀번호는 "+password+" 입니다.";
     }
 
-    public String makeHtml(String receiver){
+    public String makeHtml(User receiver){
         return  "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head>\n" +
                 "<!--[if gte mso 9]>\n" +
                 "<xml>\n" +
@@ -202,7 +201,7 @@ public class MakeEmail {
                 "      <td class=\"v-container-padding-padding\" style=\"overflow-wrap:break-word;word-break:break-word;padding:40px 10px 20px;font-family:'Montserrat',sans-serif;\" align=\"left\">\n" +
                 "        \n" +
                 "  <div class=\"v-text-align v-line-height v-font-size\" style=\"font-size: 14px; line-height: 190%; text-align: justify; word-wrap: break-word;\">\n" +
-                "    <p style=\"font-size: 14px; line-height: 190%;\"><strong><span style=\"font-size: 18px; line-height: 34.2px; color: #1e2655; font-family: Cabin, sans-serif;\">"+ receiver +"님 안녕하세요!</span></strong><br>"+this.bodyMessage+"</p>\n" +
+                "    <p style=\"font-size: 14px; line-height: 190%;\"><strong><span style=\"font-size: 18px; line-height: 34.2px; color: #1e2655; font-family: Cabin, sans-serif;\">"+ receiver.getNickname() +"님 안녕하세요!</span></strong><br>"+this.bodyMessage+"</p>\n" +
                 "  </div>\n" +
                 "\n" +
                 "      </td>\n" +

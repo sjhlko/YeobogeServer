@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @GetMapping("/email-duplicate")
-    public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
+    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> checkEmailDuplication(@RequestParam String email) {
         return Response.success(authService.checkEmailDuplication(email));
     }
 
@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @PatchMapping("/logout")
-    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
+    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> logout(@RequestHeader("Authorization") String header) {
         return Response.success(authService.logout(header));
     }
 
@@ -42,20 +42,20 @@ public class AuthController {
     }
 
     @PatchMapping("/temp-password")
-    public Response<TempPasswordResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
-        TempPasswordResponse tempPasswordResponse = authService.makeTempPassword(request);
-        return Response.success(tempPasswordResponse);
+    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
+        com.yeoboge.server.domain.vo.response.MessageResponse messageResponse = authService.makeTempPassword(request);
+        return Response.success(messageResponse);
     }
 
     @PatchMapping("/new-password")
-    public Response<UpdatePasswordResponse> updatePassword(@RequestBody UpdatePasswordRequest request, Authentication authentication) {
-        UpdatePasswordResponse updatePasswordResponse = authService.updatePassword(request,authentication.getPrincipal());
-        return Response.success(updatePasswordResponse);
+    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, Authentication authentication) {
+        com.yeoboge.server.domain.vo.response.MessageResponse messageResponse = authService.updatePassword(request,authentication.getPrincipal());
+        return Response.success(messageResponse);
     }
 
     @DeleteMapping("/unregister")
-    public Response<UnregisterResponse> unregister(Authentication authentication, @RequestHeader("Authorization") String authorizationHeader) {
-        UnregisterResponse unregisterResponse  = authService.unregister(authentication,authorizationHeader);
-        return Response.success(unregisterResponse);
+    public Response<MessageResponse> unregister(Authentication authentication, @RequestHeader("Authorization") String authorizationHeader) {
+        MessageResponse messageResponse = authService.unregister(authentication,authorizationHeader);
+        return Response.success(messageResponse);
     }
 }

@@ -55,11 +55,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse checkEmailDuplication(String email) {
+    public com.yeoboge.server.domain.vo.response.MessageResponse checkEmailDuplication(String email) {
         if (userRepository.existsByEmail(email))
             throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
 
-        return MessageResponse.builder()
+        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
                 .message(email + ": 사용 가능한 이메일")
                 .build();
     }
@@ -76,18 +76,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse logout(String header) {
+    public com.yeoboge.server.domain.vo.response.MessageResponse logout(String header) {
         String accessToken = header.substring(TOKEN_SPLIT_INDEX);
 
         tokenRepository.delete(accessToken);
 
-        return MessageResponse.builder()
+        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();
     }
 
     @Override
-    public TempPasswordResponse makeTempPassword(GetResetPasswordEmailRequest request) {
+    public com.yeoboge.server.domain.vo.response.MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = MakeTempPassword.getTempPassword();
         User existedUser = userRepository.findUserByEmail(request.email())
                 .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
@@ -95,31 +95,31 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(updatedUser);
         MakeEmail makeEmail = new MakeEmail(tempPassword);
         makeEmail.sendEmail(updatedUser,javaMailSender);
-        return TempPasswordResponse.builder()
+        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();
     }
 
     @Override
-    public UpdatePasswordResponse updatePassword(UpdatePasswordRequest request, Object principal) {
+    public com.yeoboge.server.domain.vo.response.MessageResponse updatePassword(UpdatePasswordRequest request, Object principal) {
         User existedUser = userRepository.findById((Long) principal)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
         User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
         userRepository.save(updatedUser);
-        return UpdatePasswordResponse.builder()
+        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
                 .message("비밀번호 변경 성공")
                 .build();
     }
 
     @Override
-    public UnregisterResponse unregister(Authentication authentication, String authorizationHeader) {
+    public MessageResponse unregister(Authentication authentication, String authorizationHeader) {
         User user = userRepository.findById((Long) authentication.getPrincipal())
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
         tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
-        return UnregisterResponse.builder()
+        return MessageResponse.builder()
                 .message("회원 탈퇴 성공")
                 .build();
     }

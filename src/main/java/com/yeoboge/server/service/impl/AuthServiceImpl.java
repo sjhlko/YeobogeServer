@@ -13,7 +13,7 @@ import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.AuthService;
-import com.yeoboge.server.utils.MakeEmail;
+import com.yeoboge.server.service.MailService;
 import com.yeoboge.server.utils.MakeTempPassword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final JavaMailSender javaMailSender;
-
+    private final MailService mailService;
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email()))
@@ -86,14 +86,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public com.yeoboge.server.domain.vo.response.MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
+    public MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = MakeTempPassword.getTempPassword();
         User existedUser = userRepository.findUserByEmail(request.email())
                 .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
-        MakeEmail makeEmail = new MakeEmail(tempPassword);
-        makeEmail.sendEmail(updatedUser,javaMailSender);
+        mailService.makePassword(tempPassword);
+        mailService.sendEmail(updatedUser,javaMailSender);
         return MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();

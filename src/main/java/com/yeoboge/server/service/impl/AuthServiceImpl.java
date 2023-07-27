@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -101,8 +100,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public com.yeoboge.server.domain.vo.response.MessageResponse updatePassword(UpdatePasswordRequest request, Object principal) {
-        User existedUser = userRepository.findById((Long) principal)
+    public com.yeoboge.server.domain.vo.response.MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
+        User existedUser = userRepository.findById(id)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
@@ -114,8 +113,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse unregister(Authentication authentication, String authorizationHeader) {
-        User user = userRepository.findById((Long) authentication.getPrincipal())
+    public MessageResponse unregister(Long id, String authorizationHeader) {
+        User user = userRepository.findById(id)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
         tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));

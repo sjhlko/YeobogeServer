@@ -7,7 +7,7 @@ import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @GetMapping("/email-duplicate")
-    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> checkEmailDuplication(@RequestParam String email) {
+    public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
         return Response.success(authService.checkEmailDuplication(email));
     }
 
@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @PatchMapping("/logout")
-    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> logout(@RequestHeader("Authorization") String header) {
+    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
         return Response.success(authService.logout(header));
     }
 
@@ -42,20 +42,20 @@ public class AuthController {
     }
 
     @PatchMapping("/temp-password")
-    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
-        com.yeoboge.server.domain.vo.response.MessageResponse messageResponse = authService.makeTempPassword(request);
+    public Response<MessageResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
+        MessageResponse messageResponse = authService.makeTempPassword(request);
         return Response.success(messageResponse);
     }
 
     @PatchMapping("/new-password")
-    public Response<com.yeoboge.server.domain.vo.response.MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, Authentication authentication) {
-        com.yeoboge.server.domain.vo.response.MessageResponse messageResponse = authService.updatePassword(request,authentication.getPrincipal());
+    public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, @AuthenticationPrincipal Long id) {
+        MessageResponse messageResponse = authService.updatePassword(request,id);
         return Response.success(messageResponse);
     }
 
     @DeleteMapping("/unregister")
-    public Response<MessageResponse> unregister(Authentication authentication, @RequestHeader("Authorization") String authorizationHeader) {
-        MessageResponse messageResponse = authService.unregister(authentication,authorizationHeader);
+    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id, @RequestHeader("Authorization") String authorizationHeader) {
+        MessageResponse messageResponse = authService.unregister(id,authorizationHeader);
         return Response.success(messageResponse);
     }
 }

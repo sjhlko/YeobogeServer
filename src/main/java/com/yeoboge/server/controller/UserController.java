@@ -6,7 +6,7 @@ import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.domain.vo.user.UpdateUser;
 import com.yeoboge.server.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,13 +17,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("")
-    public Response<UserDetailResponse> getProfile(Authentication authentication) {
-        return Response.success(userService.getProfile(Long.parseLong(authentication.getName())));
+    public Response<UserDetailResponse> getProfile(@AuthenticationPrincipal Long id) {
+        return Response.success(userService.getProfile(id));
     }
 
     @PatchMapping ("")
-    public Response<UpdateUser> updateUser(@RequestPart("file")MultipartFile file, @RequestPart("data") UserUpdateRequest request, Authentication authentication) {
-        UpdateUser profileImgResponse = userService.updateUser(file,request,Long.parseLong(authentication.getName()));
+    public Response<UpdateUser> updateUser(@RequestPart("file")MultipartFile file, @RequestPart("data") UserUpdateRequest request, @AuthenticationPrincipal Long id) {
+        UpdateUser profileImgResponse = userService.updateUser(file,request,id);
         return Response.success(profileImgResponse);
     }
 

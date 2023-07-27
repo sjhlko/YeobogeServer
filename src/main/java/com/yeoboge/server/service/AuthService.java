@@ -6,11 +6,11 @@ import com.yeoboge.server.domain.vo.response.MessageResponse;
 
 public interface AuthService {
     RegisterResponse register(RegisterRequest request);
-    com.yeoboge.server.domain.vo.response.MessageResponse checkEmailDuplication(String email);
+    MessageResponse checkEmailDuplication(String email);
     Tokens login(LoginRequest request);
-    com.yeoboge.server.domain.vo.response.MessageResponse logout(String header);
-    com.yeoboge.server.domain.vo.response.MessageResponse makeTempPassword(GetResetPasswordEmailRequest request);
-    com.yeoboge.server.domain.vo.response.MessageResponse updatePassword(UpdatePasswordRequest request, Long id);
+    MessageResponse logout(String header);
+    MessageResponse makeTempPassword(GetResetPasswordEmailRequest request);
+    MessageResponse updatePassword(UpdatePasswordRequest request, Long id);
     MessageResponse unregister(Long id, String authorizationHeader);
     Tokens refreshTokens(Tokens tokens);
 }

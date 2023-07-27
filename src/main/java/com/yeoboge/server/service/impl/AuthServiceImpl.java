@@ -54,11 +54,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public com.yeoboge.server.domain.vo.response.MessageResponse checkEmailDuplication(String email) {
+    public MessageResponse checkEmailDuplication(String email) {
         if (userRepository.existsByEmail(email))
             throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
 
-        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
+        return MessageResponse.builder()
                 .message(email + ": 사용 가능한 이메일")
                 .build();
     }
@@ -75,12 +75,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public com.yeoboge.server.domain.vo.response.MessageResponse logout(String header) {
+    public MessageResponse logout(String header) {
         String accessToken = header.substring(TOKEN_SPLIT_INDEX);
 
         tokenRepository.delete(accessToken);
 
-        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
+        return MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();
     }
@@ -94,20 +94,20 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(updatedUser);
         MakeEmail makeEmail = new MakeEmail(tempPassword);
         makeEmail.sendEmail(updatedUser,javaMailSender);
-        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
+        return MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();
     }
 
     @Override
-    public com.yeoboge.server.domain.vo.response.MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
+    public MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
         User existedUser = userRepository.findById(id)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
         User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
         userRepository.save(updatedUser);
-        return com.yeoboge.server.domain.vo.response.MessageResponse.builder()
+        return MessageResponse.builder()
                 .message("비밀번호 변경 성공")
                 .build();
     }

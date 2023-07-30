@@ -55,6 +55,9 @@ dependencies {
 
     //s3 버킷 관련 의존성
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    //xml 파싱 관련 의존성
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 }
 
 tasks.named('test') {

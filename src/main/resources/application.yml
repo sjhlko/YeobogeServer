@@ -51,3 +51,7 @@ cloud:
 
 logging:
   config: classpath:log4j2.xml
+
+server:
+  servlet:
+    context-path: /api/v1

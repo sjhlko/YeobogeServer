@@ -31,7 +31,7 @@ public class OAuthServiceImpl implements OAuthService {
         User user = request.toEntity(new HashSet<>(favoriteGenres));
         user = userRepository.save(user);
 
-        return generateTokens(user.getId());
+        return generateToken(user.getId());
     }
 
     @Override
@@ -41,18 +41,13 @@ public class OAuthServiceImpl implements OAuthService {
 
         Long userId = userRepository.findIdByEmail(email);
 
-        return generateTokens(userId);
+        return generateToken(userId);
     }
 
-    private Tokens generateTokens(Long userId) {
-        String accessToken = jwtProvider.generateAccessToken(userId);
-        String refreshToken = jwtProvider.generateRefreshToken(userId);
+    private Tokens generateToken(Long userId) {
+        Tokens tokens = jwtProvider.generateTokens(userId);
+        tokenRepository.save(tokens);
 
-        tokenRepository.save(new Token(accessToken, refreshToken));
-
-        return Tokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return tokens;
     }
 }

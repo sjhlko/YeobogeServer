@@ -1,8 +1,9 @@
 package com.yeoboge.server.config.security;
 
+import com.yeoboge.server.domain.vo.auth.Tokens;
+
 public interface JwtProvider {
-    String generateAccessToken(Long userId);
-    String generateRefreshToken(Long userId);
+    Tokens generateTokens(Long userId);
     boolean isValid(String token, Long userId);
     Long parseUserId(String token);
 }

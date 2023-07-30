@@ -1,5 +1,6 @@
 package com.yeoboge.server.config.security;
 
+import com.yeoboge.server.domain.vo.auth.Tokens;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,13 +24,11 @@ public class JwtProviderImpl implements JwtProvider {
     private String key;
 
     @Override
-    public String generateAccessToken(Long userId) {
-        return generateToken(new HashMap<>(), userId, ACCESS_TOKEN_EXPIRED_TIME);
-    }
-
-    @Override
-    public String generateRefreshToken(Long userId) {
-        return generateToken(new HashMap<>(), userId, REFRESH_TOKEN_EXPIRED_TIME);
+    public Tokens generateTokens(Long userId) {
+        return Tokens.builder()
+                .accessToken(generateAccessToken(userId))
+                .refreshToken(generateRefreshToken(userId))
+                .build();
     }
 
     @Override
@@ -41,6 +40,14 @@ public class JwtProviderImpl implements JwtProvider {
     @Override
     public Long parseUserId(String token) {
         return Long.parseLong(extractClaim(token, Claims::getSubject));
+    }
+
+    private String generateAccessToken(Long userId) {
+        return generateToken(new HashMap<>(), userId, ACCESS_TOKEN_EXPIRED_TIME);
+    }
+
+    private String generateRefreshToken(Long userId) {
+        return generateToken(new HashMap<>(), userId, REFRESH_TOKEN_EXPIRED_TIME);
     }
 
     private String generateToken(Map<String, Object> extraClaims, Long userId, long expiredTime) {

@@ -3,7 +3,6 @@ package com.yeoboge.server.service.impl;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.entity.Genre;
-import com.yeoboge.server.domain.entity.Token;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -150,14 +149,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Tokens generateToken(long userId) {
-        String accessToken = jwtProvider.generateAccessToken(userId);
-        String refreshToken = jwtProvider.generateRefreshToken(userId);
+        Tokens tokens = jwtProvider.generateTokens(userId);
+        tokenRepository.save(tokens);
 
-        tokenRepository.save(new Token(accessToken, refreshToken));
-
-        return Tokens.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return tokens;
     }
 }

@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * {@link OAuthService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class OAuthServiceImpl implements OAuthService {
@@ -44,6 +47,13 @@ public class OAuthServiceImpl implements OAuthService {
         return generateToken(userId);
     }
 
+    /**
+     * JWT 토큰을 발급하고 해당 토큰을 Redis 스토리지에 저장함.
+     *
+     * @param userId {@link User} ID
+     * @return Access Token, Refresh Token을 담고 있는 {@link Tokens}
+     * @see JwtProvider
+     */
     private Tokens generateToken(Long userId) {
         Tokens tokens = jwtProvider.generateTokens(userId);
         tokenRepository.save(tokens);

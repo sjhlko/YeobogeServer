@@ -13,6 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@link TokenRepository} 구현체
+ */
 @Repository
 @RequiredArgsConstructor
 public class TokenRepositoryImpl implements TokenRepository {

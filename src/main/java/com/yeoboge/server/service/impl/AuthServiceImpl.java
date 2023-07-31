@@ -24,6 +24,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * {@link AuthService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -138,16 +141,39 @@ public class AuthServiceImpl implements AuthService {
         return generateToken(userId);
     }
 
+    /**
+     * 비밀번호 암호화를 위해 해시를 적용함.
+     *
+     * @param password 비밀번호 plain text
+     * @return 해싱된 비밀번호
+     */
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
 
+    /**
+     * Spring Security 인증 메커니즘으로 사용자 계정 인증 후 Context 저장함.
+     *
+     * @param username 계정 이메일
+     * @param password 계정 비밀번호
+     * @see UsernamePasswordAuthenticationToken
+     * @see AuthenticationManager
+     */
     private void authenticate(String username, String password) {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(username, password);
         authManager.authenticate(authToken);
     }
 
+    /**
+     * {@link User} ID로 해당 사용자의 토큰들을 발급하고
+     * Redis 스토리지에 저장함.
+     *
+     * @param userId {@link User} ID
+     * @return 발급된 토큰들을 담은 {@link Tokens}
+     * @see JwtProvider
+     * @see TokenRepository
+     */
     private Tokens generateToken(long userId) {
         Tokens tokens = jwtProvider.generateTokens(userId);
         tokenRepository.save(tokens);

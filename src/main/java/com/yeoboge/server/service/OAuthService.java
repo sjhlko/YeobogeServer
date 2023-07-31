@@ -4,7 +4,7 @@ import com.yeoboge.server.domain.dto.auth.SocialRegisterRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 
 /**
- * 소셜 계정으로 회원 가입 및 로그인 비즈니스 로직을 처리하는 Service
+ * 소셜 계정으로 회원 가입 및 로그인 비즈니스 로직에 대한 메서드를 제공하는 Service
  */
 public interface OAuthService {
     /**

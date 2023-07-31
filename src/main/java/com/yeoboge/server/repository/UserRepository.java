@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     /**
-     * {@code email}로 엔티티의 {@code id}, {@code email}, {@code password}를 조회함.
+     * {@code email}로 엔티티의 {@code email}, {@code password}, {@code role}을 조회함.
      *
      * @param email 조회할 계정 이메일
      * @return 해당 이메일을 가진 엔티티의 {@link UserDetailsDto}

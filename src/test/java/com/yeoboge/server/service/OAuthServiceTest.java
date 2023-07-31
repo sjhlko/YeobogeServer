@@ -6,6 +6,7 @@ import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.Tokens;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +69,39 @@ public class OAuthServiceTest {
 
         // then
         assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("소셜 로그인 성공 단위 테스트")
+    public void socialLoginSuccess() {
+        // given
+        long userId = 1L;
+        String email = "test_email";
+        Tokens expected = makeTokens();
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(userRepository.findIdByEmail(email)).thenReturn(userId);
+        when(jwtProvider.generateTokens(userId)).thenReturn(expected);
+
+        Tokens actual = oAuthService.socialLogin(email);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("소셜 로그인 실패 단위 테스트")
+    public void socialLoginFail() {
+        // given
+        String email = "test_email";
+
+        // when
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        // then
+        assertThatThrownBy(() -> oAuthService.socialLogin(email))
+                .isInstanceOf(AppException.class);
     }
 
     private SocialRegisterRequest makeRegisterRequest() {

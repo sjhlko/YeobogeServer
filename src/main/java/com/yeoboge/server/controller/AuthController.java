@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,11 +32,13 @@ public class AuthController {
         return Response.success(authService.login(request));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/logout")
     public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
         return Response.success(authService.logout(header));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/refresh")
     public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
         return Response.success(authService.refreshTokens(tokens));
@@ -47,12 +50,14 @@ public class AuthController {
         return Response.success(messageResponse);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/new-password")
     public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, @AuthenticationPrincipal Long id) {
         MessageResponse messageResponse = authService.updatePassword(request,id);
         return Response.success(messageResponse);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/unregister")
     public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id, @RequestHeader("Authorization") String authorizationHeader) {
         MessageResponse messageResponse = authService.unregister(id,authorizationHeader);

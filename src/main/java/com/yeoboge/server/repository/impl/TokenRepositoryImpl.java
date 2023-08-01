@@ -1,6 +1,6 @@
 package com.yeoboge.server.repository.impl;
 
-import com.yeoboge.server.domain.entity.Token;
+import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.TokenRepository;
@@ -13,6 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@link TokenRepository} 구현체
+ */
 @Repository
 @RequiredArgsConstructor
 public class TokenRepositoryImpl implements TokenRepository {
@@ -20,10 +23,10 @@ public class TokenRepositoryImpl implements TokenRepository {
     private final RedisTemplate redisTemplate;
 
     @Override
-    public void save(final Token token) {
+    public void save(final Tokens token) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        valueOperations.set(token.getAccessToken(), token.getRefreshToken());
-        redisTemplate.expire(token.getAccessToken(), TIME_TO_LIVE, TimeUnit.SECONDS);
+        valueOperations.set(token.accessToken(), token.refreshToken());
+        redisTemplate.expire(token.accessToken(), TIME_TO_LIVE, TimeUnit.SECONDS);
     }
 
     @Override

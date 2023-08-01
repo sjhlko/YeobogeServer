@@ -36,7 +36,9 @@ public class SecurityConfig {
             "/auths/login",
             "/auths/refresh",
             "/auths/temp-password",
-            "/auths/test"
+            /* OAuth 관련 url */
+            "/oauths/register",
+            "/oauths/login"
     };
 
     private final HttpEndpointChecker endpointChecker;

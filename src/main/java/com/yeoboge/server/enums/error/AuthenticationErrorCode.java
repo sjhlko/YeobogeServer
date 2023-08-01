@@ -4,9 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-/**
- * 계정 및 인증 관련 {@link ErrorCode}
- */
 @Getter
 @RequiredArgsConstructor
 public enum AuthenticationErrorCode implements ErrorCode {

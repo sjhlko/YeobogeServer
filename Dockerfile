@@ -27,7 +27,5 @@ ENTRYPOINT [                                                \
     "-jar",                                                 \
     "-Djava.security.egd=file:/dev/./urandom",              \
     "-Dsun.net.inetaddr.ttl=0",                             \
-    "-Djava.net.preferIPv4Stack=true",                      \
-    "-Djava.net.preferIPv4Addresses=true",                  \
     "app.jar"              \
 ]

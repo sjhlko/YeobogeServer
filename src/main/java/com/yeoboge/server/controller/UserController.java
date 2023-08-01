@@ -6,7 +6,6 @@ import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.domain.vo.user.UpdateUser;
 import com.yeoboge.server.service.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/my")
-@SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;

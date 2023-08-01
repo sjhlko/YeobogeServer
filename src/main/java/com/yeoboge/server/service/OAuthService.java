@@ -1,6 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.auth.SocialRegisterRequest;
+import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 
 /**
@@ -18,8 +19,8 @@ public interface OAuthService {
     /**
      * 소셜 계정으로 사용자를 로그인하고 JWT 토큰을 발급함.
      *
-     * @param email 로그인할 소셜 계정 이메일
+     * @param request 로그인할 소셜 계정 이메일을 담고 있는 {@link SocialLoginRequest}
      * @return 발급된 Access Token, Refresh Token를 담고 있는 {@link Tokens}
      */
-    Tokens socialLogin(String email);
+    Tokens socialLogin(SocialLoginRequest request);
 }

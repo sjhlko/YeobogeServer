@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.dto.auth.SocialRegisterRequest;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
@@ -77,6 +78,7 @@ public class OAuthServiceTest {
         // given
         long userId = 1L;
         String email = "test_email";
+        SocialLoginRequest request = new SocialLoginRequest(email);
         Tokens expected = makeTokens();
 
         // when
@@ -84,7 +86,7 @@ public class OAuthServiceTest {
         when(userRepository.findIdByEmail(email)).thenReturn(userId);
         when(jwtProvider.generateTokens(userId)).thenReturn(expected);
 
-        Tokens actual = oAuthService.socialLogin(email);
+        Tokens actual = oAuthService.socialLogin(request);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -95,12 +97,13 @@ public class OAuthServiceTest {
     public void socialLoginFail() {
         // given
         String email = "test_email";
+        SocialLoginRequest request = new SocialLoginRequest(email);
 
         // when
         when(userRepository.existsByEmail(email)).thenReturn(false);
 
         // then
-        assertThatThrownBy(() -> oAuthService.socialLogin(email))
+        assertThatThrownBy(() -> oAuthService.socialLogin(request))
                 .isInstanceOf(AppException.class);
     }
 

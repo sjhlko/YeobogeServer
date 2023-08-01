@@ -4,6 +4,7 @@ import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.dto.auth.SocialRegisterRequest;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
@@ -38,7 +39,8 @@ public class OAuthServiceImpl implements OAuthService {
     }
 
     @Override
-    public Tokens socialLogin(String email) {
+    public Tokens socialLogin(SocialLoginRequest request) {
+        String email = request.email();
         if (!userRepository.existsByEmail(email))
             throw new AppException(AuthenticationErrorCode.USER_NOT_FOUND);
 

@@ -12,7 +12,7 @@
     <!-- Log Appender 설정 -->
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern="${consoleLayout}" />
+            <PatternLayout pattern="${consoleLayout}" disableAnsi = "false" />
         </Console>
         <!--ConsoleAppender, RollingFileAppneder -->
         <RollingFile name="daily_log"

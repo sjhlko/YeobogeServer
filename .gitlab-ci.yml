@@ -36,7 +36,6 @@ deploy:
   script:
     - docker run --name $CI_PROJECT_NAME -d
       -p 8080:8080 --restart unless-stopped
-      -v /home/deployer/logs:/app/logs
       -e DATABASE_URI=$DATABASE_URI
       -e DATABASE_USERNAME=$DATABASE_USERNAME
       -e DATABASE_PASSWORD=$DATABASE_PASSWORD

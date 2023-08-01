@@ -3,6 +3,7 @@ package com.yeoboge.server.service.impl;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.entity.Genre;
+import com.yeoboge.server.domain.entity.Token;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -13,7 +14,7 @@ import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.AuthService;
 import com.yeoboge.server.service.MailService;
-import com.yeoboge.server.utils.StringGeneratorUtils;
+import com.yeoboge.server.utils.MakeTempPassword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,9 +25,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * {@link AuthService} 구현체
- */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -40,7 +38,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtProvider jwtProvider;
     private final JavaMailSender javaMailSender;
     private final MailService mailService;
-
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email()))
@@ -90,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
-        String tempPassword = StringGeneratorUtils.getTempPassword();
+        String tempPassword = MakeTempPassword.getTempPassword();
         User existedUser = userRepository.findUserByEmail(request.email())
                 .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
@@ -141,43 +138,25 @@ public class AuthServiceImpl implements AuthService {
         return generateToken(userId);
     }
 
-    /**
-     * 비밀번호 암호화를 위해 해시를 적용함.
-     *
-     * @param password 비밀번호 plain text
-     * @return 해싱된 비밀번호
-     */
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
 
-    /**
-     * Spring Security 인증 메커니즘으로 사용자 계정 인증 후 Context 저장함.
-     *
-     * @param username 계정 이메일
-     * @param password 계정 비밀번호
-     * @see UsernamePasswordAuthenticationToken
-     * @see AuthenticationManager
-     */
     private void authenticate(String username, String password) {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(username, password);
         authManager.authenticate(authToken);
     }
 
-    /**
-     * {@link User} ID로 해당 사용자의 토큰들을 발급하고
-     * Redis 스토리지에 저장함.
-     *
-     * @param userId {@link User} ID
-     * @return 발급된 토큰들을 담은 {@link Tokens}
-     * @see JwtProvider
-     * @see TokenRepository
-     */
     private Tokens generateToken(long userId) {
-        Tokens tokens = jwtProvider.generateTokens(userId);
-        tokenRepository.save(tokens);
+        String accessToken = jwtProvider.generateAccessToken(userId);
+        String refreshToken = jwtProvider.generateRefreshToken(userId);
 
-        return tokens;
+        tokenRepository.save(new Token(accessToken, refreshToken));
+
+        return Tokens.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

@@ -2,7 +2,6 @@ package com.yeoboge.server.config.security;
 
 import com.yeoboge.server.config.security.filter.JwtExceptionFilter;
 import com.yeoboge.server.config.security.filter.JwtTokenFilter;
-import com.yeoboge.server.config.security.filter.LoggingFilter;
 import com.yeoboge.server.handler.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +33,6 @@ public class SecurityConfig {
             "/auths/register",
             "/auths/email-duplicate",
             "/auths/login",
-            "/auths/refresh",
             "/auths/temp-password"
     };
 
@@ -42,7 +40,6 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final JwtTokenFilter jwtTokenFilter;
-    private final LoggingFilter loggingFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -56,8 +53,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler()))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtExceptionFilter, JwtTokenFilter.class)
-                .addFilterAfter(loggingFilter, JwtExceptionFilter.class);
+                .addFilterBefore(jwtExceptionFilter, JwtTokenFilter.class);
         return http.build();
     }
 

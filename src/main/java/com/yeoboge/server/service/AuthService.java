@@ -44,8 +44,31 @@ public interface AuthService {
      * @return {@link MessageResponse}
      */
     MessageResponse logout(String header);
+
+    /**
+     * 임시 비밀번호를 생성하고 회원의 비밀번호를 임시 비밀번호로 변경한 뒤 임시 비밀번호를 메일로 전송함
+     *
+     * @param request 임시 비밀번호를 전송받을 이메일을 담은 {@link GetResetPasswordEmailRequest} VO
+     * @return {@link MessageResponse}
+     */
     MessageResponse makeTempPassword(GetResetPasswordEmailRequest request);
+
+    /**
+     * 회원의 비밀번호를 변경함
+     *
+     * @param request 변경할 비밀번호와 변경될 비밀번호가 담긴 {@link UpdatePasswordRequest} VO
+     * @param id 로그인한 회원의 인덱스
+     * @return {@link MessageResponse}
+     */
     MessageResponse updatePassword(UpdatePasswordRequest request, Long id);
+
+    /**
+     * 회원 탈퇴를 진행하고 해당 회원의 토큰을 삭제처리함
+     *
+     * @param id 로그인한 회원의 인덱스
+     * @param authorizationHeader 사용자의 Access Token
+     * @return {@link MessageResponse}
+     */
     MessageResponse unregister(Long id, String authorizationHeader);
 
     /**

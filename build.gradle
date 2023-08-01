@@ -10,6 +10,9 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -61,6 +64,7 @@ dependencies {
 
     //xml 파싱 관련 의존성
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+
 }
 
 tasks.named('test') {

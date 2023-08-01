@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
         User existedUser = userRepository.findById(id)
                 .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         User updatedUser = new User();
-        if(!file.isEmpty()) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file),request.nickname());
+        if(file!=null) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file),request.nickname());
         else if(request.isChanged())
             updatedUser = User.updateUserProfile(existedUser, null ,request.nickname());
         else updatedUser = User.updateUserProfile(existedUser, existedUser.getProfileImagePath() ,request.nickname());

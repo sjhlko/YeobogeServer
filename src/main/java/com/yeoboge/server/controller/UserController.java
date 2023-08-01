@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @PatchMapping ("")
-    public Response<MessageResponse> updateUser(@RequestPart("file")MultipartFile file, @RequestPart("data") UserUpdateRequest request, @AuthenticationPrincipal Long id) {
+    public Response<MessageResponse> updateUser(@RequestPart(value = "file", required = false)MultipartFile file, @RequestPart("data") UserUpdateRequest request, @AuthenticationPrincipal Long id) {
         MessageResponse profileImgResponse = userService.updateUser(file,request,id);
         return Response.success(profileImgResponse);
     }

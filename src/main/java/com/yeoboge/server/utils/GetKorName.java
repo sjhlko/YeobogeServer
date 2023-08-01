@@ -12,13 +12,12 @@ public class GetKorName {
         try {
             XmlMapper xmlMapper = new XmlMapper();
             JsonNode rootNode = xmlMapper.readTree(xmlData);
-
             JsonNode boardGameNode = rootNode.get("boardgame");
             if (boardGameNode != null) {
                 JsonNode nameNode = boardGameNode.get("name");
                 for (JsonNode jsonNode : nameNode) {
                     String name = String.valueOf(jsonNode.get(""));
-                    if(isKoreanCharacter(name)){
+                    if (isKoreanCharacter(name)){
                         System.out.println(name);
                         ret = name.replaceAll("\"","");
                     }

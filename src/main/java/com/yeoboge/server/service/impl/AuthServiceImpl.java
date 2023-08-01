@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
     public MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = StringGeneratorUtils.getTempPassword();
         User existedUser = userRepository.findUserByEmail(request.email())
-                .orElseThrow(()-> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
         mailService.makePassword(tempPassword);
@@ -105,8 +105,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
         User existedUser = userRepository.findById(id)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
-        if(!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        if (!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
         User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
         userRepository.save(updatedUser);
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse unregister(Long id, String authorizationHeader) {
         User user = userRepository.findById(id)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
         tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
         return MessageResponse.builder()

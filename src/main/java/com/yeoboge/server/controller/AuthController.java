@@ -88,14 +88,16 @@ public class AuthController {
 
     @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/new-password")
-    public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, @AuthenticationPrincipal Long id) {
+    public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request,
+                                                    @AuthenticationPrincipal Long id) {
         MessageResponse messageResponse = authService.updatePassword(request,id);
         return Response.success(messageResponse);
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/unregister")
-    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id, @RequestHeader("Authorization") String authorizationHeader) {
+    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id,
+                                                @RequestHeader("Authorization") String authorizationHeader) {
         MessageResponse messageResponse = authService.unregister(id,authorizationHeader);
         return Response.success(messageResponse);
     }

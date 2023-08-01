@@ -35,7 +35,8 @@ public class SecurityConfig {
             "/auths/email-duplicate",
             "/auths/login",
             "/auths/refresh",
-            "/auths/temp-password"
+            "/auths/temp-password",
+            "/auths/test"
     };
 
     private final HttpEndpointChecker endpointChecker;

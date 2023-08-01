@@ -16,18 +16,17 @@ public class CsvParsing {
 
     public CsvParsing(String filePath) throws IOException {
         this.filePath = filePath;
-        bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.filePath), "UTF-8"));
+        bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(this.filePath),
+                "UTF-8"));
         readCSV = new ArrayList<>();
-
         makeList(bufferedReader);
         this.index = 0;
     }
 
     public void makeList(BufferedReader bufferedReader) throws IOException {
         String line = null;
-        while((line = bufferedReader.readLine())!=null) {
+        while ((line = bufferedReader.readLine()) != null) {
             String[] lineContents = line.split("\t",-1);
-
             readCSV.add(lineContents);
         }
     }

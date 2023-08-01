@@ -4,7 +4,6 @@ import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
-import com.yeoboge.server.domain.vo.user.UpdateUser;
 import com.yeoboge.server.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,8 @@ public class UserController {
     }
 
     @PatchMapping ("")
-    public Response<MessageResponse> updateUser(@RequestPart(value = "file", required = false)MultipartFile file, @RequestPart("data") UserUpdateRequest request, @AuthenticationPrincipal Long id) {
+    public Response<MessageResponse> updateUser(@RequestPart(value = "file", required = false)MultipartFile file,
+                                                @RequestPart("data") UserUpdateRequest request, @AuthenticationPrincipal Long id) {
         MessageResponse profileImgResponse = userService.updateUser(file,request,id);
         return Response.success(profileImgResponse);
     }

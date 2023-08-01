@@ -1,18 +1,28 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.error.EmailErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
 
-public class MakeEmail {
+@Service
+@RequiredArgsConstructor
+public class MailServiceImpl implements MailService {
     final String bodyEncoding = "UTF-8";
     final String subject= "🎲여보게 임시 비밀번호 발급 이메일입니다.🎲";
     final String sender = "heyboardgame@gmail.com";
     private String bodyMessage = " ";
+    public void makePassword(String password) {
+        this.bodyMessage = "여보게 임시 비밀번호 발급 이메일입니다. \n 임시 비밀번호는 "+password+" 입니다.";
+    }
+
+    @Override
     public void sendEmail(User receiver, JavaMailSender javaMailSender){
         String html = makeHtml(receiver);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -27,10 +37,8 @@ public class MakeEmail {
             throw new AppException(EmailErrorCode.EMAIL_SENDING_ERROR);
         }
     }
-    public MakeEmail(String password) {
-        this.bodyMessage = "여보게 임시 비밀번호 발급 이메일입니다. \n 임시 비밀번호는 "+password+" 입니다.";
-    }
 
+    @Override
     public String makeHtml(User receiver){
         return  "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head>\n" +
                 "<!--[if gte mso 9]>\n" +

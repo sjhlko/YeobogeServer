@@ -41,6 +41,14 @@ public class User {
     )
     Set<Genre> favoriteGenres;
 
+    /**
+     * 기존 회원의 정보가 담긴 {@link User} 엔티티에서 비밀번호만을 바꾸고자하는 비밀번호로 변경한
+     * 새로운 User 엔티티를 반환함
+     *
+     * @param user 비밀번호 변경을 하고자 하는 회원 엔티티
+     * @param password 변경하고자 하는 새로운 비밀번호
+     * @return {@link User} 엔티티
+     */
     public static User updatePassword(User user, String password){
         return User.builder()
                 .id(user.getId())
@@ -54,6 +62,15 @@ public class User {
                 .build();
     }
 
+    /**
+     * 기존 회원의 정보가 담긴 {@link User} 엔티티에서 프로필 사진 링크와 닉네임을 변경한
+     * 새로운 User 엔티티를 반환함
+     *
+     * @param user 회원 정보 변경을 하고자 하는 회원 엔티티
+     * @param path 변경하고자 하는 사진의 링크
+     * @param nickname 변경하고자 하는 새로운 닉네임
+     * @return {@link User} 엔티티
+     */
     public static User updateUserProfile(User user, String path, String nickname){
         return User.builder()
                 .id(user.getId())

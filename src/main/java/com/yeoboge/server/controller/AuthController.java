@@ -80,23 +80,48 @@ public class AuthController {
         return Response.success(authService.refreshTokens(tokens));
     }
 
+    /**
+     * 임시 비밀번호 메일을 보내는 API
+     *
+     * @param request 임시 비밀번호를 전송받을 이메일 {@link GetResetPasswordEmailRequest}
+     * @return 이메일 발송됨 메세지를 포함한 HTTP 200 응답
+     * @see MessageResponse
+     */
     @PatchMapping("/temp-password")
     public Response<MessageResponse> getResetPasswordEmail(@RequestBody GetResetPasswordEmailRequest request) {
         MessageResponse messageResponse = authService.makeTempPassword(request);
         return Response.success(messageResponse);
     }
 
+    /**
+     * 비밀번호를 변경하는 API
+     *
+     * @param request 현재 비밀번호와 변경할 비밀번호에 대한 {@link UpdatePasswordRequest} VO
+     * @param id 현재 로그인한 회원의 인덱스
+     * @return 비밀번호 변경 성공됨 메세지를 포함한 HTTP 200 응답
+     * @see MessageResponse
+     */
     @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/new-password")
-    public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request, @AuthenticationPrincipal Long id) {
-        MessageResponse messageResponse = authService.updatePassword(request,id);
+    public Response<MessageResponse> updatePassword(@RequestBody UpdatePasswordRequest request,
+                                                    @AuthenticationPrincipal Long id) {
+        MessageResponse messageResponse = authService.updatePassword(request, id);
         return Response.success(messageResponse);
     }
 
+    /**
+     * 회원 탈퇴 API
+     *
+     * @param id 현재 로그인한 회원의 인덱스
+     * @param header 탈퇴할 사용자의 Access Token 값을 가진 HTTP Header
+     * @return 회원 탈퇴 성공됨 메세지를 포함한 HTTP 200 응답
+     * @see MessageResponse
+     */
     @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/unregister")
-    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id, @RequestHeader("Authorization") String authorizationHeader) {
-        MessageResponse messageResponse = authService.unregister(id,authorizationHeader);
+    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id,
+                                                @RequestHeader("Authorization") String header) {
+        MessageResponse messageResponse = authService.unregister(id, header);
         return Response.success(messageResponse);
     }
 }

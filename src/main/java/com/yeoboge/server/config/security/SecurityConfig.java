@@ -35,7 +35,10 @@ public class SecurityConfig {
             "/auths/email-duplicate",
             "/auths/login",
             "/auths/refresh",
-            "/auths/temp-password"
+            "/auths/temp-password",
+            /* OAuth 관련 url */
+            "/oauths/register",
+            "/oauths/login"
     };
 
     private final HttpEndpointChecker endpointChecker;

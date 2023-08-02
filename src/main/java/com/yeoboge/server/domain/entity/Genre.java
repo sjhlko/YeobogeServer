@@ -3,6 +3,9 @@ package com.yeoboge.server.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
 @Entity
@@ -15,4 +18,6 @@ public class Genre {
     @Column(name = "genre_id")
     private Long id;
     private String name;
+    @OneToMany(mappedBy = "genre", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<GenreOfBoardGame> boardGame  = new ArrayList<>();
 }

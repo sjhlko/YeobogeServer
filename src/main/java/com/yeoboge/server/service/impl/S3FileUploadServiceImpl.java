@@ -26,8 +26,9 @@ public class S3FileUploadServiceImpl implements S3FileUploadService {
     @Override
     public String uploadFile(MultipartFile file) {
         String fileName = generateFilename(file);
-        try{
-            s3Client.putObject(new PutObjectRequest(bucketName,fileName,file.getInputStream(),getObjectMetadata(file))) ;
+        try {
+            s3Client.putObject(new PutObjectRequest(bucketName, fileName,
+                    file.getInputStream(), getObjectMetadata(file))) ;
             return defaultUrl + bucketName + ".s3." + region + ".amazonaws.com/" +fileName;
         } catch (IOException e) {
             throw new AppException(UserErrorCode.FILE_UPLOAD_ERROR);

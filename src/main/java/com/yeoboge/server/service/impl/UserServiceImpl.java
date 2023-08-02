@@ -21,19 +21,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponse getProfile(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         return UserDetailResponse.of(user);
     }
 
     @Override
     public MessageResponse updateUser(MultipartFile file, UserUpdateRequest request, Long id) {
         User existedUser = userRepository.findById(id)
-                .orElseThrow(()->new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         User updatedUser = new User();
-        if(!file.isEmpty()) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file),request.nickname());
-        else if(request.isChanged())
-            updatedUser = User.updateUserProfile(existedUser, null ,request.nickname());
-        else updatedUser = User.updateUserProfile(existedUser, existedUser.getProfileImagePath() ,request.nickname());
+        if (file!=null) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file), request.nickname());
+        else if (request.isChanged())
+            updatedUser = User.updateUserProfile(existedUser, null, request.nickname());
+        else updatedUser = User.updateUserProfile(existedUser, existedUser.getProfileImagePath(), request.nickname());
         userRepository.save(updatedUser);
         return MessageResponse.builder()
                 .message("프로필 변경 성공")

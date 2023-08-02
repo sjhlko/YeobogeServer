@@ -144,8 +144,7 @@ public class AuthServiceTest {
 
         // when
         when(userRepository.findIdByEmail(username)).thenReturn(userId);
-        when(jwtProvider.generateAccessToken(userId)).thenReturn(expectedAccessToken);
-        when(jwtProvider.generateRefreshToken(userId)).thenReturn(expectedRefreshToken);
+        when(jwtProvider.generateTokens(userId)).thenReturn(expected);
 
         Tokens actual = authService.login(request);
 
@@ -217,8 +216,7 @@ public class AuthServiceTest {
         // when
         when(tokenRepository.findByToken(prevAccessToken)).thenReturn(Optional.of(prevRefreshToken));
         when(jwtProvider.parseUserId(prevRefreshToken)).thenReturn(userId);
-        when(jwtProvider.generateAccessToken(userId)).thenReturn(newAccessToken);
-        when(jwtProvider.generateRefreshToken(userId)).thenReturn(newRefreshToken);
+        when(jwtProvider.generateTokens(userId)).thenReturn(expected);
 
         Tokens actual = authService.refreshTokens(makeTokens(prevAccessToken, prevRefreshToken));
 

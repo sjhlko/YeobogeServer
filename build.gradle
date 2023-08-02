@@ -10,6 +10,9 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -55,6 +58,13 @@ dependencies {
 
     //s3 버킷 관련 의존성
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // log 관련 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+    //xml 파싱 관련 의존성
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+
 }
 
 tasks.named('test') {

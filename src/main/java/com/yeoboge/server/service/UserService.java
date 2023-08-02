@@ -2,10 +2,10 @@ package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
-import com.yeoboge.server.domain.vo.user.UpdateUser;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     UserDetailResponse getProfile(Long id);
-    UpdateUser updateUser(MultipartFile file, UserUpdateRequest request, Long id);
+    MessageResponse updateUser(MultipartFile file, UserUpdateRequest request, Long id);
 }

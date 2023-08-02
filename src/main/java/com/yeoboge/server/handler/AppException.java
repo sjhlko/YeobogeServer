@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 예외 처리를 위한 공통 {@link RuntimeException}
+ */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

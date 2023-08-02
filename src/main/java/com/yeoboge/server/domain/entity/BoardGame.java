@@ -3,12 +3,17 @@ package com.yeoboge.server.domain.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@NoArgsConstructor
+@Getter
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class BoardGame {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +30,9 @@ public class BoardGame {
     private Integer playTime;
     @Column(columnDefinition = "TEXT")
     private String mechanism;
-
-
+    private String isLocalized;
+    @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<GenreOfBoardGame> genre  = new ArrayList<>();
+    @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<ThemeOfBoardGame> theme  = new ArrayList<>();
 }

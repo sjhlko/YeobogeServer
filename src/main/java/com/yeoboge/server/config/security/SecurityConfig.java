@@ -27,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private static final String[] PERMIT_URL_ARRAY = {
-            /* swagger v3 */
+            /* swagger v3 관련 url */
             "/v3/api-docs/**",
             "/swagger-ui/**",
             /* Auth 관련 url */

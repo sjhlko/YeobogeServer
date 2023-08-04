@@ -14,6 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.UUID;
 
+/**
+ * {@link S3FileUploadService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class S3FileUploadServiceImpl implements S3FileUploadService {

@@ -59,8 +59,8 @@ public class AuthServiceTest {
         String userCode = "user_code";
         String hashedPassword = "hashed_password";
         List<Genre> favoriteGenres = List.of(
-                new Genre(1L, "전략"),
-                new Genre(2L, "카드")
+                Genre.builder().id(1L).build(),
+                Genre.builder().id(2L).build()
         );
         RegisterRequest request = makeRegisterRequest();
         User expected = User.builder().id(userId)

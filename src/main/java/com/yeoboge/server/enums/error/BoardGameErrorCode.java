@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+/**
+ * 보드게임 API 관련 {@link ErrorCode}
+ */
 @Getter
 @RequiredArgsConstructor
 public enum BoardGameErrorCode implements ErrorCode{

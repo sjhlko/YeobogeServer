@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class BoardGameController {
     private final BoardGameService boardGameService;
 
+    /**
+     * 보드게임 단건 조회 API
+     *
+     * @param id 조회하고자 하는 보드게임의 id
+     * @return 보드게임의 정보에 대한 {@link BoardGameDetailResponse} VO를 리턴함
+     */
     @GetMapping("/{id}")
     public Response<BoardGameDetailResponse> test(@PathVariable Long id) {
         BoardGameDetailResponse response = boardGameService.getBoardGameDetail(id);

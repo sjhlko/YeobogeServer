@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * {@link BoardGameService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class BoardGameServiceImpl implements BoardGameService {

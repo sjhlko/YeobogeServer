@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * {@link UserService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {

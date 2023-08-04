@@ -11,6 +11,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+/**
+ * {@link MailService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {

@@ -45,4 +45,20 @@ public class BoardGameController {
         BookmarkResponse response = boardGameService.addBookmark(id, userId);
         return Response.created(response);
     }
+
+    /**
+     * 특정 보드게임에 대해 찜하기를 취소하는 API
+     *
+     * @param id 찜하기 취소할 보드게임 ID
+     * @param userId 취소할 사용자 ID
+     * @return HTTP 204 응답
+     */
+    @DeleteMapping("/{id}/bookmarks")
+    public ResponseEntity removeBookmark(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId
+    ) {
+        boardGameService.removeBookmark(id, userId);
+        return Response.deleted();
+    }
 }

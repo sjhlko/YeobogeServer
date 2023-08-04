@@ -94,4 +94,15 @@ public class BoardGameServiceImpl implements BoardGameService {
                 .boardGameId(id)
                 .build();
     }
+
+    @Override
+    public void removeBookmark(Long id, Long userId) {
+        BoardGame boardGame = boardGameRepository.findById(id)
+                .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        user.removeBookmark(boardGame);
+        userRepository.save(user);
+    }
 }

@@ -32,4 +32,12 @@ public interface BoardGameService {
      * @return 찜하기 성공 메세지 {@link MessageResponse}
      */
     BookmarkResponse addBookmark(Long id, Long userId);
+
+    /**
+     * 찜한 보드게임을 취소함.
+     *
+     * @param id 찜하기 취소할 보드게임 ID
+     * @param userId 취소할 사용자 ID
+     */
+    void removeBookmark(Long id, Long userId);
 }

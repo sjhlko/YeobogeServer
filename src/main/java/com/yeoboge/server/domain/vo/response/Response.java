@@ -44,4 +44,13 @@ public record Response<T>(String resultCode, T result) {
         Response<T> response = new Response<>("CREATED", result);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    /**
+     * HTTP 204 응답을 반환함.
+     *
+     * @return 204 응답
+     */
+    public static ResponseEntity deleted() {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

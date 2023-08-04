@@ -98,4 +98,24 @@ public class User {
         bookmark.setParent(this, boardGame);
         bookmarked.add(bookmark);
     }
+
+    /**
+     * 찜한 보드게임 목록에서 특정 보드게임을 제거함.
+     *
+     * @param boardGame 제거할 보드게임 {@link BoardGame}
+     */
+    public void removeBookmark(BoardGame boardGame) {
+        BookmarkedBoardGame toRemove = null;
+        for (BookmarkedBoardGame bookmark : bookmarked) {
+            if (bookmark.getBoardGame().equals(boardGame)) {
+                toRemove = bookmark;
+                break;
+            }
+        }
+
+        if (toRemove != null) {
+            bookmarked.remove(toRemove);
+            toRemove.setParent(null, null);
+        }
+    }
 }

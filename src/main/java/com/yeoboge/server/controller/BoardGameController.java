@@ -33,8 +33,8 @@ public class BoardGameController {
     /**
      * 특정 보드게임을 찜하는 API
      *
-     * @param id {@link com.yeoboge.server.domain.entity.BoardGame} ID
-     * @param userId {@link com.yeoboge.server.domain.entity.User} ID
+     * @param id 찜할 보드게임 ID
+     * @param userId 회원 ID
      * @return 찜하기 성공 메세지를 포함한 HTTP 200 응답
      */
     @PostMapping("/{id}/bookmarks")

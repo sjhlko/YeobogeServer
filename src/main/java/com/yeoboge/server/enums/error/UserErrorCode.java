@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements ErrorCode{
-    FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "File upload error occurred in S3");
+    FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "File upload error occurred in S3"),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND,"User doesn't exist");
+
     private final HttpStatus httpStatus;
     private final String message;
 }

@@ -1,12 +1,16 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
+import com.yeoboge.server.domain.dto.user.BookmarkResponse;
 import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.GenreOfBoardGame;
 import com.yeoboge.server.domain.entity.ThemeOfBoardGame;
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
+import com.yeoboge.server.enums.error.UserErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.BoardGameService;
 import com.yeoboge.server.utils.CsvParsing;
 import com.yeoboge.server.utils.GetKorName;
@@ -22,6 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardGameServiceImpl implements BoardGameService {
     private final BoardGameRepository boardGameRepository;
+    private final UserRepository userRepository;
+
     @Override
     public void saveBoardGame() throws IOException {
         CsvParsing boardGameCsv = new CsvParsing("C:\\Users\\HeongJi\\Desktop\\여보게\\games.txt");
@@ -70,4 +76,19 @@ public class BoardGameServiceImpl implements BoardGameService {
         return BoardGameDetailResponse.of(boardGame,theme,genre);
     }
 
+    @Override
+    public BookmarkResponse addBookmark(Long id, Long userId) {
+        BoardGame boardGame = boardGameRepository.findById(id)
+                .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        user.addBookmark(boardGame);
+        userRepository.save(user);
+
+        return BookmarkResponse.builder()
+                .userId(userId)
+                .boardGameId(id)
+                .build();
+    }
 }

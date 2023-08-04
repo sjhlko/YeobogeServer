@@ -41,6 +41,9 @@ public class User {
     )
     Set<Genre> favoriteGenres;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<BookmarkedBoardGame> bookmarked;
+
     /**
      * 기존 회원의 정보가 담긴 {@link User} 엔티티에서 비밀번호만을 바꾸고자하는 비밀번호로 변경한
      * 새로운 User 엔티티를 반환함
@@ -84,4 +87,15 @@ public class User {
                 .build();
     }
 
+    /**
+     * 찜한 보드게임 목록에 특정 보드게임을 추가함.
+     *
+     * @param boardGame 찜할 보드게임 {@link BoardGame}
+     */
+    public void addBookmark(BoardGame boardGame) {
+        BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
+
+        bookmark.setParent(this, boardGame);
+        bookmarked.add(bookmark);
+    }
 }

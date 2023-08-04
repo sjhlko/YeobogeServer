@@ -31,14 +31,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private static final int TOKEN_SPLIT_INDEX = 7;
-
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final AuthenticationManager authManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final JavaMailSender javaMailSender;
     private final MailService mailService;
 
     @Override
@@ -96,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
         mailService.makePassword(tempPassword);
-        mailService.sendEmail(updatedUser,javaMailSender);
+        mailService.sendEmail(updatedUser);
         return MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();

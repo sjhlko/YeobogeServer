@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
+    private final JavaMailSender javaMailSender;
     final String bodyEncoding = "UTF-8";
     final String subject= "🎲여보게 임시 비밀번호 발급 이메일입니다.🎲";
     final String sender = "heyboardgame@gmail.com";
@@ -26,7 +27,7 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendEmail(User receiver, JavaMailSender javaMailSender){
+    public void sendEmail(User receiver){
         String html = makeHtml(receiver);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {

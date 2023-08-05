@@ -81,7 +81,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     @Override
     public BookmarkResponse addBookmark(Long id, Long userId) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getById(id);
+        User user = userRepository.getById(userId);
 
         user.addBookmark(boardGame);
         userRepository.save(user);
@@ -95,7 +95,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     @Override
     public void removeBookmark(Long id, Long userId) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getById(id);
+        User user = userRepository.getById(userId);
 
         user.removeBookmark(boardGame);
         userRepository.save(user);

@@ -7,7 +7,6 @@ import com.yeoboge.server.domain.entity.GenreOfBoardGame;
 import com.yeoboge.server.domain.entity.ThemeOfBoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
-import com.yeoboge.server.enums.error.UserErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -81,10 +80,8 @@ public class BoardGameServiceImpl implements BoardGameService {
 
     @Override
     public BookmarkResponse addBookmark(Long id, Long userId) {
-        BoardGame boardGame = boardGameRepository.findById(id)
-                .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getById(id);
 
         user.addBookmark(boardGame);
         userRepository.save(user);
@@ -97,10 +94,8 @@ public class BoardGameServiceImpl implements BoardGameService {
 
     @Override
     public void removeBookmark(Long id, Long userId) {
-        BoardGame boardGame = boardGameRepository.findById(id)
-                .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getById(id);
 
         user.removeBookmark(boardGame);
         userRepository.save(user);

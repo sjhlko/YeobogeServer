@@ -1,6 +1,8 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.entity.BoardGame;
+import com.yeoboge.server.enums.error.BoardGameErrorCode;
+import com.yeoboge.server.handler.AppException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +11,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface BoardGameRepository extends JpaRepository<BoardGame, Long> {
+    default BoardGame getById(Long id) {
+        return findById(id).orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
+    }
 }

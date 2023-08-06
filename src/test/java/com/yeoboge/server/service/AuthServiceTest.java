@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,6 +51,8 @@ public class AuthServiceTest {
     private TokenRepository tokenRepository;
     @Mock
     private MailService mailService;
+    @Mock
+    private RedisTemplate redisTemplate;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")
@@ -436,6 +439,46 @@ public class AuthServiceTest {
                 .message("회원 탈퇴 성공")
                 .build());
 
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 : 유저 존재하지 않음")
+    void unregisterFailed1() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        doThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND))
+                .when(userRepository).getById(user.getId());
+
+        // then
+        assertThatThrownBy(() -> authService.unregister(user.getId(),header))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 : 토큰이 유효하지 않음")
+    void unregisterFailed2() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        doNothing().when(userRepository).delete(user);
+        doThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID))
+                .when(tokenRepository).delete(header.substring(7));
+
+        // then
+        assertThatCode(() -> authService.unregister(user.getId(),header))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     private RegisterRequest makeRegisterRequest() {

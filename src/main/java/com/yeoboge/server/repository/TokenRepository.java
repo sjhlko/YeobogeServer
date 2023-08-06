@@ -1,6 +1,8 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.vo.auth.Tokens;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 
 import java.util.Optional;
 
@@ -29,4 +31,9 @@ public interface TokenRepository {
      * @return 해당 Access Token 값을 키로 하는 Refresh Token의 {@link Optional} 객체
      */
     Optional<String> findByToken(final String accessToken);
+
+    default String getByToken(final String accessToken) {
+        return findByToken(accessToken)
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));
+    }
 }

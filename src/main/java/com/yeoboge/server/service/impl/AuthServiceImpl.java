@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = StringGeneratorUtils.getTempPassword();
-        User existedUser = userRepository.findUserByEmail(request.email())
+        User existedUser = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
         User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
         userRepository.save(updatedUser);
@@ -127,11 +127,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Tokens refreshTokens(Tokens tokens) {
         String accessToken = tokens.accessToken();
-        String refreshToken = tokenRepository.findByToken(accessToken)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));
+        String refreshToken = tokenRepository.getByToken(accessToken);
 
-        if (!refreshToken.equals(tokens.refreshToken()))
-            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
+        tokens.checkTokenValidation(refreshToken);
 
         tokenRepository.delete(accessToken);
         Long userId = jwtProvider.parseUserId(refreshToken);

@@ -48,8 +48,8 @@ public class OAuthServiceTest {
         long userId = 1L;
         String userCode = "user_code";
         List<Genre> favoriteGenres = List.of(
-                new Genre(1L, "전략"),
-                new Genre(2L, "카드")
+                Genre.builder().id(1L).name("전략").build(),
+                Genre.builder().id(2L).name("카드").build()
         );
         SocialRegisterRequest request = makeRegisterRequest();
         User expectedUser = User.builder().id(userId)

@@ -32,7 +32,8 @@ public class OAuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<Response<Tokens>> socialRegister(@RequestBody SocialRegisterRequest request) {
-        return Response.created(oAuthService.socialRegister(request));
+        Tokens response = oAuthService.socialRegister(request);
+        return Response.created(response);
     }
 
     /**
@@ -43,6 +44,7 @@ public class OAuthController {
      */
     @PostMapping("/login")
     public Response<Tokens> socialLogin(@RequestBody SocialLoginRequest request) {
-        return Response.success(oAuthService.socialLogin(request));
+        Tokens response = oAuthService.socialLogin(request);
+        return Response.success(response);
     }
 }

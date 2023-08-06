@@ -280,7 +280,7 @@ public class AuthServiceTest {
 
     @Test
     @DisplayName("임시 비밀번호 메일 발송_성공")
-    void makeTempPassword() {
+    void makeTempPasswordSuccess() {
         //given
         User user = User.builder()
                 .email("aaa@gmail.com")

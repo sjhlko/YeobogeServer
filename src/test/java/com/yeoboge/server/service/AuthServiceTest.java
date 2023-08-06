@@ -1,8 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
-import com.yeoboge.server.domain.vo.auth.GetResetPasswordEmailRequest;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
+import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
@@ -14,8 +13,6 @@ import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
-import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.Tokens;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -344,7 +341,33 @@ public class AuthServiceTest {
     }
 
     @Test
-    void updatePassword() {
+    @DisplayName("비밀번호 변경_성공")
+    void updatePasswordSuccess() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        User updatedUser = User.builder()
+                .id(user.getId())
+                .password(passwordEncoder.encode(user.getPassword()))
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword(user.getPassword())
+                .updatedPassword("bbb")
+                .build();
+
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        when(passwordEncoder.matches(request.existingPassword(),user.getPassword())).thenReturn(true);
+        when(userRepository.save(user)).thenReturn(updatedUser);
+
+        // then
+        assertThat(userRepository.save(user).getPassword()).isEqualTo(passwordEncoder.encode(user.getPassword()));
+        assertThat(authService.updatePassword(request,0L)).isEqualTo(MessageResponse.builder()
+                .message("비밀번호 변경 성공")
+                .build());
     }
 
     @Test

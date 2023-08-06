@@ -214,7 +214,7 @@ public class AuthServiceTest {
         Long userId = 1L;
 
         // when
-        when(tokenRepository.findByToken(prevAccessToken)).thenReturn(Optional.of(prevRefreshToken));
+        when(tokenRepository.getByToken(prevAccessToken)).thenReturn(prevRefreshToken);
         when(jwtProvider.parseUserId(prevRefreshToken)).thenReturn(userId);
         when(jwtProvider.generateTokens(userId)).thenReturn(expected);
 
@@ -233,7 +233,7 @@ public class AuthServiceTest {
         Tokens tokens = makeTokens(nonExistedAccessToken, refreshToken);
 
         // when
-        when(tokenRepository.findByToken(nonExistedAccessToken)).thenReturn(Optional.empty());
+        when(tokenRepository.getByToken(nonExistedAccessToken)).thenThrow(new AppException());
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
@@ -250,7 +250,7 @@ public class AuthServiceTest {
         Tokens tokens = makeTokens(accessToken, wrongRefreshToken);
 
         // when
-        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(actualRefreshToken));
+        when(tokenRepository.getByToken(accessToken)).thenReturn(actualRefreshToken);
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
@@ -266,7 +266,7 @@ public class AuthServiceTest {
         Tokens tokens = makeTokens(accessToken, expiredRefreshToken);
 
         // when
-        when(tokenRepository.findByToken(accessToken)).thenReturn(Optional.of(expiredRefreshToken));
+        when(tokenRepository.getByToken(accessToken)).thenReturn(expiredRefreshToken);
         when(jwtProvider.parseUserId(expiredRefreshToken))
                 .thenThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID));
 

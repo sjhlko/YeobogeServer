@@ -1,7 +1,6 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.user.BookmarkResponse;
 import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.GenreOfBoardGame;
 import com.yeoboge.server.domain.entity.ThemeOfBoardGame;
@@ -80,16 +79,15 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public BookmarkResponse addBookmark(Long id, Long userId) {
+    public MessageResponse addBookmark(Long id, Long userId) {
         BoardGame boardGame = boardGameRepository.getById(id);
         User user = userRepository.getByIdFetchBookmark(userId);
 
         user.addBookmark(boardGame);
         userRepository.save(user);
 
-        return BookmarkResponse.builder()
-                .userId(userId)
-                .boardGameId(id)
+        return MessageResponse.builder()
+                .message("찜하기가 저장되었습니다")
                 .build();
     }
 

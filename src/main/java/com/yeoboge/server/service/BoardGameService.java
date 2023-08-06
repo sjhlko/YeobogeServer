@@ -1,7 +1,6 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.user.BookmarkResponse;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 
 import java.io.IOException;
@@ -31,7 +30,7 @@ public interface BoardGameService {
      * @param userId {@link com.yeoboge.server.domain.entity.User} ID
      * @return 찜하기 성공 메세지 {@link MessageResponse}
      */
-    BookmarkResponse addBookmark(Long id, Long userId);
+    MessageResponse addBookmark(Long id, Long userId);
 
     /**
      * 찜한 보드게임을 취소함.

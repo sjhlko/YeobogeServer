@@ -1,7 +1,6 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.user.BookmarkResponse;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.BoardGameService;
@@ -39,11 +38,11 @@ public class BoardGameController {
      * @return 찜하기 성공 메세지를 포함한 HTTP 200 응답
      */
     @PostMapping("/{id}/bookmarks")
-    public ResponseEntity<Response<BookmarkResponse>> addBookmark(
+    public ResponseEntity<Response<MessageResponse>> addBookmark(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId
     ) {
-        BookmarkResponse response = boardGameService.addBookmark(id, userId);
+        MessageResponse response = boardGameService.addBookmark(id, userId);
         return Response.created(response);
     }
 

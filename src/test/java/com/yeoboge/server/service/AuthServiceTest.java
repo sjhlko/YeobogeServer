@@ -7,6 +7,7 @@ import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.enums.error.EmailErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
@@ -310,11 +311,12 @@ public class AuthServiceTest {
 
         // when
         when(userRepository.getByEmail(request.email()))
-                .thenThrow(new AppException(AuthenticationErrorCode.EMAIL_INVALID));
+                .thenThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
 
         // then
         assertThatThrownBy(() -> authService.makeTempPassword(request))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -333,11 +335,12 @@ public class AuthServiceTest {
                 .thenReturn(user);
         when(userRepository.save(any())).thenReturn(user);
         doNothing().when(mailService).makePassword(any());
-        doThrow(new AppException(AuthenticationErrorCode.EMAIL_INVALID)).when(mailService).sendEmail(user);
+        doThrow(new AppException(EmailErrorCode.EMAIL_SENDING_ERROR)).when(mailService).sendEmail(user);
 
         // then
         assertThatThrownBy(() -> authService.makeTempPassword(request))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(EmailErrorCode.EMAIL_SENDING_ERROR.getMessage());
     }
 
     @Test
@@ -356,7 +359,6 @@ public class AuthServiceTest {
                 .existingPassword(user.getPassword())
                 .updatedPassword("bbb")
                 .build();
-
 
         // when
         when(userRepository.getById(user.getId())).thenReturn(user);

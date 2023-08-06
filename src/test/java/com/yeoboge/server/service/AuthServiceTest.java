@@ -1,6 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
+import com.yeoboge.server.domain.vo.auth.GetResetPasswordEmailRequest;
 import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
@@ -37,7 +38,6 @@ import static org.mockito.Mockito.*;
 public class AuthServiceTest {
     @InjectMocks
     private AuthServiceImpl authService;
-
     @Mock
     private JwtProvider jwtProvider;
     @Mock
@@ -50,6 +50,8 @@ public class AuthServiceTest {
     private GenreRepository genreRepository;
     @Mock
     private TokenRepository tokenRepository;
+    @Mock
+    private MailService mailService;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")
@@ -273,6 +275,40 @@ public class AuthServiceTest {
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
                 .isInstanceOf(AppException.class);
+    }
+
+
+    @Test
+    @DisplayName("임시 비밀번호 메일 발송_성공")
+    void makeTempPassword() {
+        //given
+        User user = User.builder()
+                .email("aaa@gmail.com")
+                .build();
+        GetResetPasswordEmailRequest request = GetResetPasswordEmailRequest.builder()
+                .email(user.getEmail())
+                .build();
+
+        //when
+        when(userRepository.getByEmail(any()))
+                .thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
+        doNothing().when(mailService).makePassword(any());
+        doNothing().when(mailService).sendEmail(user);
+
+        //then
+        assertThat(authService.makeTempPassword(request)).isEqualTo(MessageResponse.builder()
+                .message("이메일 발송됨")
+                .build());
+
+    }
+
+    @Test
+    void updatePassword() {
+    }
+
+    @Test
+    void unregister() {
     }
 
     private RegisterRequest makeRegisterRequest() {

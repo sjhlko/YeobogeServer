@@ -29,7 +29,7 @@ public class BookmarkedBoardGame {
 
     @CreatedDate
     @Column(name = "created_at")
-    private LocalDateTime bookmarked;
+    private LocalDateTime createdAt;
 
     public void setParent(User user, BoardGame boardGame) {
         this.user = user;

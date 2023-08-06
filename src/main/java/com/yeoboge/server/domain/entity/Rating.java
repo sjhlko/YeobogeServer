@@ -29,7 +29,7 @@ public class Rating {
 
     @CreatedDate
     @Column(name = "created_at")
-    private LocalDateTime rated;
+    private LocalDateTime createdAt;
 
     private Double rate;
 

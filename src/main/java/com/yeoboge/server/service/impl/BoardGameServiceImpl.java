@@ -6,6 +6,7 @@ import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.GenreOfBoardGame;
 import com.yeoboge.server.domain.entity.ThemeOfBoardGame;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
@@ -99,5 +100,19 @@ public class BoardGameServiceImpl implements BoardGameService {
 
         user.removeBookmark(boardGame);
         userRepository.save(user);
+    }
+
+    @Override
+    public MessageResponse rateBoardGame(Long id, Long userId, Double rate) {
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getById(userId);
+
+        if (rate != 0) user.rateBoardGame(boardGame, rate);
+        else user.removeRating(boardGame);
+        userRepository.save(user);
+
+        return MessageResponse.builder()
+                .message("평가가 저장되었습니다.")
+                .build();
     }
 }

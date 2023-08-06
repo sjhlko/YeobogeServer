@@ -7,6 +7,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -39,10 +40,14 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    Set<Genre> favoriteGenres;
+    private Set<Genre> favoriteGenres;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<BookmarkedBoardGame> bookmarked;
+    private Set<BookmarkedBoardGame> bookmarked;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(name = "board_game_id")
+    private Map<Long, Rating> ratings;
 
     /**
      * 기존 회원의 정보가 담긴 {@link User} 엔티티에서 비밀번호만을 바꾸고자하는 비밀번호로 변경한
@@ -94,7 +99,6 @@ public class User {
      */
     public void addBookmark(BoardGame boardGame) {
         BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
-
         bookmark.setParent(this, boardGame);
         bookmarked.add(bookmark);
     }
@@ -117,5 +121,29 @@ public class User {
             bookmarked.remove(toRemove);
             toRemove.setParent(null, null);
         }
+    }
+
+    /**
+     * 보드게임의 평점을 저장함.
+     *
+     * @param boardGame 평가할 보드게임
+     * @param rate 보드게임 평점
+     */
+    public void rateBoardGame(BoardGame boardGame, double rate) {
+        Rating rating = ratings.getOrDefault(boardGame.getId(), new Rating());
+        rating.setParent(this, boardGame);
+        rating.setRate(rate);
+        ratings.put(boardGame.getId(), rating);
+    }
+
+    /**
+     * 보드게임 평가를 취소함.
+     *
+     * @param boardGame 평가를 취소할 보드게임
+     */
+    public void removeRating(BoardGame boardGame) {
+        Rating toRemove = ratings.get(boardGame.getId());
+        ratings.remove(boardGame.getId());
+        toRemove.setParent(null, null);
     }
 }

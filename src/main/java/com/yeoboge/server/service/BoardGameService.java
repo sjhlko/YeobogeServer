@@ -40,4 +40,14 @@ public interface BoardGameService {
      * @param userId 취소할 사용자 ID
      */
     void removeBookmark(Long id, Long userId);
+
+    /**
+     * 보드게임의 평점을 남김.
+     *
+     * @param id 평가할 보드게임 ID
+     * @param userId 평점을 남길 사용자 ID
+     * @param rate 보드게임 평점
+     * @return {@link MessageResponse}
+     */
+    MessageResponse rateBoardGame(Long id, Long userId, Double rate);
 }

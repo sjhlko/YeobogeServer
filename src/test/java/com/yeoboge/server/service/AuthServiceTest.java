@@ -373,6 +373,51 @@ public class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("비밀번호 변경_실패 : 유저 존재하지 않음")
+    void updatePasswordFailed1() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword(user.getPassword())
+                .updatedPassword("bbb")
+                .build();
+
+        // when
+        doThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND))
+                .when(userRepository).getById(user.getId());
+        // then
+        assertThatThrownBy(() -> authService.updatePassword(request,user.getId()))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경_실패 : 기존 패스워드 불일치")
+    void updatePasswordFailed2() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword("ccc")
+                .updatedPassword("bbb")
+                .build();
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        when(passwordEncoder.matches(request.existingPassword(),user.getPassword())).thenReturn(false);
+
+        // then
+        assertThatThrownBy(() -> authService.updatePassword(request,user.getId()))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.PASSWORD_NOT_MATCH.getMessage());
+    }
+
+    @Test
     void unregister() {
     }
 

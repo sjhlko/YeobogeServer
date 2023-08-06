@@ -30,7 +30,8 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<Response<RegisterResponse>> register(@RequestBody RegisterRequest request) {
-        return Response.created(authService.register(request));
+        RegisterResponse response = authService.register(request);
+        return Response.created(response);
     }
 
     /**
@@ -41,7 +42,8 @@ public class AuthController {
      */
     @GetMapping("/email-duplicate")
     public Response<MessageResponse> checkEmailDuplication(@RequestParam String email) {
-        return Response.success(authService.checkEmailDuplication(email));
+        MessageResponse response = authService.checkEmailDuplication(email);
+        return Response.success(response);
     }
 
     /**
@@ -52,7 +54,8 @@ public class AuthController {
      */
     @PostMapping("/login")
     public Response<Tokens> login(@RequestBody LoginRequest request) {
-        return Response.success(authService.login(request));
+        Tokens response = authService.login(request);
+        return Response.success(response);
     }
 
     /**
@@ -65,7 +68,8 @@ public class AuthController {
     @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/logout")
     public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
-        return Response.success(authService.logout(header));
+        MessageResponse response = authService.logout(header);
+        return Response.success(response);
     }
 
     /**
@@ -77,7 +81,8 @@ public class AuthController {
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/refresh")
     public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
-        return Response.success(authService.refreshTokens(tokens));
+        Tokens response = authService.refreshTokens(tokens);
+        return Response.success(response);
     }
 
     /**

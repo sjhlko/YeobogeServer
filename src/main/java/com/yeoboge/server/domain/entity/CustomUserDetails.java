@@ -1,6 +1,5 @@
 package com.yeoboge.server.domain.entity;
 
-import com.yeoboge.server.domain.dto.auth.UserDetailsDto;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,10 +14,10 @@ public class CustomUserDetails implements UserDetails {
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public static CustomUserDetails build(UserDetailsDto user) {
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.role().name()));
+    public static CustomUserDetails build(User user) {
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
 
-        return new CustomUserDetails(user.email(), user.password(), authorities);
+        return new CustomUserDetails(user.getEmail(), user.getPassword(), authorities);
     }
 
     @Override

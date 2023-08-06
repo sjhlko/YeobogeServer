@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+/**
+ * 이메일 전송 관련 {@link ErrorCode}
+ */
 @Getter
 @RequiredArgsConstructor
 public enum EmailErrorCode implements ErrorCode{

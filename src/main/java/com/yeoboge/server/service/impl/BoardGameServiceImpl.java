@@ -4,9 +4,12 @@ import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.GenreOfBoardGame;
 import com.yeoboge.server.domain.entity.ThemeOfBoardGame;
+import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.BoardGameService;
 import com.yeoboge.server.utils.CsvParsing;
 import com.yeoboge.server.utils.GetKorName;
@@ -18,10 +21,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * {@link BoardGameService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class BoardGameServiceImpl implements BoardGameService {
     private final BoardGameRepository boardGameRepository;
+    private final UserRepository userRepository;
+
     @Override
     public void saveBoardGame() throws IOException {
         CsvParsing boardGameCsv = new CsvParsing("C:\\Users\\HeongJi\\Desktop\\여보게\\games.txt");
@@ -70,4 +78,39 @@ public class BoardGameServiceImpl implements BoardGameService {
         return BoardGameDetailResponse.of(boardGame,theme,genre);
     }
 
+    @Override
+    public MessageResponse addBookmark(Long id, Long userId) {
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getByIdFetchBookmark(userId);
+
+        user.addBookmark(boardGame);
+        userRepository.save(user);
+
+        return MessageResponse.builder()
+                .message("찜하기가 저장되었습니다")
+                .build();
+    }
+
+    @Override
+    public void removeBookmark(Long id, Long userId) {
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getByIdFetchBookmark(userId);
+
+        user.removeBookmark(boardGame);
+        userRepository.save(user);
+    }
+
+    @Override
+    public MessageResponse rateBoardGame(Long id, Long userId, Double rate) {
+        BoardGame boardGame = boardGameRepository.getById(id);
+        User user = userRepository.getByIdFetchRating(userId);
+
+        if (rate != 0) user.rateBoardGame(boardGame, rate);
+        else user.removeRating(boardGame);
+        userRepository.save(user);
+
+        return MessageResponse.builder()
+                .message("평가가 저장되었습니다.")
+                .build();
+    }
 }

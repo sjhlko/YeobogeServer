@@ -101,8 +101,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
-        User existedUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User existedUser = userRepository.getById(id);
         if (!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
         existedUser.updatePassword(encodePassword(request.updatedPassword()));
@@ -114,8 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse unregister(Long id, String authorizationHeader) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User user = userRepository.getById(id);
         userRepository.delete(user);
         tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
         return MessageResponse.builder()

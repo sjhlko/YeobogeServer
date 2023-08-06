@@ -418,7 +418,24 @@ public class AuthServiceTest {
     }
 
     @Test
-    void unregister() {
+    @DisplayName("회원 탈퇴_성공")
+    void unregisterSuccess() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        doNothing().when(userRepository).delete(user);
+        doNothing().when(tokenRepository).delete(header.substring(7));
+
+        // then
+        assertThat(authService.unregister(user.getId(),header)).isEqualTo(MessageResponse.builder()
+                .message("회원 탈퇴 성공")
+                .build());
+
     }
 
     private RegisterRequest makeRegisterRequest() {

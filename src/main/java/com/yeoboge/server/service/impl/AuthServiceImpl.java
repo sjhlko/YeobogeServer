@@ -91,10 +91,10 @@ public class AuthServiceImpl implements AuthService {
         String tempPassword = StringGeneratorUtils.getTempPassword();
         User existedUser = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
-        User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
-        userRepository.save(updatedUser);
+        existedUser.updatePassword(encodePassword(tempPassword));
+        userRepository.save(existedUser);
         mailService.makePassword(tempPassword);
-        mailService.sendEmail(updatedUser);
+        mailService.sendEmail(existedUser);
         return MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();
@@ -106,8 +106,8 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
         if (!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
-        User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
-        userRepository.save(updatedUser);
+        existedUser.updatePassword(encodePassword(request.updatedPassword()));
+        userRepository.save(existedUser);
         return MessageResponse.builder()
                 .message("비밀번호 변경 성공")
                 .build();

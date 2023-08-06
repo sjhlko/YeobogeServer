@@ -32,12 +32,11 @@ public class UserServiceImpl implements UserService {
     public MessageResponse updateUser(MultipartFile file, UserUpdateRequest request, Long id) {
         User existedUser = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
-        User updatedUser = new User();
-        if (file!=null) updatedUser = User.updateUserProfile(existedUser, s3FileUploadService.uploadFile(file), request.nickname());
+        if (file!=null) existedUser.updateUserProfile(s3FileUploadService.uploadFile(file), request.nickname());
         else if (request.isChanged())
-            updatedUser = User.updateUserProfile(existedUser, null, request.nickname());
-        else updatedUser = User.updateUserProfile(existedUser, existedUser.getProfileImagePath(), request.nickname());
-        userRepository.save(updatedUser);
+            existedUser.updateUserProfile(null, request.nickname());
+        else existedUser.updateUserProfile(existedUser.getProfileImagePath(), request.nickname());
+        userRepository.save(existedUser);
         return MessageResponse.builder()
                 .message("프로필 변경 성공")
                 .build();

@@ -1,5 +1,7 @@
 package com.yeoboge.server.domain.vo.auth;
 
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 import lombok.Builder;
 
 /**
@@ -9,4 +11,9 @@ import lombok.Builder;
  * @param refreshToken Access Token 재발급 시 사용되는 토큰
  */
 @Builder
-public record Tokens(String accessToken, String refreshToken) { }
+public record Tokens(String accessToken, String refreshToken) {
+    public void checkTokenValidation(String original) {
+        if (!refreshToken.equals(original))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
+    }
+}

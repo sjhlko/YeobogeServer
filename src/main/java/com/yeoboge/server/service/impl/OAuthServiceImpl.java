@@ -2,7 +2,6 @@ package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.dto.auth.SocialRegisterRequest;
-import com.yeoboge.server.domain.dto.auth.UserDetailsDto;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
@@ -42,13 +41,12 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public Tokens socialLogin(SocialLoginRequest request) {
         String email = request.email();
-        UserDetailsDto user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User user = userRepository.getByEmail(email);
 
-        if (user.password() != null)
+        if (user.getPassword() != null)
             throw new AppException(AuthenticationErrorCode.BAD_CREDENTIAL);
 
-        return generateToken(user.id());
+        return generateToken(user.getId());
     }
 
     /**

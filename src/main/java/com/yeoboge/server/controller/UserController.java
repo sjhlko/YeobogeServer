@@ -1,10 +1,11 @@
 package com.yeoboge.server.controller;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
-import com.yeoboge.server.domain.vo.auth.UpdatePasswordRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
+import com.yeoboge.server.enums.BoardGameOrderColumn;
 import com.yeoboge.server.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,24 @@ public class UserController {
                                                 @RequestPart("data") UserUpdateRequest request,
                                                 @AuthenticationPrincipal Long id) {
         MessageResponse response = userService.updateUser(file, request, id);
+        return Response.success(response);
+    }
+
+    /**
+     * 회원이 찜한 보드게임 목록을 조회하는 API
+     *
+     * @param id 현재 로그인한 회원의 ID
+     * @param page 보드게임 목록 페이지 번호
+     * @param order 정렬 기준
+     * @return {@link com.yeoboge.server.domain.dto.user.BookmarkListResponse}을 Body로 갖는 HTTP 200 응답
+     */
+    @GetMapping("/bookmarks")
+    public Response<BoardGameListResponse> getMyBookmarks(
+            @AuthenticationPrincipal Long id,
+            @RequestParam Integer page,
+            @RequestParam BoardGameOrderColumn order
+    ) {
+        BoardGameListResponse response = userService.getMyBookmarks(id, page, order);
         return Response.success(response);
     }
 

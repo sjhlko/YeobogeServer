@@ -51,8 +51,6 @@ public class AuthServiceTest {
     private TokenRepository tokenRepository;
     @Mock
     private MailService mailService;
-    @Mock
-    private RedisTemplate redisTemplate;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")

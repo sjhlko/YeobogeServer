@@ -34,15 +34,13 @@ public class UserServiceImpl implements UserService {
     private final S3FileUploadService s3FileUploadService;
     @Override
     public UserDetailResponse getProfile(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User user = userRepository.getById(id);
         return UserDetailResponse.of(user);
     }
 
     @Override
     public MessageResponse updateUser(MultipartFile file, UserUpdateRequest request, Long id) {
-        User existedUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User existedUser = userRepository.getById(id);
         if (file!=null) existedUser.updateUserProfile(s3FileUploadService.uploadFile(file), request.nickname());
         else if (request.isChanged())
             existedUser.updateUserProfile(null, request.nickname());

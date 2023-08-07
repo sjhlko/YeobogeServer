@@ -4,6 +4,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.enums.error.UserErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.service.impl.S3FileUploadServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +48,27 @@ class S3FileUploadServiceTest {
         // then
         assertThat(s3FileUploadServiceSpy.uploadFile(file))
                 .isInstanceOf(String.class);
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패")
+    void uploadFileFailed() {
+        // given
+        S3FileUploadServiceImpl s3FileUploadServiceSpy = Mockito.spy(new S3FileUploadServiceImpl(s3Client));
+        String filename = "file";
+        MockMultipartFile file = new MockMultipartFile("file",
+                "test.img", "png",
+                "test file".getBytes(StandardCharsets.UTF_8));
+
+        // when
+        when(s3FileUploadServiceSpy.generateFilename(file)).thenReturn(filename);
+        when(s3FileUploadServiceSpy.getObjectMetadata(file)).thenReturn(new ObjectMetadata());
+        when(s3Client.putObject(any(PutObjectRequest.class))).thenThrow(new AppException(UserErrorCode.FILE_UPLOAD_ERROR));
+
+        // then
+        assertThatThrownBy(() -> s3FileUploadServiceSpy.uploadFile(file))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(UserErrorCode.FILE_UPLOAD_ERROR.getMessage());
     }
 
 

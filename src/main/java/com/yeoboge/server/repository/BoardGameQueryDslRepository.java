@@ -35,4 +35,16 @@ public interface BoardGameQueryDslRepository {
      * @return 해당 별점의 보드게임 목록
      */
     List<BoardGame> getRatingByUserId(final Long userId, final Double rate);
+
+    /**
+     * 회원이 평가한 보드게임 중 특정 별점의 목록을 페이징하여 조회함.
+     *
+     * @param userId 조회를 요청한 회원 ID
+     * @param score 조회할 별점
+     * @param page 조회할 보드게임 목록의 페이지 번호
+     * @param order 목록의 정렬 기준
+     * @return 해당 별점의 보드게임 목록
+     */
+    List<BoardGame> getRatingsByUserId(final Long userId, final Double score,
+                                       final Integer page, final BoardGameOrderColumn order);
 }

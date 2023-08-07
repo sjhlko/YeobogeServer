@@ -1,8 +1,8 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.user.BookmarkListResponse;
 import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.BoardGame;
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
     public BoardGameListResponse getMyBookmarks(Long id, Integer page, BoardGameOrderColumn order) {
         List<BoardGame> bookmarks = boardGameRepository.getBookmarkByUserId(id, page, order);
 
-        BoardGameListResponse response = new BookmarkListResponse(new ArrayList<>());
+        BoardGameListResponse response = new ThumbnailListResponse(new ArrayList<>());
         response.addBoardGames(bookmarks);
 
         return response;
@@ -71,6 +71,27 @@ public class UserServiceImpl implements UserService {
             List<BoardGame> ratings = boardGameRepository.getRatingByUserId(id, rate);
             response.addBoardGames(ratings, rate);
         }
+
+        return response;
+    }
+
+    @Override
+    public BoardGameListResponse getMyRatingsByScore(
+            Long id, Double score, Integer page, BoardGameOrderColumn order
+    ) {
+        List<BoardGame> boardGames = boardGameRepository.getRatingsByUserId(id, score, page, order);
+        return makeListResponse(boardGames);
+    }
+
+    /**
+     * 보드게임 목록을 리스트화하여 담은 DTO 객체를 반환함.
+     *
+     * @param boardGames 원본 보드게임 리스트
+     * @return {@link ThumbnailListResponse}
+     */
+    private BoardGameListResponse makeListResponse(List<BoardGame> boardGames) {
+        BoardGameListResponse response = new ThumbnailListResponse(new ArrayList<>());
+        response.addBoardGames(boardGames);
 
         return response;
     }

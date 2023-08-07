@@ -3,6 +3,7 @@ package com.yeoboge.server.repository.impl;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.entity.BoardGame;
@@ -37,7 +38,7 @@ public class BoardGameQueryDslRepositoryImpl implements BoardGameQueryDslReposit
                 .where(bookmarkedBoardGame.user.id.eq(userId))
                 .offset(page * BOARD_GAME_PAGE_SIZE)
                 .limit(BOARD_GAME_PAGE_SIZE)
-                .orderBy(sortOption(order))
+                .orderBy(sortOption(order, bookmarkedBoardGame))
                 .fetch();
         return boardGames;
     }
@@ -57,8 +58,20 @@ public class BoardGameQueryDslRepositoryImpl implements BoardGameQueryDslReposit
                 .from(boardGame).join(rating)
                 .on(rating.boardGame.id.eq(boardGame.id))
                 .where(rating.user.id.eq(userId), rating.rate.eq(rate))
-                .orderBy(sortOption(BoardGameOrderColumn.NEW))
+                .orderBy(sortOption(BoardGameOrderColumn.NEW, rating))
                 .limit(RECENT_RATING_SIZE)
+                .fetch();
+    }
+
+    @Override
+    public List<BoardGame> getRatingsByUserId(Long userId, Double score, Integer page, BoardGameOrderColumn order) {
+        return queryFactory.select(boardGame)
+                .from(boardGame).join(rating)
+                .on(rating.boardGame.id.eq(boardGame.id))
+                .where(rating.user.id.eq(userId), rating.rate.eq(score))
+                .offset(page * BOARD_GAME_PAGE_SIZE)
+                .limit(BOARD_GAME_PAGE_SIZE)
+                .orderBy(sortOption(order, rating))
                 .fetch();
     }
 
@@ -68,13 +81,13 @@ public class BoardGameQueryDslRepositoryImpl implements BoardGameQueryDslReposit
      * @param order 목록 정렬 기준
      * @return 정렬할 컬럼 및 방향이 정해진 {@link OrderSpecifier}
      */
-    private OrderSpecifier sortOption(BoardGameOrderColumn order) {
+    private OrderSpecifier sortOption(BoardGameOrderColumn order, EntityPathBase newPath) {
         Order direction = order.getDirection() == Sort.Direction.ASC ? Order.ASC : Order.DESC;
         String orderProperty = order.getColumn();
         Path fieldPath;
 
         switch (order) {
-            case NEW -> fieldPath = Expressions.path(BookmarkedBoardGame.class, bookmarkedBoardGame, orderProperty);
+            case NEW -> fieldPath = Expressions.path(BookmarkedBoardGame.class, newPath, orderProperty);
             case EASY, HARD -> fieldPath = Expressions.path(BoardGame.class, boardGame, orderProperty);
             default -> fieldPath = null;
         }

@@ -17,6 +17,7 @@ import java.util.List;
 
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
 import static com.yeoboge.server.domain.entity.QBookmarkedBoardGame.bookmarkedBoardGame;
+import static com.yeoboge.server.domain.entity.QRating.rating;
 
 /**
  * {@link BoardGameQueryDslRepository} 구현체
@@ -25,6 +26,7 @@ import static com.yeoboge.server.domain.entity.QBookmarkedBoardGame.bookmarkedBo
 @RequiredArgsConstructor
 public class BoardGameQueryDslRepositoryImpl implements BoardGameQueryDslRepository {
     private static final int BOARD_GAME_PAGE_SIZE = 20;
+    private static final int RECENT_RATING_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -38,6 +40,26 @@ public class BoardGameQueryDslRepositoryImpl implements BoardGameQueryDslReposit
                 .orderBy(sortOption(order))
                 .fetch();
         return boardGames;
+    }
+
+    @Override
+    public List<Double> getUserRatingGroup(Long userId) {
+        return queryFactory.select(rating.rate)
+                .from(rating)
+                .where(rating.user.id.eq(userId))
+                .groupBy(rating.rate)
+                .fetch();
+    }
+
+    @Override
+    public List<BoardGame> getRatingByUserId(Long userId, Double rate) {
+        return queryFactory.select(boardGame)
+                .from(boardGame).join(rating)
+                .on(rating.boardGame.id.eq(boardGame.id))
+                .where(rating.user.id.eq(userId), rating.rate.eq(rate))
+                .orderBy(sortOption(BoardGameOrderColumn.NEW))
+                .limit(RECENT_RATING_SIZE)
+                .fetch();
     }
 
     /**

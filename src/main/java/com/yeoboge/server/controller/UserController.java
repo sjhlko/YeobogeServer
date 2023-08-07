@@ -71,4 +71,15 @@ public class UserController {
         return Response.success(response);
     }
 
+    /**
+     * 회원이 평가한 보드게임 목록을 각 별점 별로 조회하는 API
+     *
+     * @param id 현재 로그인한 회원의 ID
+     * @return 각 별점 별로 보드게임을 10개씩 담은 HTTP 200 응답
+     */
+    @GetMapping("/ratings")
+    public Response<BoardGameListResponse> getMyAllRatings(@AuthenticationPrincipal Long id) {
+        BoardGameListResponse response = userService.getMyAllRatings(id);
+        return Response.success(response);
+    }
 }

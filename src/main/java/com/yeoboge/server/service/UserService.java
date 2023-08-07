@@ -1,6 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -38,4 +39,12 @@ public interface UserService {
      * @return {@link com.yeoboge.server.domain.dto.user.BookmarkListResponse}
      */
     BoardGameListResponse getMyBookmarks(Long id, Integer page, BoardGameOrderColumn order);
+
+    /**
+     * 회원이 평가한 보드게임을 각 별점 별로 조회함.
+     *
+     * @param id 조회를 요청한 회원 ID
+     * @return {@link ThumbnailMapResponse}
+     */
+    BoardGameListResponse getMyAllRatings(Long id);
 }

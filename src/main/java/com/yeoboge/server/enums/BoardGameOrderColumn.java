@@ -13,7 +13,7 @@ import java.util.Arrays;
 @Getter
 @AllArgsConstructor
 public enum BoardGameOrderColumn {
-    NEW("new", "createdAt", Direction.ASC),
+    NEW("new", "createdAt", Direction.DESC),
     EASY("easy", "weight", Direction.ASC),
     HARD("hard", "weight", Direction.DESC),
     POPULAR("popular", "", Direction.DESC);

@@ -1,6 +1,5 @@
 package com.yeoboge.server.domain.entity;
 
-import com.yeoboge.server.domain.entity.id.ThemeOfBoardGamePK;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,14 +11,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(ThemeOfBoardGamePK.class)
 public class ThemeOfBoardGame {
-    @ManyToOne(fetch = FetchType.LAZY)
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "theme_of_board_game_id")
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theme_id", nullable = false)
     private Theme theme;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Id
     @JoinColumn(name = "board_game_id", nullable = false)
     private BoardGame boardGame;
 }

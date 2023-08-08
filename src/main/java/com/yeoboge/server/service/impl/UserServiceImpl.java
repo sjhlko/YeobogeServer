@@ -55,11 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public BoardGameListResponse getMyBookmarks(Long id, Integer page, BoardGameOrderColumn order) {
         List<BoardGame> bookmarks = boardGameRepository.getBookmarkByUserId(id, page, order);
-
-        BoardGameListResponse response = new ThumbnailListResponse(new ArrayList<>());
-        response.addBoardGames(bookmarks);
-
-        return response;
+        return makeListResponse(bookmarks);
     }
 
     @Override

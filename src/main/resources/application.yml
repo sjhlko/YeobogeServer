@@ -33,9 +33,6 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
-jwt:
-  sign:
-    key: ${JWT_SIGN_KEY}
 
 cloud:
   aws:

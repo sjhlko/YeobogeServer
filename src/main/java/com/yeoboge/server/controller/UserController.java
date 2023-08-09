@@ -1,6 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -59,7 +60,7 @@ public class UserController {
      * @param id 현재 로그인한 회원의 ID
      * @param page 보드게임 목록 페이지 번호
      * @param order 정렬 기준
-     * @return {@link com.yeoboge.server.domain.dto.user.BookmarkListResponse}을 Body로 갖는 HTTP 200 응답
+     * @return {@link ThumbnailListResponse}을 Body로 갖는 HTTP 200 응답
      */
     @GetMapping("/bookmarks")
     public Response<BoardGameListResponse> getMyBookmarks(
@@ -71,4 +72,35 @@ public class UserController {
         return Response.success(response);
     }
 
+    /**
+     * 회원이 평가한 보드게임 목록을 각 별점 별로 조회하는 API
+     *
+     * @param id 현재 로그인한 회원의 ID
+     * @return 각 별점 별로 보드게임을 10개씩 담은 HTTP 200 응답
+     */
+    @GetMapping("/ratings")
+    public Response<BoardGameListResponse> getMyAllRatings(@AuthenticationPrincipal Long id) {
+        BoardGameListResponse response = userService.getMyAllRatings(id);
+        return Response.success(response);
+    }
+
+    /**
+     * 회원이 평가한 보드게임 중 특정 별점의 목록을 조회하는 API
+     *
+     * @param id 현재 로그인한 회원의 ID
+     * @param score 조회할 별점
+     * @param page 조회할 보드게임 목록의 페이지 번호
+     * @param order 정렬 기준
+     * @return 해당 별점의 보드게임 목록을 페이지 범위만큼 담은 HTTP 200 응답
+     */
+    @GetMapping("/ratings/score")
+    public Response<BoardGameListResponse> getMyRatingByScore(
+            @AuthenticationPrincipal Long id,
+            @RequestParam Double score,
+            @RequestParam Integer page,
+            @RequestParam BoardGameOrderColumn order
+    ) {
+        BoardGameListResponse response = userService.getMyRatingsByScore(id, score, page, order);
+        return Response.success(response);
+    }
 }

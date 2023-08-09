@@ -1,20 +1,19 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.dto.auth.RegisterRequest;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.enums.error.EmailErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
-import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.service.impl.AuthServiceImpl;
-import com.yeoboge.server.domain.vo.auth.LoginRequest;
-import com.yeoboge.server.domain.vo.auth.Tokens;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,7 +35,6 @@ import static org.mockito.Mockito.*;
 public class AuthServiceTest {
     @InjectMocks
     private AuthServiceImpl authService;
-
     @Mock
     private JwtProvider jwtProvider;
     @Mock
@@ -50,6 +47,8 @@ public class AuthServiceTest {
     private GenreRepository genreRepository;
     @Mock
     private TokenRepository tokenRepository;
+    @Mock
+    private MailService mailService;
 
     @Test
     @DisplayName("회원가입 성공 단위 테스트")
@@ -273,6 +272,209 @@ public class AuthServiceTest {
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
                 .isInstanceOf(AppException.class);
+    }
+
+
+    @Test
+    @DisplayName("임시 비밀번호 메일 발송_성공")
+    void makeTempPasswordSuccess() {
+        // given
+        User user = User.builder()
+                .email("aaa@gmail.com")
+                .build();
+        GetResetPasswordEmailRequest request = GetResetPasswordEmailRequest.builder()
+                .email(user.getEmail())
+                .build();
+
+        // when
+        when(userRepository.getByEmail(any()))
+                .thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
+        doNothing().when(mailService).makePassword(any());
+        doNothing().when(mailService).sendEmail(user);
+
+        // then
+        assertThat(authService.makeTempPassword(request)).isEqualTo(MessageResponse.builder()
+                .message("이메일 발송됨")
+                .build());
+
+    }
+
+    @Test
+    @DisplayName("임시 비밀번호 메일 발송_실패 : 회원가입된 이메일이 아님")
+    void makeTempPasswordFailed1() {
+        // given
+        GetResetPasswordEmailRequest request = GetResetPasswordEmailRequest.builder()
+                .email("aaa@gmail.com")
+                .build();
+
+        // when
+        when(userRepository.getByEmail(request.email()))
+                .thenThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+
+        // then
+        assertThatThrownBy(() -> authService.makeTempPassword(request))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("임시 비밀번호 메일 발송_실패 : 이메일 전송 오류")
+    void makeTempPasswordFailed2() {
+        // given
+        User user = User.builder()
+                .email("aaa@gmail.com")
+                .build();
+        GetResetPasswordEmailRequest request = GetResetPasswordEmailRequest.builder()
+                .email(user.getEmail())
+                .build();
+
+        // when
+        when(userRepository.getByEmail(any()))
+                .thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
+        doNothing().when(mailService).makePassword(any());
+        doThrow(new AppException(EmailErrorCode.EMAIL_SENDING_ERROR)).when(mailService).sendEmail(user);
+
+        // then
+        assertThatThrownBy(() -> authService.makeTempPassword(request))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(EmailErrorCode.EMAIL_SENDING_ERROR.getMessage());
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경_성공")
+    void updatePasswordSuccess() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        User updatedUser = User.builder()
+                .id(user.getId())
+                .password(passwordEncoder.encode(user.getPassword()))
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword(user.getPassword())
+                .updatedPassword("bbb")
+                .build();
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        when(passwordEncoder.matches(request.existingPassword(),user.getPassword())).thenReturn(true);
+        when(userRepository.save(user)).thenReturn(updatedUser);
+
+        // then
+        assertThat(userRepository.save(user).getPassword()).isEqualTo(passwordEncoder.encode(user.getPassword()));
+        assertThat(authService.updatePassword(request,0L)).isEqualTo(MessageResponse.builder()
+                .message("비밀번호 변경 성공")
+                .build());
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경_실패 : 유저 존재하지 않음")
+    void updatePasswordFailed1() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword(user.getPassword())
+                .updatedPassword("bbb")
+                .build();
+
+        // when
+        doThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND))
+                .when(userRepository).getById(user.getId());
+        // then
+        assertThatThrownBy(() -> authService.updatePassword(request,user.getId()))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경_실패 : 기존 패스워드 불일치")
+    void updatePasswordFailed2() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .password("aaa")
+                .build();
+        UpdatePasswordRequest request = UpdatePasswordRequest.builder()
+                .existingPassword("ccc")
+                .updatedPassword("bbb")
+                .build();
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        when(passwordEncoder.matches(request.existingPassword(),user.getPassword())).thenReturn(false);
+
+        // then
+        assertThatThrownBy(() -> authService.updatePassword(request,user.getId()))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.PASSWORD_NOT_MATCH.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴_성공")
+    void unregisterSuccess() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        doNothing().when(userRepository).delete(user);
+        doNothing().when(tokenRepository).delete(header.substring(7));
+
+        // then
+        assertThat(authService.unregister(user.getId(),header)).isEqualTo(MessageResponse.builder()
+                .message("회원 탈퇴 성공")
+                .build());
+
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 : 유저 존재하지 않음")
+    void unregisterFailed1() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        doThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND))
+                .when(userRepository).getById(user.getId());
+
+        // then
+        assertThatThrownBy(() -> authService.unregister(user.getId(),header))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패 : 토큰이 유효하지 않음")
+    void unregisterFailed2() {
+        // given
+        User user = User.builder()
+                .id(0L)
+                .build();
+        String header = "Bearer valid_access_token";
+
+        // when
+        when(userRepository.getById(user.getId())).thenReturn(user);
+        doNothing().when(userRepository).delete(user);
+        doThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID))
+                .when(tokenRepository).delete(header.substring(7));
+
+        // then
+        assertThatCode(() -> authService.unregister(user.getId(),header))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     private RegisterRequest makeRegisterRequest() {

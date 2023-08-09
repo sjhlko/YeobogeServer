@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CommonErrorCode implements ErrorCode {
-    NOT_FOUND(HttpStatus.NOT_FOUND, "Requested Resource Not Found");
+    NOT_FOUND(HttpStatus.NOT_FOUND, "Requested Resource Not Found"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong");
 
     private final HttpStatus httpStatus;
     private final String message;

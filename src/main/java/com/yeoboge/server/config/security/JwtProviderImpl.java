@@ -4,12 +4,10 @@ import com.yeoboge.server.domain.vo.auth.Tokens;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,9 +20,7 @@ import java.util.function.Function;
 public class JwtProviderImpl implements JwtProvider {
     private static final long ACCESS_TOKEN_EXPIRED_TIME = 1000L * 60 * 60;
     private static final long REFRESH_TOKEN_EXPIRED_TIME = 1000L * 60 * 60 * 24 * 7;
-
-    @Value("${jwt.sign.key}")
-    private String key;
+    private static final SecretKey SIGNING_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     @Override
     public Tokens generateTokens(Long userId) {
@@ -81,7 +77,7 @@ public class JwtProviderImpl implements JwtProvider {
                 .setSubject(String.valueOf(userId))
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expiredTime))
-                .signWith(SignatureAlgorithm.HS256, key)
+                .signWith(SIGNING_KEY)
                 .compact();
     }
 
@@ -112,19 +108,9 @@ public class JwtProviderImpl implements JwtProvider {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(SIGNING_KEY)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    /**
-     * Jwt 발급 시 서명에 사용되는 키를 해시 암호화함.
-     *
-     * @return 암호화된 서명키
-     */
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(key);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

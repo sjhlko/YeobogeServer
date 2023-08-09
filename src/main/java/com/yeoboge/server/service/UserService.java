@@ -1,6 +1,8 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -35,7 +37,26 @@ public interface UserService {
      * @param id 조회를 요청한 회원 ID
      * @param page 조회할 보드게임 목록의 페이지 번호
      * @param order 목록의 정렬 기준 {@link BoardGameOrderColumn}
-     * @return {@link com.yeoboge.server.domain.dto.user.BookmarkListResponse}
+     * @return {@link ThumbnailListResponse}
      */
     BoardGameListResponse getMyBookmarks(Long id, Integer page, BoardGameOrderColumn order);
+
+    /**
+     * 회원이 평가한 보드게임을 각 별점 별로 조회함.
+     *
+     * @param id 조회를 요청한 회원 ID
+     * @return {@link ThumbnailMapResponse}
+     */
+    BoardGameListResponse getMyAllRatings(Long id);
+
+    /**
+     * 회원이 평가한 보드게임 중 특정 별점의 목록을 조회함.
+     *
+     * @param id 조회를 요청한 회원 ID
+     * @param score 조회할 별점
+     * @param page 조회할 보드게임 목록의 페이지 번호
+     * @param order 목록의 정렬 기준
+     * @return {@link ThumbnailListResponse}
+     */
+    BoardGameListResponse getMyRatingsByScore(Long id, Double score, Integer page, BoardGameOrderColumn order);
 }

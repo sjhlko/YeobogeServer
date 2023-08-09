@@ -31,14 +31,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private static final int TOKEN_SPLIT_INDEX = 7;
-
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final AuthenticationManager authManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final JavaMailSender javaMailSender;
     private final MailService mailService;
 
     @Override
@@ -91,12 +89,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse makeTempPassword(GetResetPasswordEmailRequest request) {
         String tempPassword = StringGeneratorUtils.getTempPassword();
-        User existedUser = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.EMAIL_INVALID));
-        User updatedUser = User.updatePassword(existedUser,encodePassword(tempPassword));
-        userRepository.save(updatedUser);
+        User existedUser = userRepository.getByEmail(request.email());
+        existedUser.updatePassword(encodePassword(tempPassword));
+        userRepository.save(existedUser);
         mailService.makePassword(tempPassword);
-        mailService.sendEmail(updatedUser,javaMailSender);
+        mailService.sendEmail(existedUser);
         return MessageResponse.builder()
                 .message("이메일 발송됨")
                 .build();
@@ -104,12 +101,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse updatePassword(UpdatePasswordRequest request, Long id) {
-        User existedUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User existedUser = userRepository.getById(id);
         if (!passwordEncoder.matches(request.existingPassword(), existedUser.getPassword()))
             throw new AppException(AuthenticationErrorCode.PASSWORD_NOT_MATCH);
-        User updatedUser = User.updatePassword(existedUser,encodePassword(request.updatedPassword()));
-        userRepository.save(updatedUser);
+        existedUser.updatePassword(encodePassword(request.updatedPassword()));
+        userRepository.save(existedUser);
         return MessageResponse.builder()
                 .message("비밀번호 변경 성공")
                 .build();
@@ -117,8 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse unregister(Long id, String authorizationHeader) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
+        User user = userRepository.getById(id);
         userRepository.delete(user);
         tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
         return MessageResponse.builder()

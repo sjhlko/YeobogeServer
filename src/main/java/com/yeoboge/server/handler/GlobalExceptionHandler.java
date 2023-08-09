@@ -2,6 +2,7 @@ package com.yeoboge.server.handler;
 
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> AppExceptionHandler(AppException e){
         return handleExceptionInternal(e.getErrorCode());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> CommonExceptionHandler(Exception e) {
+        return handleExceptionInternal(CommonErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     /**

@@ -16,7 +16,7 @@ public enum BoardGameOrderColumn {
     NEW("new", "createdAt", Direction.DESC),
     EASY("easy", "weight", Direction.ASC),
     HARD("hard", "weight", Direction.DESC),
-    POPULAR("popular", "", Direction.DESC);
+    POPULAR("popular", "ratings", Direction.DESC);
 
     private String criteria;
     private String column;

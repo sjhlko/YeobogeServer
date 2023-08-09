@@ -14,9 +14,8 @@ public interface MailService {
      * 임시 비밀번호 발급 관련 이메일을 전송함
      *
      * @param receiver 이메일을 받는 대상의 이메일 주소
-     * @param javaMailSender 스프링에서 제공하는 웹 어플리케이션에서 메일을 보다 손쉽게 보낼 수 있도록 해주는 API
      */
-    void sendEmail(User receiver, JavaMailSender javaMailSender);
+    void sendEmail(User receiver);
 
     /**
      * 임시 비밀번호 발급 관련 이메일의 html을 생성함

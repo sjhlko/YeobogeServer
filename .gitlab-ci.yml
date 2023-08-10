@@ -18,6 +18,9 @@ publish:
     - docker build --cache-from $TAG_LATEST -t $TAG_LATEST -t $TAG_COMMIT .
     - docker push $TAG_LATEST
     - docker push $TAG_COMMIT
+  only:
+    - develop
+    - main
 
 deploy:
   image: docker:24.0.4

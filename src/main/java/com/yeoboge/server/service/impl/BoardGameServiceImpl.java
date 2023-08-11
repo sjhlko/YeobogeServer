@@ -2,6 +2,7 @@ package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
@@ -239,11 +240,12 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public MessageResponse rateBoardGame(Long id, Long userId, Double rate) {
+    public MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request) {
         BoardGame boardGame = boardGameRepository.getById(id);
         User user = userRepository.getByIdFetchRating(userId);
+        Double score = request.score();
 
-        if (rate != 0) user.rateBoardGame(boardGame, rate);
+        if (score != 0) user.rateBoardGame(boardGame, score);
         else user.removeRating(boardGame);
         userRepository.save(user);
 

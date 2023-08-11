@@ -2,6 +2,7 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.BoardGameService;
@@ -73,16 +74,16 @@ public class BoardGameController {
      *
      * @param id 평가할 보드게임 ID
      * @param userId 평점을 남길 사용자 ID
-     * @param rate 보드게임 평점
+     * @param request 보드게임 평점 {@link RatingRequest}
      * @return 평점 저장 메세지를 포함한 HTTP 200 응답
      */
     @PutMapping("/{id}/rate")
     public Response<MessageResponse> rateBoardGame(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId,
-            @RequestParam Double rate
+            @RequestBody RatingRequest request
     ) {
-        MessageResponse response = boardGameService.rateBoardGame(id, userId, rate);
+        MessageResponse response = boardGameService.rateBoardGame(id, userId, request);
         return Response.success(response);
     }
 

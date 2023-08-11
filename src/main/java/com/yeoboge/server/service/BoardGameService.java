@@ -2,6 +2,7 @@ package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,10 +66,10 @@ public interface BoardGameService {
      *
      * @param id 평가할 보드게임 ID
      * @param userId 평점을 남길 사용자 ID
-     * @param rate 보드게임 평점
+     * @param request 보드게임 평점 DTO {@link RatingRequest}
      * @return {@link MessageResponse}
      */
-    MessageResponse rateBoardGame(Long id, Long userId, Double rate);
+    MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request);
 
     Page<BoardGameThumbnail> searchBoardGame(Pageable pageable, Integer player,
                                              String searchWord, ArrayList<String> genre);

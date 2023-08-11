@@ -5,6 +5,7 @@ import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,6 +41,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e.getErrorCode());
     }
 
+    /**
+     * 데이터 무결성 위배로 인한 엔티티 삽입 및 수정 불가 예외를 처리함.
+     *
+     * @param e 엔티티 {@code save()}에서 발생한 {@link DataIntegrityViolationException}
+     * @return HTTP 400 응답
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handler(DataIntegrityViolationException e) {
+        return handleExceptionInternal(CommonErrorCode.BAD_REQUEST);
+    }
+
+    /**
+     * 비즈니스 로직과 관계 없는 서버 내에서 발생한 일반 에러를 처리함.
+     * @param e {@link NullPointerException}, {@link IllegalArgumentException} 등의 {@link Exception}
+     * @return HTTP 500 응답
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> CommonExceptionHandler(Exception e) {
         return handleExceptionInternal(CommonErrorCode.INTERNAL_SERVER_ERROR);

@@ -33,10 +33,6 @@ public class Rating {
 
     private Double rate;
 
-    public Rating(double rate) {
-        this.rate = rate;
-    }
-
     @Override
     public boolean equals(Object o) {
         Rating other = (Rating) o;

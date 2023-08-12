@@ -1,8 +1,8 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.TotalRatingsResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.PageRequest;
@@ -44,9 +44,9 @@ public interface UserService {
      * 회원이 평가한 보드게임을 각 별점 별로 조회함.
      *
      * @param id 조회를 요청한 회원 ID
-     * @return {@link ThumbnailMapResponse}
+     * @return {@link TotalRatingsResponse}
      */
-    BoardGameListResponse getMyAllRatings(Long id);
+    BoardGameMapResponse getMyAllRatings(Long id);
 
     /**
      * 회원이 평가한 보드게임 중 특정 별점의 목록을 조회함.

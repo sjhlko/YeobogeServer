@@ -1,7 +1,6 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.entity.BoardGame;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -26,7 +25,7 @@ public interface RatingRepository {
      * @param rate 조회할 별점
      * @return 해당 별점의 보드게임 목록
      */
-    List<BoardGame> getRatingByUserId(final Long userId, final Double rate);
+    List<BoardGameThumbnailDto> getRatingByUserId(final Long userId, final Double rate);
 
     /**
      * 회원이 평가한 보드게임 중 특정 별점의 목록을 페이징하여 조회함.

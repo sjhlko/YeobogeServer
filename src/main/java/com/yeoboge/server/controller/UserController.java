@@ -1,7 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameMapResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.PageRequest;
@@ -77,8 +77,8 @@ public class UserController {
      * @return 각 별점 별로 보드게임을 10개씩 담은 HTTP 200 응답
      */
     @GetMapping("/ratings")
-    public Response<BoardGameListResponse> getMyAllRatings(@AuthenticationPrincipal Long id) {
-        BoardGameListResponse response = userService.getMyAllRatings(id);
+    public Response<BoardGameMapResponse> getMyAllRatings(@AuthenticationPrincipal Long id) {
+        BoardGameMapResponse response = userService.getMyAllRatings(id);
         return Response.success(response);
     }
 

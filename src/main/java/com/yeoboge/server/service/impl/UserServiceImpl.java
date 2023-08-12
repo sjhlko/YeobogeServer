@@ -1,11 +1,11 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.TotalRatingsResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
-import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.PageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -62,12 +61,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public BoardGameListResponse getMyAllRatings(Long id) {
-        BoardGameListResponse response = new ThumbnailMapResponse(new HashMap<>());
+    public BoardGameMapResponse getMyAllRatings(Long id) {
+        BoardGameMapResponse response = new TotalRatingsResponse();
         List<Double> ratingGroup = ratingRepository.getUserRatingGroup(id);
 
         for (Double rate : ratingGroup) {
-            List<BoardGame> ratings = ratingRepository.getRatingByUserId(id, rate);
+            List<BoardGameThumbnailDto> ratings = ratingRepository.getRatingByUserId(id, rate);
             response.addBoardGames(ratings, rate);
         }
 

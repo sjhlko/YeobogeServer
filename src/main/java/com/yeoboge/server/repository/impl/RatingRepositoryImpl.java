@@ -5,7 +5,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.Rating;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
 import com.yeoboge.server.repository.RatingRepository;
@@ -43,14 +42,11 @@ public class RatingRepositoryImpl implements RatingRepository {
     }
 
     @Override
-    public List<BoardGame> getRatingByUserId(Long userId, Double score) {
+    public List<BoardGameThumbnailDto> getRatingByUserId(Long userId, Double score) {
         BoardGameOrderColumn order = BoardGameOrderColumn.NEW;
         Sort sort = Sort.by(order.getDirection(), order.getColumn());
 
-        return queryFactory.select(boardGame)
-                .from(boardGame).join(rating)
-                .on(rating.boardGame.id.eq(boardGame.id))
-                .where(rating.user.id.eq(userId), rating.rate.eq(score))
+        return getCommonQuery().where(rating.user.id.eq(userId), rating.rate.eq(score))
                 .orderBy(getOrderSpecifier(sort))
                 .limit(RECENT_RATING_SIZE)
                 .fetch();

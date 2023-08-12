@@ -1,9 +1,11 @@
 package com.yeoboge.server.controller;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
 import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
+import com.yeoboge.server.domain.vo.PageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
@@ -58,17 +60,15 @@ public class UserController {
      * 회원이 찜한 보드게임 목록을 조회하는 API
      *
      * @param id 현재 로그인한 회원의 ID
-     * @param page 보드게임 목록 페이지 번호
-     * @param order 정렬 기준
-     * @return {@link ThumbnailListResponse}을 Body로 갖는 HTTP 200 응답
+     * @param pageRequest 보드게임 목록 페이지 번호
+     * @return 찜한 보드게임 목록을 페이지 범위만큼 담은 {@link PageResponse}의 HTTP 200 응답
      */
     @GetMapping("/bookmarks")
-    public Response<BoardGameListResponse> getMyBookmarks(
+    public Response<PageResponse> getMyBookmarks(
             @AuthenticationPrincipal Long id,
-            @RequestParam Integer page,
-            @RequestParam BoardGameOrderColumn order
+            PageRequest pageRequest
     ) {
-        BoardGameListResponse response = userService.getMyBookmarks(id, page, order);
+        PageResponse response = userService.getMyBookmarks(id, pageRequest);
         return Response.success(response);
     }
 

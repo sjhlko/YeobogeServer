@@ -11,7 +11,7 @@ import lombok.Builder;
  * @param imagePath 보드게임 썸네일 이미지 URL
  */
 @Builder
-public record BoardGameThumbnail(
+public record BoardGameThumbnailDto(
         Long id,
         String name,
         String imagePath
@@ -21,10 +21,10 @@ public record BoardGameThumbnail(
      * {@link BoardGame} 엔티티로부터 필요한 정보를 가져옴.
      *
      * @param boardGame 원본 보드게임
-     * @return 해당 보드게임의 정보가 담긴 {@link BoardGameThumbnail}
+     * @return 해당 보드게임의 정보가 담긴 {@link BoardGameThumbnailDto}
      */
-    public static BoardGameThumbnail of(BoardGame boardGame) {
-        return BoardGameThumbnail.builder()
+    public static BoardGameThumbnailDto of(BoardGame boardGame) {
+        return BoardGameThumbnailDto.builder()
                 .id(boardGame.getId())
                 .name(boardGame.getName())
                 .imagePath(boardGame.getImagePath())

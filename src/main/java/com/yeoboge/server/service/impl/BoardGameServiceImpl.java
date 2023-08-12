@@ -67,6 +67,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     public BoardGameDetailResponse getBoardGameDetail(Long id) {
         List<String> genre = new ArrayList<>();
         List<String> theme = new ArrayList<>();
+        List<String> mechanism = new ArrayList<>();
         BoardGame boardGame = boardGameRepository.findById(id)
                 .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
         for (ThemeOfBoardGame themeOfBoardGame : boardGame.getTheme()) {
@@ -75,7 +76,10 @@ public class BoardGameServiceImpl implements BoardGameService {
         for (GenreOfBoardGame genreOfBoardGame : boardGame.getGenre()) {
             genre.add(genreOfBoardGame.getGenre().getName());
         }
-        return BoardGameDetailResponse.of(boardGame,theme,genre);
+        for (MechanismOfBoardGame mechanismOfBoardGame : boardGame.getMechanism()) {
+            mechanism.add(mechanismOfBoardGame.getMechanism().getName());
+        }
+        return BoardGameDetailResponse.of(boardGame,theme,genre,mechanism);
     }
 
     @Override

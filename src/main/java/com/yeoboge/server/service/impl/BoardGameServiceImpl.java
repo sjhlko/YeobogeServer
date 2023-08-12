@@ -251,4 +251,17 @@ public class BoardGameServiceImpl implements BoardGameService {
                 .message("평가가 저장되었습니다.")
                 .build();
     }
+
+    @Override
+    public Page<BoardGameThumbnail> searchBoardGame(
+            Pageable pageable,
+            Integer player,
+            String searchWord,
+            ArrayList<String> genre
+    ) {
+        Page<BoardGame> searchResults = boardGameRepository
+                .findAllByPlayerMinGreaterThanAndNameContains(pageable, player, searchWord);
+        Page<BoardGameThumbnail> boardGameThumbnails = searchResults.map(BoardGameThumbnail::of);
+        return boardGameThumbnails;
+    }
 }

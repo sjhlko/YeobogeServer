@@ -69,4 +69,7 @@ public interface BoardGameService {
      * @return {@link MessageResponse}
      */
     MessageResponse rateBoardGame(Long id, Long userId, Double rate);
+
+    Page<BoardGameThumbnail> searchBoardGame(Pageable pageable, Integer player,
+                                             String searchWord, ArrayList<String> genre);
 }

@@ -3,12 +3,10 @@ package com.yeoboge.server.service;
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
 import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
-import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.PageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
-import com.yeoboge.server.enums.BoardGameOrderColumn;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -53,11 +51,10 @@ public interface UserService {
     /**
      * 회원이 평가한 보드게임 중 특정 별점의 목록을 조회함.
      *
-     * @param id 조회를 요청한 회원 ID
+     * @param id    조회를 요청한 회원 ID
      * @param score 조회할 별점
-     * @param page 조회할 보드게임 목록의 페이지 번호
-     * @param order 목록의 정렬 기준
-     * @return {@link ThumbnailListResponse}
+     * @param pageRequest  조회할 보드게임 목록의 페이징 정보 {@link PageRequest}
+     * @return {@link PageResponse}
      */
-    BoardGameListResponse getMyRatingsByScore(Long id, Double score, Integer page, BoardGameOrderColumn order);
+    PageResponse getMyRatingsByScore(Long id, Double score, PageRequest pageRequest);
 }

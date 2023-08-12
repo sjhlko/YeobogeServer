@@ -2,13 +2,11 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.vo.PageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
-import com.yeoboge.server.enums.BoardGameOrderColumn;
 import com.yeoboge.server.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -89,18 +87,16 @@ public class UserController {
      *
      * @param id 현재 로그인한 회원의 ID
      * @param score 조회할 별점
-     * @param page 조회할 보드게임 목록의 페이지 번호
-     * @param order 정렬 기준
-     * @return 해당 별점의 보드게임 목록을 페이지 범위만큼 담은 HTTP 200 응답
+     * @param pageRequest 조회할 보드게임 목록의 페이징 정보
+     * @return 해당 별점의 보드게임 목록을 페이지 범위만큼 담은 {@link PageResponse}의 HTTP 200 응답
      */
     @GetMapping("/ratings/score")
-    public Response<BoardGameListResponse> getMyRatingByScore(
+    public Response<PageResponse> getMyRatingByScore(
             @AuthenticationPrincipal Long id,
             @RequestParam Double score,
-            @RequestParam Integer page,
-            @RequestParam BoardGameOrderColumn order
+            PageRequest pageRequest
     ) {
-        BoardGameListResponse response = userService.getMyRatingsByScore(id, score, page, order);
+        PageResponse response = userService.getMyRatingsByScore(id, score, pageRequest);
         return Response.success(response);
     }
 }

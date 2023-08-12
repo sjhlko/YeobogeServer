@@ -27,9 +27,8 @@ public class BoardGame {
     @Column(columnDefinition = "TEXT")
     private String imagePath;
     private Integer playTime;
-    @Column(columnDefinition = "TEXT")
-    private String mechanism;
-    private String isLocalized;
+    @Enumerated(EnumType.STRING)
+    private IsLocalized isLocalized;
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<GenreOfBoardGame> genre  = new ArrayList<>();
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)

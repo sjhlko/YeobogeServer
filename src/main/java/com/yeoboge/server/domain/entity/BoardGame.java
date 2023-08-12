@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class BoardGame {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_game_id")
     private Long id;
     private String name;

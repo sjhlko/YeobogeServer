@@ -1,6 +1,7 @@
 package com.yeoboge.server.domain.dto.boardGame;
 
 import com.yeoboge.server.domain.entity.BoardGame;
+import com.yeoboge.server.domain.entity.IsLocalized;
 import lombok.Builder;
 
 import java.util.List;
@@ -31,8 +32,8 @@ public record BoardGameDetailResponse(
         Integer playerMax,
         String imagePath,
         Integer playTime,
-        String mechanism,
-        String isLocalized,
+        IsLocalized isLocalized,
+        List<String> mechanism,
         List<String> genre,
         List<String> theme
 
@@ -46,7 +47,8 @@ public record BoardGameDetailResponse(
      * @param genre 정보를 반환할 보드게임의 장르의 리스트
      * @return {@link BoardGameDetailResponse} DTO
      */
-    public static BoardGameDetailResponse of(BoardGame boardGame, List<String> theme, List<String> genre){
+    public static BoardGameDetailResponse of(BoardGame boardGame, List<String> theme,
+                                             List<String> genre, List<String> mechanism){
         return BoardGameDetailResponse.builder()
                 .id(boardGame.getId())
                 .name(boardGame.getName())
@@ -56,8 +58,8 @@ public record BoardGameDetailResponse(
                 .playerMax(boardGame.getPlayerMax())
                 .imagePath(boardGame.getImagePath())
                 .playTime(boardGame.getPlayTime())
-                .mechanism(boardGame.getMechanism())
                 .isLocalized(boardGame.getIsLocalized())
+                .mechanism(mechanism)
                 .genre(genre)
                 .theme(theme)
                 .build();

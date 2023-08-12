@@ -49,6 +49,7 @@ public class FriendRepositoryImpl implements FriendRepository {
                 .join(friend)
                 .on(friend.follower.id.eq(user.id))
                 .where(friend.owner.id.eq(id))
+                .orderBy(user.nickname.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

@@ -1,7 +1,8 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.user.BookmarkListResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailMapResponse;
+import com.yeoboge.server.domain.dto.boardGame.ThumbnailListResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.BoardGame;
@@ -15,17 +16,16 @@ import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.S3FileUploadService;
 import com.yeoboge.server.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * {@link UserService} 구현체
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -55,9 +55,39 @@ public class UserServiceImpl implements UserService {
     @Override
     public BoardGameListResponse getMyBookmarks(Long id, Integer page, BoardGameOrderColumn order) {
         List<BoardGame> bookmarks = boardGameRepository.getBookmarkByUserId(id, page, order);
+        return makeListResponse(bookmarks);
+    }
 
-        BoardGameListResponse response = new BookmarkListResponse(new ArrayList<>());
-        response.addBoardGames(bookmarks);
+    @Override
+    public BoardGameListResponse getMyAllRatings(Long id) {
+        BoardGameListResponse response = new ThumbnailMapResponse(new HashMap<>());
+        List<Double> ratingGroup = boardGameRepository.getUserRatingGroup(id);
+
+        for (Double rate : ratingGroup) {
+            List<BoardGame> ratings = boardGameRepository.getRatingByUserId(id, rate);
+            response.addBoardGames(ratings, rate);
+        }
+
+        return response;
+    }
+
+    @Override
+    public BoardGameListResponse getMyRatingsByScore(
+            Long id, Double score, Integer page, BoardGameOrderColumn order
+    ) {
+        List<BoardGame> boardGames = boardGameRepository.getRatingsByUserId(id, score, page, order);
+        return makeListResponse(boardGames);
+    }
+
+    /**
+     * 보드게임 목록을 리스트화하여 담은 DTO 객체를 반환함.
+     *
+     * @param boardGames 원본 보드게임 리스트
+     * @return {@link ThumbnailListResponse}
+     */
+    private BoardGameListResponse makeListResponse(List<BoardGame> boardGames) {
+        BoardGameListResponse response = new ThumbnailListResponse(new ArrayList<>());
+        response.addBoardGames(boardGames);
 
         return response;
     }

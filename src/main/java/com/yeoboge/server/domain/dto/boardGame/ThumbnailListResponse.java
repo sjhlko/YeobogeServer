@@ -1,7 +1,5 @@
-package com.yeoboge.server.domain.dto.user;
+package com.yeoboge.server.domain.dto.boardGame;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameListResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
 import com.yeoboge.server.domain.entity.BoardGame;
 
 import java.util.List;
@@ -12,7 +10,7 @@ import java.util.List;
  * @param boardGames 찜한 보드게임의 ID, 이름, 썸네일 URL이 포함된 리스트
  * @see BoardGameThumbnail
  */
-public record BookmarkListResponse (
+public record ThumbnailListResponse(
         List<BoardGameThumbnail> boardGames
 ) implements BoardGameListResponse<BoardGameThumbnail> {
 

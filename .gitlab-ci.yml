@@ -49,7 +49,7 @@ deploy:
       -e REDIS_HOST=$SERVER_IP
       -e REDIS_PORT=6379
       -e REDIS_PASSWORD=$REDIS_PASSWORD
-      -e JWT_SIGN_KEY=$JWT_SIGN_KEY
+      -e TZ=Asia/Seoul
       $TAG_LATEST
   environment:
     name: production

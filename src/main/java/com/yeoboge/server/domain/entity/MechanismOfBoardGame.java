@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GenreOfBoardGame {
+public class MechanismOfBoardGame {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "genre_of_board_game_id")
+    @Column(name = "mechanism_of_board_game_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id", nullable = false)
-    private Genre genre;
+    @JoinColumn(name = "mechanism_id", nullable = false)
+    private Mechanism mechanism;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_game_id", nullable = false)
     private BoardGame boardGame;

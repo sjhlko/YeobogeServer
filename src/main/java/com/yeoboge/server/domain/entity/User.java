@@ -49,6 +49,9 @@ public class User {
     @MapKeyColumn(name = "board_game_id")
     private Map<Long, Rating> ratings;
 
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friend> friends;
+
     /**
      * 기존 회원의 비밀번호만을 바꾸고자하는 비밀번호로 변경한다.
      *

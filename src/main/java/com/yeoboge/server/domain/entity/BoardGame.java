@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class BoardGame {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_game_id")
     private Long id;
     private String name;
@@ -28,11 +27,20 @@ public class BoardGame {
     @Column(columnDefinition = "TEXT")
     private String imagePath;
     private Integer playTime;
-    @Column(columnDefinition = "TEXT")
-    private String mechanism;
-    private String isLocalized;
+    @Enumerated(EnumType.STRING)
+    private IsLocalized isLocalized;
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<GenreOfBoardGame> genre  = new ArrayList<>();
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<ThemeOfBoardGame> theme  = new ArrayList<>();
+    @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<MechanismOfBoardGame> mechanism  = new ArrayList<>();
+
+    public void updateName(String name){
+        this.name = name;
+    }
+
+    public void updateIsLocalized(IsLocalized isLocalized){
+        this.isLocalized = isLocalized;
+    }
 }

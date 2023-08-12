@@ -1,7 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
@@ -92,13 +92,13 @@ public class BoardGameController {
      *
      */
     @GetMapping("/search")
-    public Response<Page<BoardGameThumbnail>> searchBoardGame(
+    public Response<Page<BoardGameThumbnailDto>> searchBoardGame(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam Integer player,
             @RequestParam String searchWord,
             @RequestParam ArrayList<String> genre
     ) {
-        Page<BoardGameThumbnail> response = boardGameService.searchBoardGame(pageable,player,searchWord,genre);
+        Page<BoardGameThumbnailDto> response = boardGameService.searchBoardGame(pageable,player,searchWord,genre);
         return Response.success(response);
     }
 }

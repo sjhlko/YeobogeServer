@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.data.domain.Page;
@@ -71,6 +71,6 @@ public interface BoardGameService {
      */
     MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request);
 
-    Page<BoardGameThumbnail> searchBoardGame(Pageable pageable, Integer player,
-                                             String searchWord, ArrayList<String> genre);
+    Page<BoardGameThumbnailDto> searchBoardGame(Pageable pageable, Integer player,
+                                                String searchWord, ArrayList<String> genre);
 }

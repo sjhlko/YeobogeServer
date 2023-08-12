@@ -1,7 +1,7 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnail;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -255,7 +255,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public Page<BoardGameThumbnail> searchBoardGame(
+    public Page<BoardGameThumbnailDto> searchBoardGame(
             Pageable pageable,
             Integer player,
             String searchWord,
@@ -263,7 +263,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     ) {
         Page<BoardGame> searchResults = boardGameRepository
                 .findAllByPlayerMinGreaterThanAndNameContains(pageable, player, searchWord);
-        Page<BoardGameThumbnail> boardGameThumbnails = searchResults.map(BoardGameThumbnail::of);
+        Page<BoardGameThumbnailDto> boardGameThumbnails = searchResults.map(BoardGameThumbnailDto::of);
         return boardGameThumbnails;
     }
 }

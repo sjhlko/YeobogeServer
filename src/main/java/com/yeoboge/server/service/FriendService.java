@@ -15,4 +15,13 @@ public interface FriendService {
      * @return 친구 DTO 리스트를 포함한 {@link PageResponse}
      */
     PageResponse getFriends(Long id, Pageable pageable);
+
+    /**
+     * 회원의 친구 요청 목록을 페이징하여 조회함.
+     *
+     * @param id 조회할 회원 ID
+     * @param pageable 페이징 관련 정보가 포함된 {@link Pageable}
+     * @return 요청을 보낸 사용자의 DTO 리스트를 포함한 {@link PageResponse}
+     */
+    PageResponse getFriendRequests(Long id, Pageable pageable);
 }

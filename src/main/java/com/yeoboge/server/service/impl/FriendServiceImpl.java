@@ -21,4 +21,10 @@ public class FriendServiceImpl implements FriendService {
         Page friendsPage = friendRepository.getFriendsPage(id, pageable);
         return new PageResponse(friendsPage);
     }
+
+    @Override
+    public PageResponse getFriendRequests(Long id, Pageable pageable) {
+        Page requestPage = friendRepository.getFriendRequestsPage(id, pageable);
+        return new PageResponse(requestPage);
+    }
 }

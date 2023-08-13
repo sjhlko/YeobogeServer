@@ -3,7 +3,7 @@ package com.yeoboge.server.domain.vo;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
 import org.springframework.data.domain.Sort;
 
-public class PageRequest {
+public class MyBoardGamePageRequest {
     protected int page;
     protected int size;
     protected BoardGameOrderColumn sort;

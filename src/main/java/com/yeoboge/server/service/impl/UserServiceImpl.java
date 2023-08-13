@@ -7,7 +7,7 @@ import com.yeoboge.server.domain.dto.boardGame.TotalRatingsResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.PageRequest;
+import com.yeoboge.server.domain.vo.MyBoardGamePageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.repository.BookmarkRepository;
 import com.yeoboge.server.repository.RatingRepository;
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse getMyBookmarks(Long id, PageRequest pageRequest) {
+    public PageResponse getMyBookmarks(Long id, MyBoardGamePageRequest pageRequest) {
         Pageable pageable = pageRequest.of();
         Page bookmarks = bookmarkRepository.getBookmarkByUserId(id, pageable);
         return new PageResponse(bookmarks);
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse getMyRatingsByScore(
-            Long id, Double score, PageRequest pageRequest
+            Long id, Double score, MyBoardGamePageRequest pageRequest
     ) {
         Pageable pageable = pageRequest.of();
         Page ratings = ratingRepository.getRatingsByUserId(id, score, pageable);

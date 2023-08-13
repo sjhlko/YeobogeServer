@@ -4,7 +4,7 @@ import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameMapResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
-import com.yeoboge.server.domain.vo.PageRequest;
+import com.yeoboge.server.domain.vo.MyBoardGamePageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.UserService;
@@ -64,7 +64,7 @@ public class UserController {
     @GetMapping("/bookmarks")
     public Response<PageResponse> getMyBookmarks(
             @AuthenticationPrincipal Long id,
-            PageRequest pageRequest
+            MyBoardGamePageRequest pageRequest
     ) {
         PageResponse response = userService.getMyBookmarks(id, pageRequest);
         return Response.success(response);
@@ -94,7 +94,7 @@ public class UserController {
     public Response<PageResponse> getMyRatingByScore(
             @AuthenticationPrincipal Long id,
             @RequestParam Double score,
-            PageRequest pageRequest
+            MyBoardGamePageRequest pageRequest
     ) {
         PageResponse response = userService.getMyRatingsByScore(id, score, pageRequest);
         return Response.success(response);

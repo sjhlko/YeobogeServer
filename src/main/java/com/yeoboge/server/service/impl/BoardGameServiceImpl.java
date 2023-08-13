@@ -33,6 +33,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     private final BoardGameRepository boardGameRepository;
     private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final RatingRepository ratingRepository;
 
     private final ThemeRepository themeRepository;
     private final GenreRepository genreRepository;
@@ -245,12 +246,11 @@ public class BoardGameServiceImpl implements BoardGameService {
     @Override
     public MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchRating(userId);
+        User user = userRepository.getById(userId);
         Double score = request.score();
 
-        if (score != 0) user.rateBoardGame(boardGame, score);
-        else user.removeRating(boardGame);
-        userRepository.save(user);
+        if (score != 0) saveRating(user, boardGame, score);
+        else deleteRating(userId, id);
 
         return MessageResponse.builder()
                 .message("평가가 저장되었습니다.")
@@ -266,5 +266,30 @@ public class BoardGameServiceImpl implements BoardGameService {
                 .findBoardGameBySearchOption(pageable,request);
         Page<SearchBoardGameResponse> responses = searchResults.map(SearchBoardGameResponse::of);
         return responses;
+    }
+
+    /**
+     * 보드게임에 대해 평가를 저장함.
+     *
+     * @param user 평가를 남길 회원
+     * @param boardGame 평가를 남길 보드게임
+     * @param score 평가할 별점
+     */
+    private void saveRating(User user, BoardGame boardGame, Double score) {
+        Rating rating = ratingRepository.getOrNewByParentId(user.getId(), boardGame.getId());
+        rating.setParent(user, boardGame);
+        rating.setScore(score);
+        ratingRepository.save(rating);
+    }
+
+    /**
+     * 보드게임에 대한 평가를 삭제함.
+     *
+     * @param userId 평가를 취소할 회원 ID
+     * @param boardGameId 평가를 취소할 보드게임 ID
+     */
+    private void deleteRating(Long userId, Long boardGameId) {
+        Rating rating = ratingRepository.getByParentId(userId, boardGameId);
+        ratingRepository.delete(rating);
     }
 }

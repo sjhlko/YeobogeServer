@@ -7,7 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.Rating;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
-import com.yeoboge.server.repository.RatingRepository;
+import com.yeoboge.server.repository.CustomRatingRepository;
 import com.yeoboge.server.utils.PagingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,21 +23,21 @@ import static com.yeoboge.server.domain.entity.QRating.rating;
 import static com.yeoboge.server.domain.entity.immutable.QRecentRatings.recentRatings;
 
 /**
- * {@link RatingRepository} 구현
+ * {@link CustomRatingRepository} 구현
  */
 @Repository
 @RequiredArgsConstructor
-public class RatingRepositoryImpl implements RatingRepository {
+public class CustomRatingRepositoryImpl implements CustomRatingRepository {
     private static final int RECENT_RATING_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
     @Override
     public List<Double> getUserRatingGroup(Long userId) {
-        return queryFactory.select(rating.rate)
+        return queryFactory.select(rating.score)
                 .from(rating)
                 .where(rating.user.id.eq(userId))
-                .groupBy(rating.rate)
+                .groupBy(rating.score)
                 .fetch();
     }
 
@@ -46,7 +46,7 @@ public class RatingRepositoryImpl implements RatingRepository {
         BoardGameOrderColumn order = BoardGameOrderColumn.NEW;
         Sort sort = Sort.by(order.getDirection(), order.getColumn());
 
-        return getCommonQuery().where(rating.user.id.eq(userId), rating.rate.eq(score))
+        return getCommonQuery().where(rating.user.id.eq(userId), rating.score.eq(score))
                 .orderBy(getOrderSpecifier(sort))
                 .limit(RECENT_RATING_SIZE)
                 .fetch();
@@ -73,7 +73,7 @@ public class RatingRepositoryImpl implements RatingRepository {
         JPAQuery<BoardGameThumbnailDto> queryBase = PagingUtils.isSortPopular(pageable.getSort())
                 ? getPopularQuery() : getCommonQuery();
 
-        return queryBase.where(rating.user.id.eq(userId), rating.rate.eq(score))
+        return queryBase.where(rating.user.id.eq(userId), rating.score.eq(score))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(getOrderSpecifier(pageable.getSort()))

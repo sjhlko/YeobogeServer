@@ -7,7 +7,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -31,26 +30,14 @@ public class Rating {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    private Double rate;
-
-    @Override
-    public boolean equals(Object o) {
-        Rating other = (Rating) o;
-        return this.user.getId() == other.user.getId()
-                && this.boardGame.getId() == other.boardGame.getId();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.user.getId(), this.boardGame.getId());
-    }
+    private Double score;
 
     public void setParent(User user, BoardGame boardGame) {
         this.user = user;
         this.boardGame = boardGame;
     }
 
-    public void setRate(Double rate) {
-        this.rate = rate;
+    public void setScore(Double score) {
+        this.score = score;
     }
 }

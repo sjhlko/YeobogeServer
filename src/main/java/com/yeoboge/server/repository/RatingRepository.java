@@ -1,38 +1,51 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.yeoboge.server.domain.entity.Rating;
+import com.yeoboge.server.enums.error.CommonErrorCode;
+import com.yeoboge.server.handler.AppException;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
- * 평가한 보드게임 관련 QueryDsl 쿼리 메서드를 정의하는 인터페이스
+ * {@link Rating} 관련 DB 쿼리에 대한 메서드를 제공하는 인터페이
  */
-public interface RatingRepository {
+@Repository
+public interface RatingRepository extends JpaRepository<Rating, Long>, CustomRatingRepository {
     /**
-     * 회원이 평가한 보드게임의 별점 그룹만 조회함.
+     * 회원이 특정 보드게임에 대해 평가한 정보를 조회함.
      *
-     * @param userId 조회를 요청한 회원 ID
-     * @return 회원이 평가를 남긴 별점 리스트
+     * @param userId 조회할 회원 ID
+     * @param boardGameId 평가한 보드게임 ID
+     * @return {@link Rating}의 {@link Optional} 객체
      */
-    List<Double> getUserRatingGroup(final Long userId);
+    @Query("SELECT r FROM Rating r WHERE r.user.id = :userId and r.boardGame.id = :boardGameId")
+    Optional<Rating> findByParentId(Long userId, Long boardGameId);
 
     /**
-     * 회원이 평가한 보드게임 중 특정 별점의 목록에 대해 최신 순으로 일정 개수 조회함.
+     * 보드게임을 평가한 데이터가 있다면 해당 엔티티를 반환하고,
+     * 없다면 새 객체를 생성해 반환함.
      *
-     * @param userId 조회를 요청한 회원 ID
-     * @param rate 조회할 별점
-     * @return 해당 별점의 보드게임 목록
+     * @param userId 조회할 회원 ID
+     * @param boardGameId 평가한 보드게임 ID
+     * @return {@link Rating}
      */
-    List<BoardGameThumbnailDto> getRatingByUserId(final Long userId, final Double rate);
+    default Rating getOrNewByParentId(Long userId, Long boardGameId) {
+        return findByParentId(userId, boardGameId).orElse(new Rating());
+    }
 
     /**
-     * 회원이 평가한 보드게임 중 특정 별점의 목록을 페이징하여 조회함.
+     * 보드게임을 평가한 데이터에 대한 엔티티를 반환함.
      *
-     * @param userId 조회를 요청한 회원 ID
-     * @param score 조회할 별점
-     * @return 페이징된 해당 별점의 보드게임 {@link BoardGameThumbnailDto} 목록
+     * @param userId 조회할 회원 ID
+     * @param boardGameId 평가한 보드게임 ID
+     * @return {@link Rating}
+     * @throws AppException 회원이 해당 보드게임을 평가한 적 없다면, 404 응답인 {@code NOT_FOUND} 예외를 던짐.
      */
-    Page<BoardGameThumbnailDto> getRatingsByUserId(final Long userId, final Double score, final Pageable pageable);
+    default Rating getByParentId(Long userId, Long boardGameId) {
+        return findByParentId(userId, boardGameId)
+                .orElseThrow(() -> new AppException(CommonErrorCode.NOT_FOUND));
+    }
 }

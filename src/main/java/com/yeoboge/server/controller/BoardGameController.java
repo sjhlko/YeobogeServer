@@ -1,8 +1,9 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
+import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.BoardGameService;
@@ -13,8 +14,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 
 /**
  * 보드게임 관련 API 엔드포인트에 대해 매핑되는 Rest Controller
@@ -89,16 +88,16 @@ public class BoardGameController {
 
     /**
      * 보드게임 검색 API
-     *
+     * @param pageable 페이징 정보가 담긴 {@link Pageable}
+     * @param request 보드게임 검색 조건이 담긴 {@link SearchBoardGameRequest} VO
+     * @return 보드게임 검색 결과에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO
      */
     @GetMapping("/search")
-    public Response<Page<BoardGameThumbnailDto>> searchBoardGame(
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam Integer player,
-            @RequestParam String searchWord,
-            @RequestParam ArrayList<String> genre
+    public Response<Page<SearchBoardGameResponse>> searchBoardGame(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable,
+            SearchBoardGameRequest request
     ) {
-        Page<BoardGameThumbnailDto> response = boardGameService.searchBoardGame(pageable,player,searchWord,genre);
+        Page<SearchBoardGameResponse> response = boardGameService.searchBoardGame(pageable,request);
         return Response.success(response);
     }
 }

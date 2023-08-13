@@ -1,14 +1,14 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
+import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * 보드게임 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
@@ -71,6 +71,14 @@ public interface BoardGameService {
      */
     MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request);
 
-    Page<BoardGameThumbnailDto> searchBoardGame(Pageable pageable, Integer player,
-                                                String searchWord, ArrayList<String> genre);
+    /**
+     * 보드게임을 검색한다.
+     *
+     * @param pageable 페이징 관련한 정보가 담긴 {@link Pageable}
+     * @param request 보드게임 검색 시의 검색 조건이 담긴 DTO {@link SearchBoardGameRequest}
+     * @return 검색 조건에 부합하는 보드게임에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO를
+     * 페이징을 적용하여 리턴함
+     */
+    Page<SearchBoardGameResponse> searchBoardGame(Pageable pageable,
+                                                  SearchBoardGameRequest request);
 }

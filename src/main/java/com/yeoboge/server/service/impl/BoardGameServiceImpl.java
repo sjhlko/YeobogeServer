@@ -1,13 +1,15 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
+import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
 import com.yeoboge.server.domain.entity.*;
+import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.*;
+import com.yeoboge.server.repository.customRepository.BoardGameCustomRepository;
 import com.yeoboge.server.service.BoardGameService;
 import com.yeoboge.server.utils.CsvParsing;
 import com.yeoboge.server.utils.GetKorName;
@@ -36,6 +38,7 @@ public class BoardGameServiceImpl implements BoardGameService {
     private final MechanismOfBoardGameRepository mechanismOfBoardGameRepository;
     private final ThemeOfBoardGameRepository themeOfBoardGameRepository;
     private final GenreOfBoardGameRepository genreOfBoardGameRepository;
+    private final BoardGameCustomRepository boardGameCustomRepository;
 
     @Override
     public void saveBoardGame() throws IOException {
@@ -255,15 +258,13 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public Page<BoardGameThumbnailDto> searchBoardGame(
+    public Page<SearchBoardGameResponse> searchBoardGame(
             Pageable pageable,
-            Integer player,
-            String searchWord,
-            ArrayList<String> genre
+            SearchBoardGameRequest request
     ) {
-        Page<BoardGame> searchResults = boardGameRepository
-                .findAllByPlayerMinGreaterThanAndNameContains(pageable, player, searchWord);
-        Page<BoardGameThumbnailDto> boardGameThumbnails = searchResults.map(BoardGameThumbnailDto::of);
-        return boardGameThumbnails;
+        Page<BoardGame> searchResults = boardGameCustomRepository
+                .findBoardGameBySearchOption(pageable,request);
+        Page<SearchBoardGameResponse> responses = searchResults.map(SearchBoardGameResponse::of);
+        return responses;
     }
 }

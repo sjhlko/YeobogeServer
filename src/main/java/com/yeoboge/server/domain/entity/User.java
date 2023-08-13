@@ -43,9 +43,6 @@ public class User {
     private Set<Genre> favoriteGenres;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BookmarkedBoardGame> bookmarked;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKeyColumn(name = "board_game_id")
     private Map<Long, Rating> ratings;
 
@@ -73,37 +70,6 @@ public class User {
     }
 
     /**
-     * 찜한 보드게임 목록에 특정 보드게임을 추가함.
-     *
-     * @param boardGame 찜할 보드게임 {@link BoardGame}
-     */
-    public void addBookmark(BoardGame boardGame) {
-        BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
-        bookmark.setParent(this, boardGame);
-        bookmarked.add(bookmark);
-    }
-
-    /**
-     * 찜한 보드게임 목록에서 특정 보드게임을 제거함.
-     *
-     * @param boardGame 제거할 보드게임 {@link BoardGame}
-     */
-    public void removeBookmark(BoardGame boardGame) {
-        BookmarkedBoardGame toRemove = null;
-        for (BookmarkedBoardGame bookmark : bookmarked) {
-            if (bookmark.getBoardGame().equals(boardGame)) {
-                toRemove = bookmark;
-                break;
-            }
-        }
-
-        if (toRemove != null) {
-            bookmarked.remove(toRemove);
-            toRemove.setParent(null, null);
-        }
-    }
-
-    /**
      * 보드게임의 평점을 저장함.
      *
      * @param boardGame 평가할 보드게임
@@ -112,7 +78,7 @@ public class User {
     public void rateBoardGame(BoardGame boardGame, double rate) {
         Rating rating = ratings.getOrDefault(boardGame.getId(), new Rating());
         rating.setParent(this, boardGame);
-        rating.setRate(rate);
+        rating.setScore(rate);
         ratings.put(boardGame.getId(), rating);
     }
 

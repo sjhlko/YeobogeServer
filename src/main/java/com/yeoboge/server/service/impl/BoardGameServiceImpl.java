@@ -32,6 +32,8 @@ import java.util.Optional;
 public class BoardGameServiceImpl implements BoardGameService {
     private final BoardGameRepository boardGameRepository;
     private final UserRepository userRepository;
+    private final BookmarkRepository bookmarkRepository;
+
     private final ThemeRepository themeRepository;
     private final GenreRepository genreRepository;
     private final MechanismRepository mechanismRepository;
@@ -223,10 +225,11 @@ public class BoardGameServiceImpl implements BoardGameService {
     @Override
     public MessageResponse addBookmark(Long id, Long userId) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchBookmark(userId);
+        User user = userRepository.getById(userId);
 
-        user.addBookmark(boardGame);
-        userRepository.save(user);
+        BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
+        bookmark.setParent(user, boardGame);
+        bookmarkRepository.save(bookmark);
 
         return MessageResponse.builder()
                 .message("찜하기가 저장되었습니다")
@@ -235,11 +238,8 @@ public class BoardGameServiceImpl implements BoardGameService {
 
     @Override
     public void removeBookmark(Long id, Long userId) {
-        BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchBookmark(userId);
-
-        user.removeBookmark(boardGame);
-        userRepository.save(user);
+        BookmarkedBoardGame bookmark = bookmarkRepository.getByParentId(userId, id);
+        bookmarkRepository.delete(bookmark);
     }
 
     @Override

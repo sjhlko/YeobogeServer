@@ -40,9 +40,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.id FROM User u WHERE u.email = :email")
     Long findIdByEmail(final String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.bookmarked WHERE u.id = :id")
-    Optional<User> findByIdJoinBookmark(final Long id);
-
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.ratings WHERE u.id = :id")
     Optional<User> findByIdJoinRatings(final Long id);
 
@@ -52,10 +49,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     default User getByEmail(String email) {
         return findByEmail(email).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
-    }
-
-    default User getByIdFetchBookmark(Long id) {
-        return findByIdJoinBookmark(id).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
     }
 
     default User getByIdFetchRating(Long id) {

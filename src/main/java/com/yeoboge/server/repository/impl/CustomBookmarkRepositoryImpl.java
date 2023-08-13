@@ -6,7 +6,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
-import com.yeoboge.server.repository.BookmarkRepository;
+import com.yeoboge.server.repository.CustomBookmarkRepository;
 import com.yeoboge.server.utils.PagingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,11 +21,11 @@ import static com.yeoboge.server.domain.entity.QBookmarkedBoardGame.bookmarkedBo
 import static com.yeoboge.server.domain.entity.immutable.QRecentRatings.recentRatings;
 
 /**
- * {@link BookmarkRepository} 구현
+ * {@link CustomBookmarkRepository} 구현
  */
 @Repository
 @RequiredArgsConstructor
-public class BookmarkRepositoryImpl implements BookmarkRepository {
+public class CustomBookmarkRepositoryImpl implements CustomBookmarkRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override

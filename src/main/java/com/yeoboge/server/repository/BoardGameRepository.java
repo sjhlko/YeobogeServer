@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
  * {@link BoardGame} 관련 DB 쿼리에 대한 메서드를 제공하는 인터페이스
  */
 @Repository
-public interface BoardGameRepository extends JpaRepository<BoardGame, Long>, BoardGameQueryDslRepository {
+public interface BoardGameRepository extends JpaRepository<BoardGame, Long>, CustomBoardGameRepository {
     default BoardGame getById(Long id) {
         return findById(id).orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
     }

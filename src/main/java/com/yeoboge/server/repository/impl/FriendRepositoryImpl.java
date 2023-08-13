@@ -51,15 +51,12 @@ public class FriendRepositoryImpl implements FriendRepository {
      * @return {@link FriendInfoDto} 리스트
      */
     private List<FriendInfoDto> getFriendList(Long id, Pageable pageable) {
-        return queryFactory.select(Projections.constructor(FriendInfoDto.class,
+        return getFriendQueryBase(id,
+                Projections.constructor(FriendInfoDto.class,
                         user.id,
                         user.nickname,
                         user.profileImagePath.as("imagePath")
-                )).from(user)
-                .join(friend)
-                .on(friend.follower.id.eq(user.id))
-                .where(friend.owner.id.eq(id))
-                .orderBy(user.nickname.asc())
+                )).orderBy(user.nickname.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -91,11 +88,7 @@ public class FriendRepositoryImpl implements FriendRepository {
      * @return 친구 수를 조회하는 {@link JPAQuery}
      */
     private JPAQuery<Long> getFriendCountQuery(Long id) {
-        return queryFactory.select(user.count())
-                .from(user)
-                .join(friend)
-                .on(friend.owner.id.eq(user.id))
-                .where(user.id.eq(id));
+        return getFriendQueryBase(id, user.count());
     }
 
     /**
@@ -106,6 +99,22 @@ public class FriendRepositoryImpl implements FriendRepository {
      */
     private JPAQuery<Long> getRequestCountQuery(Long id) {
         return getRequestQueryBase(id, user.count());
+    }
+
+    /**
+     * 회원의 친구 조회 시 조회 테이블, 조인 조건 등이 지정된 쿼리를 반환함.
+     *
+     * @param id 조회할 회원 ID
+     * @param selectExpression {@select} 쿼리에서 조회할 컬럼이 지정된 {@link Expression}
+     * @return {@code select} 조회 결과
+     * @param <T> 쿼리 조회 후 반환할 클래스 타입
+     */
+    private <T> JPAQuery<T> getFriendQueryBase(Long id, Expression<T> selectExpression) {
+        return queryFactory.select(selectExpression)
+                .from(user)
+                .join(friend)
+                .on(friend.follower.id.eq(user.id))
+                .where(friend.owner.id.eq(id));
     }
 
     /**

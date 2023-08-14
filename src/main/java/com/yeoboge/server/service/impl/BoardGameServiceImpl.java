@@ -1,9 +1,11 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
+import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
 import com.yeoboge.server.domain.entity.*;
+import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
@@ -30,6 +32,9 @@ import java.util.Optional;
 public class BoardGameServiceImpl implements BoardGameService {
     private final BoardGameRepository boardGameRepository;
     private final UserRepository userRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final RatingRepository ratingRepository;
+
     private final ThemeRepository themeRepository;
     private final GenreRepository genreRepository;
     private final MechanismRepository mechanismRepository;
@@ -220,10 +225,11 @@ public class BoardGameServiceImpl implements BoardGameService {
     @Override
     public MessageResponse addBookmark(Long id, Long userId) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchBookmark(userId);
+        User user = userRepository.getById(userId);
 
-        user.addBookmark(boardGame);
-        userRepository.save(user);
+        BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
+        bookmark.setParent(user, boardGame);
+        bookmarkRepository.save(bookmark);
 
         return MessageResponse.builder()
                 .message("찜하기가 저장되었습니다")
@@ -232,22 +238,18 @@ public class BoardGameServiceImpl implements BoardGameService {
 
     @Override
     public void removeBookmark(Long id, Long userId) {
-        BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchBookmark(userId);
-
-        user.removeBookmark(boardGame);
-        userRepository.save(user);
+        BookmarkedBoardGame bookmark = bookmarkRepository.getByParentId(userId, id);
+        bookmarkRepository.delete(bookmark);
     }
 
     @Override
     public MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request) {
         BoardGame boardGame = boardGameRepository.getById(id);
-        User user = userRepository.getByIdFetchRating(userId);
+        User user = userRepository.getById(userId);
         Double score = request.score();
 
-        if (score != 0) user.rateBoardGame(boardGame, score);
-        else user.removeRating(boardGame);
-        userRepository.save(user);
+        if (score != 0) saveRating(user, boardGame, score);
+        else deleteRating(userId, id);
 
         return MessageResponse.builder()
                 .message("평가가 저장되었습니다.")
@@ -255,15 +257,38 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public Page<BoardGameThumbnailDto> searchBoardGame(
+    public PageResponse searchBoardGame(
             Pageable pageable,
-            Integer player,
-            String searchWord,
-            ArrayList<String> genre
+            SearchBoardGameRequest request
     ) {
         Page<BoardGame> searchResults = boardGameRepository
-                .findAllByPlayerMinGreaterThanAndNameContains(pageable, player, searchWord);
-        Page<BoardGameThumbnailDto> boardGameThumbnails = searchResults.map(BoardGameThumbnailDto::of);
-        return boardGameThumbnails;
+                .findBoardGameBySearchOption(pageable, request);
+        PageResponse responses = new PageResponse(searchResults.map(SearchBoardGameResponse::of));
+        return responses;
+    }
+
+    /**
+     * 보드게임에 대해 평가를 저장함.
+     *
+     * @param user 평가를 남길 회원
+     * @param boardGame 평가를 남길 보드게임
+     * @param score 평가할 별점
+     */
+    private void saveRating(User user, BoardGame boardGame, Double score) {
+        Rating rating = ratingRepository.getOrNewByParentId(user.getId(), boardGame.getId());
+        rating.setParent(user, boardGame);
+        rating.setScore(score);
+        ratingRepository.save(rating);
+    }
+
+    /**
+     * 보드게임에 대한 평가를 삭제함.
+     *
+     * @param userId 평가를 취소할 회원 ID
+     * @param boardGameId 평가를 취소할 보드게임 ID
+     */
+    private void deleteRating(Long userId, Long boardGameId) {
+        Rating rating = ratingRepository.getByParentId(userId, boardGameId);
+        ratingRepository.delete(rating);
     }
 }

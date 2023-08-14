@@ -5,7 +5,7 @@ import com.yeoboge.server.domain.dto.boardGame.BoardGameMapResponse;
 import com.yeoboge.server.domain.dto.boardGame.TotalRatingsResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
-import com.yeoboge.server.domain.vo.PageRequest;
+import com.yeoboge.server.domain.vo.MyBoardGamePageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,10 +35,10 @@ public interface UserService {
      * 회원이 찜한 보드게임 목록을 조회함.
      *
      * @param id    조회를 요청한 회원 ID
-     * @param pageRequest  조회할 보드게임 목록의 페이징 정보 {@link PageRequest}
+     * @param pageRequest  조회할 보드게임 목록의 페이징 정보 {@link MyBoardGamePageRequest}
      * @return {@link PageResponse}
      */
-    PageResponse getMyBookmarks(Long id, PageRequest pageRequest);
+    PageResponse getMyBookmarks(Long id, MyBoardGamePageRequest pageRequest);
 
     /**
      * 회원이 평가한 보드게임을 각 별점 별로 조회함.
@@ -53,8 +53,8 @@ public interface UserService {
      *
      * @param id    조회를 요청한 회원 ID
      * @param score 조회할 별점
-     * @param pageRequest  조회할 보드게임 목록의 페이징 정보 {@link PageRequest}
+     * @param pageRequest  조회할 보드게임 목록의 페이징 정보 {@link MyBoardGamePageRequest}
      * @return {@link PageResponse}
      */
-    PageResponse getMyRatingsByScore(Long id, Double score, PageRequest pageRequest);
+    PageResponse getMyRatingsByScore(Long id, Double score, MyBoardGamePageRequest pageRequest);
 }

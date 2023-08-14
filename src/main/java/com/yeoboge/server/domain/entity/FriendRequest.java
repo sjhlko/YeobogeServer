@@ -10,34 +10,21 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Rating {
+@NoArgsConstructor
+public class FriendRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "rating_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "requester_id")
+    private User requester;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_game_id")
-    private BoardGame boardGame;
+    @JoinColumn(name = "receiver_id")
+    private User receiver;
 
     @CreatedDate
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    private Double score;
-
-    public void setParent(User user, BoardGame boardGame) {
-        this.user = user;
-        this.boardGame = boardGame;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
-    }
 }

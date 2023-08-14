@@ -1,7 +1,12 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
+import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
+import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 
@@ -14,6 +19,22 @@ public interface BoardGameService {
      * 보드게임을 저장하는 메서드
      */
     void saveBoardGame() throws IOException;
+
+    /**
+     * 테마를 저장하는 메서드
+     */
+    void saveTheme() throws IOException;
+
+    /**
+     * 보드게임별 테마를 저장하는 메서드
+     */
+    void saveThemeOfBoardGame() throws IOException;
+
+    /**
+     * 보드게임별 전략을 저장하는 메서드
+     */
+    void saveMechanismOfBoardGame() throws IOException;
+
 
     /**
      * 특정 보드게임에 대한 정보를 반환하는 메서드
@@ -45,8 +66,18 @@ public interface BoardGameService {
      *
      * @param id 평가할 보드게임 ID
      * @param userId 평점을 남길 사용자 ID
-     * @param rate 보드게임 평점
+     * @param request 보드게임 평점 DTO {@link RatingRequest}
      * @return {@link MessageResponse}
      */
-    MessageResponse rateBoardGame(Long id, Long userId, Double rate);
+    MessageResponse rateBoardGame(Long id, Long userId, RatingRequest request);
+
+    /**
+     * 보드게임을 검색한다.
+     *
+     * @param pageable 페이징 관련한 정보가 담긴 {@link Pageable}
+     * @param request 보드게임 검색 시의 검색 조건이 담긴 DTO {@link SearchBoardGameRequest}
+     * @return 검색 조건에 부합하는 보드게임에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO를
+     * 페이징을 적용하여 리턴함
+     */
+    PageResponse searchBoardGame(Pageable pageable, SearchBoardGameRequest request);
 }

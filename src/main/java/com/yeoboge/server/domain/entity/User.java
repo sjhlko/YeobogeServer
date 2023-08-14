@@ -7,7 +7,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -42,12 +41,8 @@ public class User {
     )
     private Set<Genre> favoriteGenres;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BookmarkedBoardGame> bookmarked;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @MapKeyColumn(name = "board_game_id")
-    private Map<Long, Rating> ratings;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friend> friends;
 
     /**
      * 기존 회원의 비밀번호만을 바꾸고자하는 비밀번호로 변경한다.
@@ -67,60 +62,5 @@ public class User {
     public void updateUserProfile(String path, String nickname){
         this.profileImagePath = path;
         this.nickname = nickname;
-    }
-
-    /**
-     * 찜한 보드게임 목록에 특정 보드게임을 추가함.
-     *
-     * @param boardGame 찜할 보드게임 {@link BoardGame}
-     */
-    public void addBookmark(BoardGame boardGame) {
-        BookmarkedBoardGame bookmark = new BookmarkedBoardGame();
-        bookmark.setParent(this, boardGame);
-        bookmarked.add(bookmark);
-    }
-
-    /**
-     * 찜한 보드게임 목록에서 특정 보드게임을 제거함.
-     *
-     * @param boardGame 제거할 보드게임 {@link BoardGame}
-     */
-    public void removeBookmark(BoardGame boardGame) {
-        BookmarkedBoardGame toRemove = null;
-        for (BookmarkedBoardGame bookmark : bookmarked) {
-            if (bookmark.getBoardGame().equals(boardGame)) {
-                toRemove = bookmark;
-                break;
-            }
-        }
-
-        if (toRemove != null) {
-            bookmarked.remove(toRemove);
-            toRemove.setParent(null, null);
-        }
-    }
-
-    /**
-     * 보드게임의 평점을 저장함.
-     *
-     * @param boardGame 평가할 보드게임
-     * @param rate 보드게임 평점
-     */
-    public void rateBoardGame(BoardGame boardGame, double rate) {
-        Rating rating = ratings.getOrDefault(boardGame.getId(), new Rating());
-        rating.setParent(this, boardGame);
-        rating.setRate(rate);
-        ratings.put(boardGame.getId(), rating);
-    }
-
-    /**
-     * 보드게임 평가를 취소함.
-     *
-     * @param boardGame 평가를 취소할 보드게임
-     */
-    public void removeRating(BoardGame boardGame) {
-        Rating toRemove = ratings.get(boardGame.getId());
-        ratings.remove(boardGame.getId());
-        toRemove.setParent(null, null);
     }
 }

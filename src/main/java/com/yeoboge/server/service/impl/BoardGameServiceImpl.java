@@ -9,7 +9,6 @@ import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.*;
-import com.yeoboge.server.repository.customRepository.BoardGameCustomRepository;
 import com.yeoboge.server.service.BoardGameService;
 import com.yeoboge.server.utils.CsvParsing;
 import com.yeoboge.server.utils.GetKorName;
@@ -262,8 +261,8 @@ public class BoardGameServiceImpl implements BoardGameService {
             Pageable pageable,
             SearchBoardGameRequest request
     ) {
-        Page<BoardGame> searchResults = boardGameCustomRepository
-                .findBoardGameBySearchOption(pageable,request);
+        Page<BoardGame> searchResults = boardGameRepository
+                .findBoardGameBySearchOption(pageable, request);
         Page<SearchBoardGameResponse> responses = searchResults.map(SearchBoardGameResponse::of);
         return responses;
     }

@@ -1,11 +1,11 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
@@ -79,6 +79,5 @@ public interface BoardGameService {
      * @return 검색 조건에 부합하는 보드게임에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO를
      * 페이징을 적용하여 리턴함
      */
-    Page<SearchBoardGameResponse> searchBoardGame(Pageable pageable,
-                                                  SearchBoardGameRequest request);
+    PageResponse searchBoardGame(Pageable pageable, SearchBoardGameRequest request);
 }

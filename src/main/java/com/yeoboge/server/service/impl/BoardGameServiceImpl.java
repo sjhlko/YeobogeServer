@@ -1,5 +1,6 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
@@ -40,7 +41,6 @@ public class BoardGameServiceImpl implements BoardGameService {
     private final MechanismOfBoardGameRepository mechanismOfBoardGameRepository;
     private final ThemeOfBoardGameRepository themeOfBoardGameRepository;
     private final GenreOfBoardGameRepository genreOfBoardGameRepository;
-    private final BoardGameCustomRepository boardGameCustomRepository;
 
     @Override
     public void saveBoardGame() throws IOException {
@@ -257,13 +257,13 @@ public class BoardGameServiceImpl implements BoardGameService {
     }
 
     @Override
-    public Page<SearchBoardGameResponse> searchBoardGame(
+    public PageResponse searchBoardGame(
             Pageable pageable,
             SearchBoardGameRequest request
     ) {
         Page<BoardGame> searchResults = boardGameRepository
                 .findBoardGameBySearchOption(pageable, request);
-        Page<SearchBoardGameResponse> responses = searchResults.map(SearchBoardGameResponse::of);
+        PageResponse responses = new PageResponse(searchResults.map(SearchBoardGameResponse::of));
         return responses;
     }
 

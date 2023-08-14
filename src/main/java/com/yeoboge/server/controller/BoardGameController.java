@@ -1,5 +1,6 @@
 package com.yeoboge.server.controller;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
@@ -8,7 +9,6 @@ import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.BoardGameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -93,11 +93,11 @@ public class BoardGameController {
      * @return 보드게임 검색 결과에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO
      */
     @GetMapping("/search")
-    public Response<Page<SearchBoardGameResponse>> searchBoardGame(
+    public Response<PageResponse> searchBoardGame(
             @PageableDefault(size = 20, sort = "name") Pageable pageable,
             SearchBoardGameRequest request
     ) {
-        Page<SearchBoardGameResponse> response = boardGameService.searchBoardGame(pageable,request);
+        PageResponse response = boardGameService.searchBoardGame(pageable, request);
         return Response.success(response);
     }
 }

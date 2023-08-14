@@ -1,5 +1,6 @@
 package com.yeoboge.server.repository.impl;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.entity.BoardGame;
@@ -45,13 +46,25 @@ public class BoardGameCustomRepositoryImpl extends QuerydslRepositorySupport imp
                 .selectFrom(boardGame)
                 .join(genreOfBoardGame)
                 .on(genreOfBoardGame.boardGame.id.eq(boardGame.id))
-                .where(genreOfBoardGame.genre.id.in(request.genre()))
-                .where(boardGame.playerMin.gt(request.player()-1))
+                .where(checkGenre(request))
+                .where(checkNumOfPlayer(request))
                 .where(boardGame.name.contains(request.searchWord()));
         long count = query.fetch().size();
         List<BoardGame> boardGames = Objects.requireNonNull(this.getQuerydsl())
                 .applyPagination(pageable,query).fetch();
         return new PageImpl<>(boardGames, pageable, count);
+    }
+
+    private BooleanExpression checkNumOfPlayer(SearchBoardGameRequest request){
+        if(request.player()==0)
+            return null;
+        return boardGame.playerMin.gt(request.player()-1);
+    }
+
+    private BooleanExpression checkGenre(SearchBoardGameRequest request){
+        if(request.genre().size()==0)
+            return null;
+        return genreOfBoardGame.genre.id.in(request.genre());
     }
 
 }

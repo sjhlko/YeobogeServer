@@ -2,6 +2,7 @@ package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.TotalRatingsResponse;
 import com.yeoboge.server.domain.dto.user.UserDetailResponse;
 import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.User;
@@ -12,6 +13,7 @@ import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.UserErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BookmarkRepository;
+import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +33,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -41,6 +43,8 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private BookmarkRepository bookmarkRepository;
+    @Mock
+    private RatingRepository ratingRepository;
     @Mock
     private S3FileUploadService s3FileUploadService;
 
@@ -263,6 +267,42 @@ class UserServiceTest {
         assertThat(actual.getNextPage()).isNull();
     }
 
+    @Test
+    @DisplayName("평가한 보드게임 별점 별로 조회 성공: 평가한 보드게임 존재함")
+    public void getMyAllRatingsSuccess() {
+        // given
+        Long userId = 1L;
+        Double ratedScore = 3.5;
+        List<Double> ratingGroup = List.of(ratedScore);
+        List<BoardGameThumbnailDto> boardGames = getBoardGameList();
+
+        // when
+        when(ratingRepository.getUserRatingGroup(userId)).thenReturn(ratingGroup);
+        when(ratingRepository.getRatingByUserId(userId, ratedScore)).thenReturn(boardGames);
+
+        TotalRatingsResponse actual = (TotalRatingsResponse) userService.getMyAllRatings(userId);
+
+        // then
+        assertThat(actual.getBoardGames().get(ratedScore)).isEqualTo(boardGames);
+    }
+
+    @Test
+    @DisplayName("평가한 보드게임 별점 별로 조회 성공: 평가한 보드게임 없음")
+    public void getMyEmptyRatingsSuccess() {
+        // given
+        Long userId = 1L;
+        List<Double> ratingGroup = List.of();
+
+        // when
+        when(ratingRepository.getUserRatingGroup(userId)).thenReturn(ratingGroup);
+
+        TotalRatingsResponse actual = (TotalRatingsResponse) userService.getMyAllRatings(userId);
+
+        // then
+        assertThat(actual.getBoardGames()).isEmpty();
+        verify(ratingRepository, never()).getRatingByUserId(any(), any());
+    }
+
     private MyBoardGamePageRequest setPageRequest(int page) {
         MyBoardGamePageRequest pageRequest = new MyBoardGamePageRequest();
         pageRequest.setPage(page);
@@ -273,13 +313,16 @@ class UserServiceTest {
     }
 
     private Page<BoardGameThumbnailDto> getBoardGamePage(Pageable pageable, int total) {
+        List<BoardGameThumbnailDto> contents = getBoardGameList();
+        return new PageImpl(contents, pageable, total);
+    }
+
+    private List<BoardGameThumbnailDto> getBoardGameList() {
         BoardGameThumbnailDto dto = new BoardGameThumbnailDto(
                 1L,
                 "board_game1",
                 "image_path"
         );
-        List<BoardGameThumbnailDto> contents = List.of(dto);
-
-        return new PageImpl(contents, pageable, total);
+        return List.of(dto);
     }
 }

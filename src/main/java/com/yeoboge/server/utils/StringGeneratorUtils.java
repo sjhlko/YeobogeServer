@@ -1,7 +1,5 @@
 package com.yeoboge.server.utils;
 
-import org.apache.commons.lang3.RandomStringUtils;
-
 /**
  * 랜덤 문자열을 생성하는 유틸 클래스
  */
@@ -25,22 +23,5 @@ public class StringGeneratorUtils {
             str += charSet[idx];
         }
         return str;
-    }
-
-    /**
-     * 사용자 간 친구 추가 시 사용되는 코드를 생성함.
-     *
-     * @return 친구 추가 용 코드
-     */
-    public static String generateUserCode() {
-        final char[] alphabets = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
-                'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-        StringBuilder stringBuilder = new StringBuilder();
-
-        int seed = (int) (alphabets.length * Math.random());
-        stringBuilder.append(alphabets[seed]);
-        stringBuilder.append(RandomStringUtils.randomNumeric(5));
-
-        return stringBuilder.toString();
     }
 }

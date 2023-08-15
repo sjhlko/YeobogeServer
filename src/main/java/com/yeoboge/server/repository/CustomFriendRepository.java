@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 /**
  * 친구 관련 {@code QueryDsl} 쿼리를 정의하는 인터페이스
  */
-public interface FriendRepository {
+public interface CustomFriendRepository {
     /**
      * 친구 목록을 페이징을 적용해 조회함.
      *

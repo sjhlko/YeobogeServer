@@ -5,7 +5,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
-import com.yeoboge.server.repository.FriendRepository;
+import com.yeoboge.server.repository.CustomFriendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,11 +19,11 @@ import static com.yeoboge.server.domain.entity.QFriend.friend;
 import static com.yeoboge.server.domain.entity.QFriendRequest.friendRequest;
 
 /**
- * {@link FriendRepository} 구현체
+ * {@link CustomFriendRepository} 구현체
  */
 @Repository
 @RequiredArgsConstructor
-public class FriendRepositoryImpl implements FriendRepository {
+public class CustomFriendRepositoryImpl implements CustomFriendRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override

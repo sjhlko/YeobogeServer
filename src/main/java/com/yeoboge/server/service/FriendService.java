@@ -1,6 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.PageResponse;
+import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -24,4 +25,12 @@ public interface FriendService {
      * @return 요청을 보낸 사용자의 DTO 리스트를 포함한 {@link PageResponse}
      */
     PageResponse getFriendRequests(Long id, Pageable pageable);
+
+    /**
+     * 친구 요청을 보내기 위해 특정 사용자의 닉네임으로 사용자를 검색함
+     *
+     * @param nickname 친구요청을 보내고픈 사용자의 닉네임
+     * @return 해당 닉네임을 가진 사용자의 정보를 담은 {@link FriendInfoDto} DTO
+     */
+    FriendInfoDto searchUserByNickname(String nickname);
 }

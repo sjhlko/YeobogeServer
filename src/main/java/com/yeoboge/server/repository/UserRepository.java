@@ -40,11 +40,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u.id FROM User u WHERE u.email = :email")
     Long findIdByEmail(final String email);
 
+    /**
+     * {@code nickname} 으로 엔티티를 조회함.
+     *
+     * @param nickname 조회할 계정 닉네임
+     * @return 해당 닉네임을 가진 {@link User}
+     */
+    Optional<User> findByNickname(final String nickname);
+
     default User getById(Long id) {
         return findById(id).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
     }
 
     default User getByEmail(String email) {
         return findByEmail(email).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    default User getByNickname(String nickname) {
+        return findByNickname(nickname).orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
     }
 }

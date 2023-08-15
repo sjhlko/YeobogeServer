@@ -1,6 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
+import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.FriendService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,6 +47,18 @@ public class FriendController {
             @PageableDefault(size = 5) Pageable pageable
     ) {
         PageResponse response = friendService.getFriendRequests(id, pageable);
+        return Response.success(response);
+    }
+
+    /**
+     * 친구 요청을 보내기 위해 특정 사용자의 닉네임으로 사용자를 검색함
+     *
+     * @param nickname 친구요청을 보내고픈 사용자의 닉네임
+     * @return 해당 닉네임을 가진 사용자의 정보를 담은 {@link FriendInfoDto} DTO
+     */
+    @GetMapping("/requests/search")
+    public Response<FriendInfoDto> searchUserByNickname(@RequestParam String nickname) {
+        FriendInfoDto response = friendService.searchUserByNickname(nickname);
         return Response.success(response);
     }
 }

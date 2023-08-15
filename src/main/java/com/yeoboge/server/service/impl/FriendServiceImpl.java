@@ -53,11 +53,7 @@ public class FriendServiceImpl implements FriendService {
         if (friendRequestRepository.existsByReceiverIdAndRequesterId(receiver.getId(), requester.getId())){
             throw new AppException(FriendRequestErrorCode.REQUEST_ALREADY_EXISTS);
         }
-        if (friendRepository.existsByFollowerIdAndOwnerId(receiver.getId(), requester.getId()) ||
-                friendRepository.existsByFollowerIdAndOwnerId(requester.getId(), receiver.getId())
-        ){
-            throw new AppException(FriendRequestErrorCode.IS_ALREADY_FRIEND);
-        }
+        checkFriend(receiver.getId(), requester.getId());
         FriendRequest friendRequest = FriendRequest.builder()
                 .requester(requester)
                 .receiver(receiver)
@@ -73,11 +69,7 @@ public class FriendServiceImpl implements FriendService {
         User requester = userRepository.getById(id);
         User receiver = userRepository.getById(currentUserId);
         FriendRequest friendRequest = friendRequestRepository.getByReceiverIdAndRequesterId(currentUserId, id);
-        if (friendRepository.existsByFollowerIdAndOwnerId(receiver.getId(), requester.getId()) ||
-                friendRepository.existsByFollowerIdAndOwnerId(requester.getId(), receiver.getId())
-        ){
-            throw new AppException(FriendRequestErrorCode.IS_ALREADY_FRIEND);
-        }
+        checkFriend(receiver.getId(), requester.getId());
         friendRequestRepository.delete(friendRequest);
         if(friendRequestRepository.existsByReceiverIdAndRequesterId(id, currentUserId)){
             friendRequestRepository.delete(friendRequestRepository.getByReceiverIdAndRequesterId(id,currentUserId));
@@ -90,5 +82,33 @@ public class FriendServiceImpl implements FriendService {
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 수락되었습니다.")
                 .build();
+    }
+
+    @Override
+    public MessageResponse denyFiendRequest(Long currentUserId, Long id) {
+        User requester = userRepository.getById(id);
+        User receiver = userRepository.getById(currentUserId);
+        FriendRequest friendRequest = friendRequestRepository.getByReceiverIdAndRequesterId(currentUserId, id);
+        checkFriend(receiver.getId(), requester.getId());
+        friendRequestRepository.delete(friendRequest);
+        return MessageResponse.builder()
+                .message("친구 요청이 성공적으로 거절되었습니다.")
+                .build();
+    }
+
+
+    /**
+     * 두 회원이 이미 회원인지 확인함
+     *
+     * @param followerId 친구인지 확인할 유저 중 한명
+     * @param ownerId 친구인지 확인할 유저 중 나머지 한명
+     * @throws {@link AppException}
+     */
+    private void checkFriend(Long followerId, Long ownerId){
+        if (friendRepository.existsByFollowerIdAndOwnerId(followerId, ownerId) ||
+                friendRepository.existsByFollowerIdAndOwnerId(ownerId, followerId)
+        ){
+            throw new AppException(FriendRequestErrorCode.IS_ALREADY_FRIEND);
+        }
     }
 }

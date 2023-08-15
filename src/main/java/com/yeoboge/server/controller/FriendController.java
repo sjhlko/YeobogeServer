@@ -85,11 +85,27 @@ public class FriendController {
      * @return 친구 요청 수락 성공 메세지를 담은 {@link MessageResponse}
      */
     @PostMapping("/requests/{id}")
-    public Response<MessageResponse> requestFriend(
+    public Response<MessageResponse> requestFriendRequest(
             @AuthenticationPrincipal Long currentUserId,
             @PathVariable Long id
     ) {
         MessageResponse response = friendService.acceptFriendRequest(currentUserId, id);
+        return Response.success(response);
+    }
+
+    /**
+     * 특정 사용자의 친구 요청 거절하기
+     *
+     * @param currentUserId 현재 로그인한 회원 ID
+     * @param id 친구 요청을 거절하고픈 유저의 id
+     * @return 친구 요청 거절 성공 메세지를 담은 {@link MessageResponse}
+     */
+    @DeleteMapping("/requests/{id}")
+    public Response<MessageResponse> denyFriendRequest(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id
+    ) {
+        MessageResponse response = friendService.denyFiendRequest(currentUserId, id);
         return Response.success(response);
     }
 }

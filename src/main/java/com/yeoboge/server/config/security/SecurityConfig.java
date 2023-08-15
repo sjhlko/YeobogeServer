@@ -33,6 +33,7 @@ public class SecurityConfig {
             /* Auth 관련 url */
             "/auths/register",
             "/auths/email-duplicate",
+            "/auths/nickname-duplicate",
             "/auths/login",
             "/auths/refresh",
             "/auths/temp-password",

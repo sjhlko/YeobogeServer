@@ -32,6 +32,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(final String email);
 
     /**
+     * {@code nickname}의 닉네임을 가진 사용자 존재 여부를 조회함.
+     *
+     * @param nickname 조회할 사용자 닉네임
+     * @return 해당 닉네임이 존재하면 true, 아니면 false
+     */
+    boolean existsByNickname(final String nickname);
+
+    /**
      * {@code email}로 엔티티의 {@code id}를 조회함.
      *
      * @param email 조회할 계정 이메일

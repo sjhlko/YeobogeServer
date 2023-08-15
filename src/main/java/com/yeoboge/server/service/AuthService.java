@@ -29,6 +29,15 @@ public interface AuthService {
     MessageResponse checkEmailDuplication(String email);
 
     /**
+     * 닉네임 중복 여부를 확인하고 중복일 경우 중복 예외를 던짐.
+     *
+     * @param nickname 확인할 사용자 닉네임
+     * @return {@link MessageResponse}
+     * @throws com.yeoboge.server.handler.AppException 해당 닉네임을 가진 사용자가 존재할 때 던짐.
+     */
+    MessageResponse checkNicknameDuplication(String nickname);
+
+    /**
      * 로그인 후 해당 사용자의 Access Token, Refresh Token을 발급함.
      * 로그인 실패 시 인증 예외를 던짐.
      *

@@ -2,6 +2,7 @@ package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.entity.Friend;
 import com.yeoboge.server.domain.entity.FriendRequest;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -64,6 +65,30 @@ public class FriendServiceImpl implements FriendService {
         friendRequestRepository.save(friendRequest);
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 전송되었습니다.")
+                .build();
+    }
+
+    @Override
+    public MessageResponse acceptFriendRequest(Long currentUserId, Long id) {
+        User requester = userRepository.getById(id);
+        User receiver = userRepository.getById(currentUserId);
+        FriendRequest friendRequest = friendRequestRepository.getByReceiverIdAndRequesterId(currentUserId, id);
+        if (friendRepository.existsByFollowerIdAndOwnerId(receiver.getId(), requester.getId()) ||
+                friendRepository.existsByFollowerIdAndOwnerId(requester.getId(), receiver.getId())
+        ){
+            throw new AppException(FriendRequestErrorCode.IS_ALREADY_FRIEND);
+        }
+        friendRequestRepository.delete(friendRequest);
+        if(friendRequestRepository.existsByReceiverIdAndRequesterId(id, currentUserId)){
+            friendRequestRepository.delete(friendRequestRepository.getByReceiverIdAndRequesterId(id,currentUserId));
+        }
+        Friend friend = Friend.builder()
+                .follower(requester)
+                .owner(receiver)
+                .build();
+        friendRepository.save(friend);
+        return MessageResponse.builder()
+                .message("친구 요청이 성공적으로 수락되었습니다.")
                 .build();
     }
 }

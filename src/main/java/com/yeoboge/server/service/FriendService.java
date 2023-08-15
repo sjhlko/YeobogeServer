@@ -36,5 +36,21 @@ public interface FriendService {
      */
     FriendInfoDto searchUserByNickname(String nickname);
 
+    /**
+     * 특정 사용자에게 친구 요청 보내기
+     *
+     * @param id 현재 로그인한 회원 ID
+     * @param request 친구 요청을 보내고픈 유저의 id를 담은 {@link RequestFriendRequest} VO
+     * @return 친구 요청 성공 메세지를 담은 {@link MessageResponse}
+     */
     MessageResponse requestFriend(Long id, RequestFriendRequest request);
+
+    /**
+     * 특정 사용자의 친구 요청 수락하기
+     *
+     * @param currentUserId 현재 로그인한 회원 ID
+     * @param id 친구 요청을 수락하고픈 유저의 id
+     * @return 친구 요청 수락 성공 메세지를 담은 {@link MessageResponse}
+     */
+    MessageResponse acceptFriendRequest(Long currentUserId, Long id);
 }

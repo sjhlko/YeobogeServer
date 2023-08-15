@@ -24,13 +24,10 @@ public record SocialRegisterRequest(String email, String nickname, List<Long> fa
      * @return {@link User} 엔티티
      */
     public User toEntity(Set<Genre> favoriteGenres) {
-        String userCode = StringGeneratorUtils.generateUserCode();
-
         return User.builder()
                 .email(email)
                 .nickname(nickname)
                 .role(Role.USER)
-                .userCode(userCode)
                 .favoriteGenres(favoriteGenres)
                 .build();
     }

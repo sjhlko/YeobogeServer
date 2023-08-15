@@ -32,14 +32,11 @@ public record RegisterRequest(
      * @return {@link User} 엔티티
      */
     public User toEntity(String hashedPassword, Set<Genre> favoriteGenres) {
-        String userCode = StringGeneratorUtils.generateUserCode();
-
         return User.builder()
                 .email(email)
                 .password(hashedPassword)
                 .nickname(nickname)
                 .role(Role.USER)
-                .userCode(userCode)
                 .favoriteGenres(favoriteGenres)
                 .build();
     }

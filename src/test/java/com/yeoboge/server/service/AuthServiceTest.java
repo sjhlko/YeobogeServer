@@ -92,7 +92,8 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_DUPLICATED.getMessage());
     }
 
     @Test
@@ -124,7 +125,8 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.checkEmailDuplication(email))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_DUPLICATED.getMessage());
     }
 
     @Test
@@ -230,11 +232,13 @@ public class AuthServiceTest {
         Tokens tokens = makeTokens(nonExistedAccessToken, refreshToken);
 
         // when
-        when(tokenRepository.getByToken(nonExistedAccessToken)).thenThrow(new AppException());
+        when(tokenRepository.getByToken(nonExistedAccessToken))
+                .thenThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID));
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     @Test
@@ -251,7 +255,8 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     @Test
@@ -269,7 +274,8 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
 

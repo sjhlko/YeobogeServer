@@ -43,7 +43,7 @@ public class OAuthServiceTest {
     private JwtProvider jwtProvider;
 
     @Test
-    @DisplayName("소셜 로그인으로 회원가입 성공 단위 테스트")
+    @DisplayName("소셜 로그인으로 회원가입 성공")
     public void socialRegisterSuccess() {
         // given
         long userId = 1L;
@@ -72,7 +72,7 @@ public class OAuthServiceTest {
     }
 
     @Test
-    @DisplayName("소셜 로그인 성공 단위 테스트")
+    @DisplayName("소셜 로그인 성공")
     public void socialLoginSuccess() {
         // given
         String email = "test_email";

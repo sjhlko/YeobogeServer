@@ -55,7 +55,6 @@ public class AuthServiceTest {
     public void registerSuccess() {
         // given
         Long userId = 1L;
-        String userCode = "user_code";
         String hashedPassword = "hashed_password";
         List<Genre> favoriteGenres = List.of(
                 Genre.builder().id(1L).build(),
@@ -67,7 +66,6 @@ public class AuthServiceTest {
                 .password(hashedPassword)
                 .nickname(request.nickname())
                 .favoriteGenres(new HashSet<>(favoriteGenres))
-                .userCode(userCode)
                 .role(Role.USER)
                 .build();
 

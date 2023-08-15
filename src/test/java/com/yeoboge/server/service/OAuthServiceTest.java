@@ -46,7 +46,6 @@ public class OAuthServiceTest {
     public void socialRegisterSuccess() {
         // given
         long userId = 1L;
-        String userCode = "user_code";
         List<Genre> favoriteGenres = List.of(
                 Genre.builder().id(1L).name("전략").build(),
                 Genre.builder().id(2L).name("카드").build()
@@ -56,7 +55,6 @@ public class OAuthServiceTest {
                 .email(request.email())
                 .nickname(request.nickname())
                 .favoriteGenres(new HashSet<>(favoriteGenres))
-                .userCode(userCode)
                 .role(Role.USER)
                 .build();
         Tokens expected = makeTokens();

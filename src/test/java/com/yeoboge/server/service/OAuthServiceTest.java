@@ -107,6 +107,25 @@ public class OAuthServiceTest {
                 .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
     }
 
+    @Test
+    @DisplayName("소셜 로그인 실패: 비밀번호로 로그인이 필요한 회원")
+    public void socialLoginFailUserWithPassword() {
+        // given
+        String email = "test_email";
+        User user = User.builder()
+                .password("password")
+                .build();
+        SocialLoginRequest request = new SocialLoginRequest(email);
+
+        // when
+        when(userRepository.getByEmail(email)).thenReturn(user);
+
+        // then
+        assertThatThrownBy(() -> oAuthService.socialLogin(request))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.BAD_CREDENTIAL.getMessage());
+    }
+
     private SocialRegisterRequest makeRegisterRequest() {
         String email = "test_email";
         String nickname = "test_nick";

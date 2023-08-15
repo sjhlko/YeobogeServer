@@ -7,6 +7,7 @@ import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
@@ -74,15 +75,14 @@ public class OAuthServiceTest {
     @DisplayName("소셜 로그인 성공 단위 테스트")
     public void socialLoginSuccess() {
         // given
-        long userId = 1L;
         String email = "test_email";
         SocialLoginRequest request = new SocialLoginRequest(email);
+        User user = User.builder().id(1L).build();
         Tokens expected = makeTokens();
 
         // when
-        when(userRepository.existsByEmail(email)).thenReturn(true);
-        when(userRepository.findIdByEmail(email)).thenReturn(userId);
-        when(jwtProvider.generateTokens(userId)).thenReturn(expected);
+        when(userRepository.getByEmail(email)).thenReturn(user);
+        when(jwtProvider.generateTokens(user.getId())).thenReturn(expected);
 
         Tokens actual = oAuthService.socialLogin(request);
 
@@ -91,18 +91,20 @@ public class OAuthServiceTest {
     }
 
     @Test
-    @DisplayName("소셜 로그인 실패 단위 테스트")
-    public void socialLoginFail() {
+    @DisplayName("소셜 로그인 실패: 가입되지 않은 회원")
+    public void socialLoginFailNonRegisteredUser() {
         // given
         String email = "test_email";
         SocialLoginRequest request = new SocialLoginRequest(email);
 
         // when
-        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(userRepository.getByEmail(email))
+                .thenThrow(new AppException(AuthenticationErrorCode.USER_NOT_FOUND));
 
         // then
         assertThatThrownBy(() -> oAuthService.socialLogin(request))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_NOT_FOUND.getMessage());
     }
 
     private SocialRegisterRequest makeRegisterRequest() {

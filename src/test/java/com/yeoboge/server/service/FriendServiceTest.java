@@ -88,6 +88,66 @@ public class FriendServiceTest {
         assertThat(actual.getNextPage()).isNull();
     }
 
+    @Test
+    @DisplayName("친구 요청 목록 조회 성공: 첫 번째 페이지")
+    public void getFriendsRequestsFirstPageSuccess() {
+        // given
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 1);
+        List<FriendInfoDto> friends = getFriendDtoList();
+        Page page = getFriendDtoPage(pageable, 5);
+
+        // when
+        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+
+        PageResponse actual = friendService.getFriendRequests(userId, pageable);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(friends);
+        assertThat(actual.getPrevPage()).isNull();
+        assertThat(actual.getNextPage()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("친구 요청 목록 조회 성공: 중간 페이지")
+    public void getFriendsRequestsMiddlePageSuccess() {
+        // given
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(1, 1);
+        List<FriendInfoDto> friends = getFriendDtoList();
+        Page page = getFriendDtoPage(pageable, 5);
+
+        // when
+        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+
+        PageResponse actual = friendService.getFriendRequests(userId, pageable);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(friends);
+        assertThat(actual.getPrevPage()).isNotNull();
+        assertThat(actual.getNextPage()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("친구 요청 목록 조회 성공: 마지막 페이지")
+    public void getFriendsRequestsLastPageSuccess() {
+        // given
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(4, 1);
+        List<FriendInfoDto> friends = getFriendDtoList();
+        Page page = getFriendDtoPage(pageable, 5);
+
+        // when
+        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+
+        PageResponse actual = friendService.getFriendRequests(userId, pageable);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(friends);
+        assertThat(actual.getPrevPage()).isNotNull();
+        assertThat(actual.getNextPage()).isNull();
+    }
+
     private Page<FriendInfoDto> getFriendDtoPage(Pageable pageable, int total) {
         List<FriendInfoDto> content = getFriendDtoList();
         return new PageImpl<>(content, pageable, total);

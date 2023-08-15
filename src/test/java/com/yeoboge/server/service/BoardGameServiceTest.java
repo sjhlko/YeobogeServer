@@ -1,5 +1,6 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
 import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
 import com.yeoboge.server.domain.entity.Rating;
@@ -107,5 +108,47 @@ public class BoardGameServiceTest {
         assertThatThrownBy(() -> boardGameService.removeBookmark(boardGameId, userId))
                 .isInstanceOf(AppException.class)
                 .hasMessageContaining(CommonErrorCode.NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("보드게임 평가 성공: 보드게임 평가 저장")
+    public void rateUnratedBoardGameSuccess() {
+        // given
+        Double score = 3.5;
+        BoardGame boardGame = BoardGame.builder().id(1L).build();
+        User user = User.builder().id(1L).build();
+        RatingRequest request = new RatingRequest(score);
+        Rating rating = new Rating();
+
+        // when
+        when(boardGameRepository.getById(1L)).thenReturn(boardGame);
+        when(userRepository.getById(1L)).thenReturn(user);
+        when(ratingRepository.getOrNewByParentId(1L, 1L)).thenReturn(rating);
+
+        boardGameService.rateBoardGame(boardGame.getId(), user.getId(), request);
+
+        // then
+        verify(ratingRepository, times(1)).save(rating);
+    }
+
+    @Test
+    @DisplayName("보드게임 평가 성공: 기존 평가한 보드게임 평가 취소")
+    public void updateRatingSuccess() {
+        // given
+        Double newScore = 0.;
+        BoardGame boardGame = BoardGame.builder().id(1L).build();
+        User user = User.builder().id(1L).build();
+        RatingRequest request = new RatingRequest(newScore);
+        Rating rating = new Rating();
+
+        // when
+        when(boardGameRepository.getById(1L)).thenReturn(boardGame);
+        when(userRepository.getById(1L)).thenReturn(user);
+        when(ratingRepository.getByParentId(user.getId(), boardGame.getId())).thenReturn(rating);
+
+        boardGameService.rateBoardGame(boardGame.getId(), user.getId(), request);
+
+        // then
+        verify(ratingRepository, times(1)).delete(rating);
     }
 }

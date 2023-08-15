@@ -303,6 +303,69 @@ class UserServiceTest {
         verify(ratingRepository, never()).getRatingByUserId(any(), any());
     }
 
+    @Test
+    @DisplayName("특정 별점으로 평가한 보드게임 조회 성공: 첫 번째 페이지")
+    public void getMyRatingByScoreFirstPageSuccess() {
+        // given
+        Long userId = 1L;
+        Double score = 3.5;
+        MyBoardGamePageRequest pageRequest = setPageRequest(0);
+        Page page = getBoardGamePage(pageRequest.of(), 5);
+        PageResponse expected = new PageResponse(page);
+
+        // when
+        when(ratingRepository.getRatingsByUserId(userId, score, pageRequest.of())).thenReturn(page);
+
+        PageResponse actual = userService.getMyRatingsByScore(userId, score, pageRequest);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(expected.getContent());
+        assertThat(actual.getPrevPage()).isNull();
+        assertThat(actual.getNextPage()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("특정 별점으로 평가한 보드게임 조회 성공: 중간 페이지")
+    public void getMyRatingsByScoreMiddlePageSuccess() {
+        // given
+        Long userId = 1L;
+        Double score = 3.5;
+        MyBoardGamePageRequest pageRequest = setPageRequest(1);
+        Page page = getBoardGamePage(pageRequest.of(), 5);
+        PageResponse expected = new PageResponse(page);
+
+        // when
+        when(ratingRepository.getRatingsByUserId(userId, score, pageRequest.of())).thenReturn(page);
+
+        PageResponse actual = userService.getMyRatingsByScore(userId, score, pageRequest);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(expected.getContent());
+        assertThat(actual.getPrevPage()).isNotNull();
+        assertThat(actual.getNextPage()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("특정 별점으로 평가한 보드게임 조회 성공: 마지막 페이지")
+    public void getMyRatingsByScoreLasePageSuccess() {
+        // given
+        Long userId = 1L;
+        Double score = 3.5;
+        MyBoardGamePageRequest pageRequest = setPageRequest(4);
+        Page page = getBoardGamePage(pageRequest.of(), 5);
+        PageResponse expected = new PageResponse(page);
+
+        // when
+        when(ratingRepository.getRatingsByUserId(userId, score, pageRequest.of())).thenReturn(page);
+
+        PageResponse actual = userService.getMyRatingsByScore(userId, score, pageRequest);
+
+        // then
+        assertThat(actual.getContent()).isEqualTo(expected.getContent());
+        assertThat(actual.getPrevPage()).isNotNull();
+        assertThat(actual.getNextPage()).isNull();
+    }
+
     private MyBoardGamePageRequest setPageRequest(int page) {
         MyBoardGamePageRequest pageRequest = new MyBoardGamePageRequest();
         pageRequest.setPage(page);

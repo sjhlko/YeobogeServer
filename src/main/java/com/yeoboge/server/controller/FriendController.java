@@ -2,16 +2,15 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
+import com.yeoboge.server.domain.vo.user.RequestFriendRequest;
 import com.yeoboge.server.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 친구 관련 API 엔드포인트에 대해 매핑되는 Rest Controller
@@ -59,6 +58,22 @@ public class FriendController {
     @GetMapping("/requests/search")
     public Response<FriendInfoDto> searchUserByNickname(@RequestParam String nickname) {
         FriendInfoDto response = friendService.searchUserByNickname(nickname);
+        return Response.success(response);
+    }
+
+    /**
+     * 특정 사용자에게 친구 요청 보내기
+     *
+     * @param id 현재 로그인한 회원 ID
+     * @param request 친구 요청을 보내고픈 유저의 id를 담은 {@link RequestFriendRequest} VO
+     * @return 친구 요청 성공 메세지를 담은 {@link MessageResponse}
+     */
+    @PostMapping("/requests")
+    public Response<MessageResponse> requestFriend(
+            @AuthenticationPrincipal Long id,
+            @RequestBody RequestFriendRequest request
+    ) {
+        MessageResponse response = friendService.requestFriend(id, request);
         return Response.success(response);
     }
 }

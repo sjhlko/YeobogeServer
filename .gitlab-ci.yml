@@ -1,5 +1,3 @@
-image: gradle:jdk17
-
 stages:
   - test
   - publish
@@ -19,6 +17,7 @@ cache:
     - .gradle/caches
 
 test:
+  image: gradle:jdk17
   stage: test
   script:
     - ./gradlew check

@@ -1,5 +1,6 @@
 package com.yeoboge.server.domain.dto.friend;
 
+import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
 
 /**
@@ -11,4 +12,11 @@ import lombok.Builder;
  */
 @Builder
 public record FriendInfoDto(Long id, String nickname, String imagePath) {
+    public static FriendInfoDto of(User user){
+        return FriendInfoDto.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .imagePath(user.getProfileImagePath())
+                .build();
+    }
 }

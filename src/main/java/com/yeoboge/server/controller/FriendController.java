@@ -1,15 +1,16 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
+import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
+import com.yeoboge.server.domain.vo.user.RequestFriendRequest;
 import com.yeoboge.server.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 친구 관련 API 엔드포인트에 대해 매핑되는 Rest Controller
@@ -45,6 +46,66 @@ public class FriendController {
             @PageableDefault(size = 5) Pageable pageable
     ) {
         PageResponse response = friendService.getFriendRequests(id, pageable);
+        return Response.success(response);
+    }
+
+    /**
+     * 친구 요청을 보내기 위해 특정 사용자의 닉네임으로 사용자를 검색함
+     *
+     * @param nickname 친구요청을 보내고픈 사용자의 닉네임
+     * @return 해당 닉네임을 가진 사용자의 정보를 담은 {@link FriendInfoDto} DTO
+     */
+    @GetMapping("/requests/search")
+    public Response<FriendInfoDto> searchUserByNickname(@RequestParam String nickname) {
+        FriendInfoDto response = friendService.searchUserByNickname(nickname);
+        return Response.success(response);
+    }
+
+    /**
+     * 특정 사용자에게 친구 요청 보내기
+     *
+     * @param id 현재 로그인한 회원 ID
+     * @param request 친구 요청을 보내고픈 유저의 id를 담은 {@link RequestFriendRequest} VO
+     * @return 친구 요청 성공 메세지를 담은 {@link MessageResponse}
+     */
+    @PostMapping("/requests")
+    public Response<MessageResponse> requestFriend(
+            @AuthenticationPrincipal Long id,
+            @RequestBody RequestFriendRequest request
+    ) {
+        MessageResponse response = friendService.requestFriend(id, request);
+        return Response.success(response);
+    }
+
+    /**
+     * 특정 사용자의 친구 요청 수락하기
+     *
+     * @param currentUserId 현재 로그인한 회원 ID
+     * @param id 친구 요청을 수락하고픈 유저의 id
+     * @return 친구 요청 수락 성공 메세지를 담은 {@link MessageResponse}
+     */
+    @PostMapping("/requests/{id}")
+    public Response<MessageResponse> requestFriendRequest(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id
+    ) {
+        MessageResponse response = friendService.acceptFriendRequest(currentUserId, id);
+        return Response.success(response);
+    }
+
+    /**
+     * 특정 사용자의 친구 요청 거절하기
+     *
+     * @param currentUserId 현재 로그인한 회원 ID
+     * @param id 친구 요청을 거절하고픈 유저의 id
+     * @return 친구 요청 거절 성공 메세지를 담은 {@link MessageResponse}
+     */
+    @DeleteMapping("/requests/{id}")
+    public Response<MessageResponse> denyFriendRequest(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id
+    ) {
+        MessageResponse response = friendService.denyFiendRequest(currentUserId, id);
         return Response.success(response);
     }
 }

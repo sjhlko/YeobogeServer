@@ -3,6 +3,7 @@ package com.yeoboge.server.service;
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
 import com.yeoboge.server.repository.FriendRepository;
+import com.yeoboge.server.repository.FriendRequestRepository;
 import com.yeoboge.server.service.impl.FriendServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ public class FriendServiceTest {
 
     @Mock
     private FriendRepository friendRepository;
+    @Mock
+    private FriendRequestRepository friendRequestRepository;
 
     @Test
     @DisplayName("친구 목록 조회 성공: 첫 번째 페이지")
@@ -98,7 +101,7 @@ public class FriendServiceTest {
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
-        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+        when(friendRequestRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
 
         PageResponse actual = friendService.getFriendRequests(userId, pageable);
 
@@ -118,7 +121,7 @@ public class FriendServiceTest {
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
-        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+        when(friendRequestRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
 
         PageResponse actual = friendService.getFriendRequests(userId, pageable);
 
@@ -138,7 +141,7 @@ public class FriendServiceTest {
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
-        when(friendRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
+        when(friendRequestRepository.getFriendRequestsPage(userId, pageable)).thenReturn(page);
 
         PageResponse actual = friendService.getFriendRequests(userId, pageable);
 

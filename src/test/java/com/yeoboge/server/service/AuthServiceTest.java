@@ -51,11 +51,10 @@ public class AuthServiceTest {
     private MailService mailService;
 
     @Test
-    @DisplayName("회원가입 성공 단위 테스트")
+    @DisplayName("회원가입 성공")
     public void registerSuccess() {
         // given
         Long userId = 1L;
-        String userCode = "user_code";
         String hashedPassword = "hashed_password";
         List<Genre> favoriteGenres = List.of(
                 Genre.builder().id(1L).build(),
@@ -67,7 +66,6 @@ public class AuthServiceTest {
                 .password(hashedPassword)
                 .nickname(request.nickname())
                 .favoriteGenres(new HashSet<>(favoriteGenres))
-                .userCode(userCode)
                 .role(Role.USER)
                 .build();
 
@@ -83,7 +81,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("중복 이메일 회원가입 실패 단위 테스트")
+    @DisplayName("회원가입 실패: 이메일 중복")
     public void registerFailureByExistedEmail() {
         // given
         String email = "test@gmail.com";
@@ -94,11 +92,12 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_DUPLICATED.getMessage());
     }
 
     @Test
-    @DisplayName("중복 이메일 확인 단위 테스트")
+    @DisplayName("이메일 중복 체크 성공: 사용 가능한 이메일")
     public void checkEmailAvailableSuccess() {
         // given
         String email = "not@existed.com";
@@ -116,8 +115,8 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 이메일로 중복 확인 단위 테스트")
-    public void checkEmailAvailableFail() {
+    @DisplayName("이메일 중복 체크 성공: 사용 불가한 이메일")
+    public void checkEmailDuplicationSuccess() {
         // given
         String email = "already@existed.com";
 
@@ -126,11 +125,12 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.checkEmailDuplication(email))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.USER_DUPLICATED.getMessage());
     }
 
     @Test
-    @DisplayName("로그인 성공 단위 테스트")
+    @DisplayName("로그인 성공")
     public void loginSuccess() {
         // given
         long userId = 1L;
@@ -152,7 +152,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 단위 테스트")
+    @DisplayName("로그인 실패: 잘못된 비밀번호")
     public void wrongPasswordFail() {
         // given
         String username = "test@gmail.com";
@@ -168,7 +168,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("로그아웃 성공 단위 테스트")
+    @DisplayName("로그아웃 성공")
     public void logoutSuccess() {
         // given
         String header = "Bearer access_token";
@@ -187,7 +187,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("로그아웃 실패 단위 테스트")
+    @DisplayName("로그아웃 실패: 유효하지 않은 액세스 토큰 사용")
     public void logoutFail() {
         // given
         String header = "Bearer invalid_access_token";
@@ -202,7 +202,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("액세스 토큰 재발급 성공 단위 테스트")
+    @DisplayName("액세스 토큰 재발급 성공")
     public void refreshTokensSuccess() {
         // given
         String prevAccessToken = "previous_access_token";
@@ -224,7 +224,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("잘못된 액세스 토큰 재발급 실패 단위 테스트")
+    @DisplayName("액세스 토큰 재발급 실패: 기존 액세스 토큰과 일치하지 않음")
     public void refreshTokensFailByWrongToken() {
         // given
         String nonExistedAccessToken = "non_existed_access_token";
@@ -232,15 +232,17 @@ public class AuthServiceTest {
         Tokens tokens = makeTokens(nonExistedAccessToken, refreshToken);
 
         // when
-        when(tokenRepository.getByToken(nonExistedAccessToken)).thenThrow(new AppException());
+        when(tokenRepository.getByToken(nonExistedAccessToken))
+                .thenThrow(new AppException(AuthenticationErrorCode.TOKEN_INVALID));
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     @Test
-    @DisplayName("리프레시 토큰 검증 실패 단위 테스트")
+    @DisplayName("액세스 토큰 재발급 실패: 기존 리프레시 토큰과 일치하지 않음")
     public void refreshTokensFailByDifferentToken() {
         // given
         String accessToken = "access_token";
@@ -253,11 +255,12 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
     @Test
-    @DisplayName("만료된 리프레시 토큰 재발급 실패 단위 테스트")
+    @DisplayName("액세스 토큰 재발급 실패: 만료된 리프레시 토큰")
     public void refreshTokensFailByExpiredToken() {
         // given
         String accessToken = "access_token";
@@ -271,7 +274,8 @@ public class AuthServiceTest {
 
         // then
         assertThatThrownBy(() -> authService.refreshTokens(tokens))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
 

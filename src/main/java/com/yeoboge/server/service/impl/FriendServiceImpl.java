@@ -24,8 +24,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
-    private final FriendRepository friendRepository;
     private final UserRepository userRepository;
+    private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
 
     @Override
@@ -36,7 +36,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public PageResponse getFriendRequests(Long id, Pageable pageable) {
-        Page requestPage = friendRepository.getFriendRequestsPage(id, pageable);
+        Page requestPage = friendRequestRepository.getFriendRequestsPage(id, pageable);
         return new PageResponse(requestPage);
     }
 

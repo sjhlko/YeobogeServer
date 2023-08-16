@@ -15,7 +15,6 @@ import com.yeoboge.server.service.AuthService;
 import com.yeoboge.server.service.MailService;
 import com.yeoboge.server.utils.StringGeneratorUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email()))
-            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
+            throw new AppException(AuthenticationErrorCode.USER_DUPLICATED);
 
         List<Genre> favoriteGenres = genreRepository.findAllById(request.favoriteGenreIds());
         User newUser = request.toEntity(
@@ -57,10 +56,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse checkEmailDuplication(String email) {
         if (userRepository.existsByEmail(email))
-            throw new AppException(AuthenticationErrorCode.EXISTED_USERNAME);
+            throw new AppException(AuthenticationErrorCode.USER_DUPLICATED);
 
         return MessageResponse.builder()
                 .message(email + ": 사용 가능한 이메일")
+                .build();
+    }
+
+    @Override
+    public MessageResponse checkNicknameDuplication(String nickname) {
+        if (userRepository.existsByNickname(nickname))
+            throw new AppException(AuthenticationErrorCode.USER_DUPLICATED);
+
+        return MessageResponse.builder()
+                .message(nickname + ": 사용 가능한 닉네임")
                 .build();
     }
 

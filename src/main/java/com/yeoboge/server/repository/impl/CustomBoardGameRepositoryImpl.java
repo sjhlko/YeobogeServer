@@ -61,7 +61,7 @@ public class CustomBoardGameRepositoryImpl extends QuerydslRepositorySupport imp
     }
 
     private BooleanExpression checkGenre(SearchBoardGameRequest request){
-        if (request.genre().size() == 0) return null;
+        if (request.genre()==null) return null;
         return genreOfBoardGame.genre.id.in(request.genre());
     }
 }

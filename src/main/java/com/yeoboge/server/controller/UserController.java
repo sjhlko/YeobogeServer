@@ -30,7 +30,7 @@ public class UserController {
      * 회원 정보를 조회하는 API
      *
      * @param id 현재 로그인한 회원의 인덱스
-     * @return 회원의 이메일, 닉네임, 유저 코드, 프로필 사진 링크에 대한 {@link UserDetailResponse} VO, HTTP 200 응답
+     * @return 회원의 닉네임, 프로필 사진 링크에 대한 {@link UserDetailResponse} VO, HTTP 200 응답
      */
     @GetMapping("")
     public Response<UserDetailResponse> getProfile(@AuthenticationPrincipal Long id) {

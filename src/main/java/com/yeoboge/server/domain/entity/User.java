@@ -25,8 +25,6 @@ public class User {
     private String email;
     private String password;
     private String nickname;
-    @Column(name = "user_code")
-    private String userCode;
     @Convert(converter = UserRoleConverter.class)
     private Role role;
     private LocalDateTime deletedAt;

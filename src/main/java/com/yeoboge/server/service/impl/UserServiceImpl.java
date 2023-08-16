@@ -9,6 +9,8 @@ import com.yeoboge.server.domain.dto.user.UserUpdateRequest;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.MyBoardGamePageRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BookmarkRepository;
 import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -42,6 +44,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public MessageResponse updateUser(MultipartFile file, UserUpdateRequest request, Long id) {
         User existedUser = userRepository.getById(id);
+        if (!request.nickname().equals(existedUser.getNickname()) &&
+                userRepository.existsByNickname(request.nickname()))
+            throw new AppException(AuthenticationErrorCode.USER_DUPLICATED);
         if (file!=null) existedUser.updateUserProfile(s3FileUploadService.uploadFile(file), request.nickname());
         else if (request.isChanged())
             existedUser.updateUserProfile(null, request.nickname());

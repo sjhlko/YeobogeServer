@@ -47,6 +47,18 @@ public class AuthController {
     }
 
     /**
+     * 닉네임 중복 여부 확인 API
+     *
+     * @param nickname 중복 여부를 확인할 사용자 닉네임
+     * @return 해당 닉네임이 중복되지 않을 경우 HTTP 200 응답
+     */
+    @GetMapping("/nickname-duplicate")
+    public Response<MessageResponse> checkNicknameDuplication(@RequestParam String nickname) {
+        MessageResponse response = authService.checkNicknameDuplication(nickname);
+        return Response.success(response);
+    }
+
+    /**
      * 로그인 API
      *
      * @param request 로그인할 계정의 {@link LoginRequest} VO

@@ -1,5 +1,9 @@
 package com.yeoboge.server.handler;
 
+import com.yeoboge.server.config.security.JwtProvider;
+import com.yeoboge.server.service.ChatMessageService;
+import com.yeoboge.server.service.ChatRoomService;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -15,15 +19,25 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class WebSocketHandler extends TextWebSocketHandler {
-    List<HashMap<String, Object>> sessionList = new ArrayList<>(); //웹소켓 세션을 담아둘 리스트 ---roomListSessions
+    private final List<HashMap<String, Object>> sessionList = new ArrayList<>(); //웹소켓 세션을 담아둘 리스트 ---roomListSessions
+    private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageService;
+    private final JwtProvider jwtProvider;
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message){
         //메시지 발송
-        String msg = message.getPayload();
-        JSONObject obj = jsonToObjectParser(msg);
+        String payload = message.getPayload();
+        JSONObject obj = jsonToObjectParser(payload);
+        String msg = (String) obj.get("msg");
 
-        String roomId = (String) obj.get("roomId");
+        String targetUserId = (String) obj.get("targetUserId");
+        String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
+        Long currentUserId = jwtProvider.parseUserId(token);
+        String roomId = String.valueOf(chatRoomService.findChatRoomIdByUsers(
+                currentUserId,
+                Long.parseLong(targetUserId)));
         //여기서 룸 아이디 유효성 검증 또는 사람 아이디로 받고 검증
         HashMap<String, Object> temp = new HashMap<>();
         if(sessionList.size() > 0) {
@@ -51,6 +65,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
+        chatMessageService.saveMessage(msg, Long.valueOf(roomId),currentUserId);
     }
 
     @Override
@@ -59,8 +74,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
         super.afterConnectionEstablished(session);
         boolean flag = false;
         String url = session.getUri().toString();
-        System.out.println(url);
-        String roomNumber = url.split("/chats/")[1];
+        String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
+        Long currentUserId = jwtProvider.parseUserId(token);
+        String targetUserId = url.split("/chats/")[1];
+        String roomNumber = String.valueOf(chatRoomService.findChatRoomIdByUsers(
+                currentUserId,
+                Long.parseLong(targetUserId)));
         int idx = sessionList.size(); //방의 사이즈를 조사한다.
         if(sessionList.size() > 0) {
             for(int i=0; i<sessionList.size(); i++) {

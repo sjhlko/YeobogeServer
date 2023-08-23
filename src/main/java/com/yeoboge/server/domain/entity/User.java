@@ -7,6 +7,8 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -41,6 +43,13 @@ public class User {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Friend> friends;
+
+    @OneToMany(mappedBy = "currentUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<ChatRoom> currentUserChatRooms = new ArrayList<>();
+    @OneToMany(mappedBy = "targetUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<ChatRoom> targetUserChatRooms  = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<ChatMessage> chatMessages  = new ArrayList<>();
 
     /**
      * 기존 회원의 비밀번호만을 바꾸고자하는 비밀번호로 변경한다.

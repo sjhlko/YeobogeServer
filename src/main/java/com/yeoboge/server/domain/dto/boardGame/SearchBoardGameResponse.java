@@ -43,6 +43,7 @@ public record SearchBoardGameResponse(
                 .playerMax(boardGame.getPlayerMax())
                 .playerMin(boardGame.getPlayerMin())
                 .genre(getGenreOf(boardGame))
+                .weight(boardGame.getWeight())
                 .build();
     }
 

@@ -14,7 +14,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,8 +34,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
         String payload = message.getPayload();
         JSONObject obj = jsonToObjectParser(payload);
         String msg = (String) obj.get("msg");
+        String timeStamp = (String) obj.get("timeStamp");
         String url = session.getUri().toString();
-        String targetUserId = url.split("/chats/")[1];
+        String targetUserId = url.split("/chats/send-message/")[1];
         String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
         Long currentUserId = jwtProvider.parseUserId(token);
         String roomId = String.valueOf(chatRoomService.findChatRoomIdByUsers(
@@ -67,7 +70,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
-        chatMessageService.saveMessage(msg, Long.valueOf(roomId),currentUserId);
+        chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId);
     }
 
     @Override
@@ -78,7 +81,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         String url = session.getUri().toString();
         String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
         Long currentUserId = jwtProvider.parseUserId(token);
-        String targetUserId = url.split("/chats/")[1];
+        String targetUserId = url.split("/chats/send-message/")[1];
         String roomNumber = String.valueOf(chatRoomService.findChatRoomIdByUsers(
                 currentUserId,
                 Long.parseLong(targetUserId)));

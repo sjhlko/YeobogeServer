@@ -25,19 +25,21 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
+
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message){
         //메시지 발송
         String payload = message.getPayload();
         JSONObject obj = jsonToObjectParser(payload);
         String msg = (String) obj.get("msg");
-
-        String targetUserId = (String) obj.get("targetUserId");
+        String url = session.getUri().toString();
+        String targetUserId = url.split("/chats/")[1];
         String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
         Long currentUserId = jwtProvider.parseUserId(token);
         String roomId = String.valueOf(chatRoomService.findChatRoomIdByUsers(
                 currentUserId,
                 Long.parseLong(targetUserId)));
+        obj.put("sender", currentUserId);
         //여기서 룸 아이디 유효성 검증 또는 사람 아이디로 받고 검증
         HashMap<String, Object> temp = new HashMap<>();
         if(sessionList.size() > 0) {

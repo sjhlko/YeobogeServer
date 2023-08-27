@@ -49,6 +49,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         User currentUser = userRepository.getById(currentUserId);
         User targetuser = userRepository.getById(id);
         Optional<ChatRoom> chatRoom = chatRoomRepository.findByCurrentUserAndTargetUser(currentUser, targetuser);
+        if (chatRoom.isEmpty()) chatRoom = chatRoomRepository.findByCurrentUserAndTargetUser(targetuser,currentUser);
         if (chatRoom.isEmpty()) throw new AppException(ChattingErrorCode.CHAT_ROOM_NOT_FOUND);
         Page<ChatMessage> results = chatMessageRepository.findAllByChatRoom(pageable,chatRoom.get());
         PageResponse responses = new PageResponse(

@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -36,8 +35,6 @@ public class ChatMessage {
     private String message;
     @Enumerated(EnumType.STRING)
     private IsRead isRead;
-    @CreatedDate
-    @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 }

@@ -14,6 +14,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final WebSocketHandler socketHandler;
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(socketHandler, "/chats/{userId}");
+        registry.addHandler(socketHandler, "/chats/send-message/{userId}");
     }
 }

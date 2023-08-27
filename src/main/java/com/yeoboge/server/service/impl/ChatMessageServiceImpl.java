@@ -17,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -27,14 +29,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
 
     @Override
-    public void saveMessage(String message, Long chatRoomId, Long userId) {
+    public void saveMessage(String message, String timeStamp, Long chatRoomId, Long userId) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if (chatRoom.isEmpty()) throw new AppException(ChattingErrorCode.CHAT_ROOM_NOT_FOUND);
         User user = userRepository.getById(userId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         ChatMessage chatMessage = ChatMessage.builder()
                 .chatRoom(chatRoom.get())
                 .message(message)
                 .user(user)
+                .createdAt(LocalDateTime.parse(timeStamp,formatter))
                 .isRead(IsRead.NO)
                 .build();
         chatMessageRepository.save(chatMessage);

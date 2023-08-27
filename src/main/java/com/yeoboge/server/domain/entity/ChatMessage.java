@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 @Where(clause = "deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE chat_message SET deleted_at = current_timestamp WHERE chat_message_id = ? ")
 public class ChatMessage {
@@ -35,6 +37,7 @@ public class ChatMessage {
     @Enumerated(EnumType.STRING)
     private IsRead isRead;
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 }

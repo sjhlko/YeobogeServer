@@ -33,7 +33,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if (chatRoom.isEmpty()) throw new AppException(ChattingErrorCode.CHAT_ROOM_NOT_FOUND);
         User user = userRepository.getById(userId);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         ChatMessage chatMessage = ChatMessage.builder()
                 .chatRoom(chatRoom.get())
                 .message(message)

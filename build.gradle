@@ -71,6 +71,9 @@ dependencies {
     //xml 파싱 관련 의존성
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 
+    // WebFlux 관련 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // Web Socket 관련 의존성
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind

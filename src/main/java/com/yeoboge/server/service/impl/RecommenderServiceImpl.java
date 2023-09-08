@@ -22,7 +22,6 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -52,22 +51,14 @@ public class RecommenderServiceImpl implements RecommenderService {
         String genre = genreRepository.getNameById(favoriteGenreId);
         String nickname = userRepository.getById(userId).getNickname();
 
-        CompletableFuture.supplyAsync(() ->
-                response.shelves().put(RecommendTypes.MY_BOOKMARK.getKey(), recommendRepository
-                        .getMyBookmarkedBoardGames(userId))
-        );
-        CompletableFuture.supplyAsync(() ->
-                response.shelves().put(RecommendTypes.TOP_10.getKey(), recommendRepository
-                        .getTopTenBoardGames())
-        );
-        CompletableFuture.supplyAsync(() ->
-                response.shelves().put(RecommendTypes.FAVORITE_GENRE.getKey(), recommendRepository
-                        .getPopularBoardGamesOfFavoriteGenre(userId, favoriteGenreId))
-        );
-        CompletableFuture.supplyAsync(() ->
-                response.shelves().put(RecommendTypes.FRIENDS_FAVORITE.getKey(), recommendRepository
-                        .getFavoriteBoardGamesOfFriends(userId))
-        );
+        response.shelves().put(RecommendTypes.MY_BOOKMARK.getKey(),
+                recommendRepository.getMyBookmarkedBoardGames(userId));
+        response.shelves().put(RecommendTypes.TOP_10.getKey(),
+                recommendRepository.getTopTenBoardGames());
+        response.shelves().put(RecommendTypes.FAVORITE_GENRE.getKey(),
+                recommendRepository.getPopularBoardGamesOfFavoriteGenre(userId, favoriteGenreId));
+        response.shelves().put(RecommendTypes.FRIENDS_FAVORITE.getKey(),
+                recommendRepository.getFavoriteBoardGamesOfFriends(userId));
 
         response.setMetadata(nickname, genre);
 

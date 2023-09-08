@@ -24,6 +24,6 @@ public record RecommendForSingleResponse(
         descriptions.put(RecommendTypes.TOP_10.getKey(), "올해 인기 보드게임 TOP 10");
         descriptions.put(RecommendTypes.FAVORITE_GENRE.getKey(), nickname + "님이 좋아하는 " + genre + " 보드게임");
         descriptions.put(RecommendTypes.FRIENDS_FAVORITE.getKey(), nickname + "님의 친구들이 좋아하는 보드게임");
-        descriptions.put(RecommendTypes.PERSONAL_RECOMMEND.getKey(), nickname + "님만을 위한 추천 보드게임");
+        descriptions.put(RecommendTypes.PERSONAL_RECOMMEND.getKey(), nickname + "님 만을 위한 추천 보드게임");
     }
 }

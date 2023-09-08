@@ -22,7 +22,7 @@ import static com.yeoboge.server.domain.entity.QRating.rating;
 @Repository
 @RequiredArgsConstructor
 public class RecommendRepositoryImpl implements RecommendRepository {
-    private static final int SIZE_OF_BOARD_GAME_LIST = 10;
+    private static final int BASE_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -36,7 +36,8 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .on(qGenreOfBoardGame.boardGame.id.eq(rating.boardGame.id))
                 .where(rating.user.id.eq(userId), rating.score.goe(4.0))
                 .groupBy(qGenreOfBoardGame.genre.id)
-                .orderBy(rating.id.count().desc())
+                .orderBy(rating.id.avg().desc())
+                .limit(1)
                 .fetchOne();
     }
 
@@ -52,7 +53,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .on(boardGame.id.eq(recentRatings.boardGameId))
                 .where(qGenreOfBoardGame.genre.id.eq(genreId))
                 .orderBy(recentRatings.ratings.desc())
-                .limit(SIZE_OF_BOARD_GAME_LIST)
+                .limit(BASE_SIZE)
                 .fetch();
     }
 
@@ -69,12 +70,12 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .from(boardGame)
                 .join(rating)
                 .on(boardGame.id.eq(rating.boardGame.id))
-                .where(rating.user.id.in(friendsId), rating.score.goe(4.0))
+                .where(rating.user.id.in(friendsId), rating.score.goe(3.5))
                 .orderBy(rating.score.desc())
-                .limit(SIZE_OF_BOARD_GAME_LIST)
+                .limit(BASE_SIZE)
                 .fetch();
 
-        return boardGameThumbnail.size() >= SIZE_OF_BOARD_GAME_LIST ? boardGameThumbnail : Collections.emptyList();
+        return boardGameThumbnail.size() >= BASE_SIZE ? boardGameThumbnail : Collections.emptyList();
     }
 
     @Override
@@ -84,7 +85,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .from(qBookmark)
                 .where(qBookmark.user.id.eq(userId))
                 .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
-                .limit(SIZE_OF_BOARD_GAME_LIST)
+                .limit(BASE_SIZE)
                 .fetch();
 
         return queryFactory.select(thumbnailConstructorProjection())
@@ -100,7 +101,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .join(recentRatings)
                 .on(boardGame.id.eq(recentRatings.boardGameId))
                 .orderBy(recentRatings.ratings.desc())
-                .limit(SIZE_OF_BOARD_GAME_LIST)
+                .limit(BASE_SIZE)
                 .fetch();
     }
 

@@ -31,13 +31,21 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
-        String endPoint = "/recommends/{id}";
         RecommendForSingleResponse response = new RecommendForSingleResponse(new HashMap<>());
+        CountDownLatch latch = new CountDownLatch(1);
+
+//        List<BoardGameThumbnailDto> recommends = getRecommendationFromML(userId, latch);
+//        response.shelves().put("recommends", recommends);
+
+        return response;
+    }
+
+    private List<BoardGameThumbnailDto> getRecommendationFromML(Long userId, CountDownLatch latch) {
+        final String endPoint = "/recommends/{id}";
         Mono<RecommendWebClientResponse> mono = WebClientUtils.get(
                 webClient, RecommendWebClientResponse.class, endPoint, userId
         );
 
-        CountDownLatch latch = new CountDownLatch(1);
         List<BoardGameThumbnailDto> recommends = new ArrayList<>();
         mono.subscribe(wr -> {
             getBoardGameData(wr.result(), recommends);
@@ -50,9 +58,7 @@ public class RecommenderServiceImpl implements RecommenderService {
             throw new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        response.shelves().put("recommends", recommends);
-
-        return response;
+        return recommends;
     }
 
     /**
@@ -62,10 +68,8 @@ public class RecommenderServiceImpl implements RecommenderService {
      * @param thumbnailList 조회한 {@link BoardGameThumbnailDto}를 담을 {@link List}
      */
     private void getBoardGameData(List<RecommendIds> recommendIds, List<BoardGameThumbnailDto> thumbnailList) {
-        // 추천 요청 API 미완성으로 임시로 구현한 로직: 추천 목록이 10개임을 가정
-        for (int i = 0; i < 10; i++) {
-            RecommendIds ids = recommendIds.get(0);
-            BoardGame boardGame = boardGameRepository.getById(ids.id());
+        for (RecommendIds id : recommendIds) {
+            BoardGame boardGame = boardGameRepository.getById(id.id());
             thumbnailList.add(BoardGameThumbnailDto.of(boardGame));
         }
     }

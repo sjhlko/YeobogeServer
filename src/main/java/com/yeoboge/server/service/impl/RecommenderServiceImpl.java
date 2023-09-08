@@ -5,9 +5,13 @@ import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.vo.recommend.RecommendIds;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
+import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
+import com.yeoboge.server.repository.GenreRepository;
+import com.yeoboge.server.repository.RecommendRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.RecommenderService;
 import com.yeoboge.server.utils.WebClientUtils;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -27,15 +32,44 @@ import java.util.concurrent.CountDownLatch;
 @RequiredArgsConstructor
 public class RecommenderServiceImpl implements RecommenderService {
     private final BoardGameRepository boardGameRepository;
+    private final RecommendRepository recommendRepository;
+    private final GenreRepository genreRepository;
+    private final UserRepository userRepository;
+
     private final WebClient webClient;
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
-        RecommendForSingleResponse response = new RecommendForSingleResponse(new HashMap<>());
+        RecommendForSingleResponse response = new RecommendForSingleResponse(
+                new ArrayList<>(), new HashMap<>(), new HashMap<>()
+        );
         CountDownLatch latch = new CountDownLatch(1);
 
 //        List<BoardGameThumbnailDto> recommends = getRecommendationFromML(userId, latch);
 //        response.shelves().put("recommends", recommends);
+
+        Long favoriteGenreId = recommendRepository.getMyFavoriteGenreId(userId);
+        String genre = genreRepository.getNameById(favoriteGenreId);
+        String nickname = userRepository.getById(userId).getNickname();
+
+        CompletableFuture.supplyAsync(() ->
+                response.shelves().put(RecommendTypes.MY_BOOKMARK.getKey(), recommendRepository
+                        .getMyBookmarkedBoardGames(userId))
+        );
+        CompletableFuture.supplyAsync(() ->
+                response.shelves().put(RecommendTypes.TOP_10.getKey(), recommendRepository
+                        .getTopTenBoardGames())
+        );
+        CompletableFuture.supplyAsync(() ->
+                response.shelves().put(RecommendTypes.FAVORITE_GENRE.getKey(), recommendRepository
+                        .getPopularBoardGamesOfFavoriteGenre(userId, favoriteGenreId))
+        );
+        CompletableFuture.supplyAsync(() ->
+                response.shelves().put(RecommendTypes.FRIENDS_FAVORITE.getKey(), recommendRepository
+                        .getFavoriteBoardGamesOfFriends(userId))
+        );
+
+        response.setMetadata(nickname, genre);
 
         return response;
     }

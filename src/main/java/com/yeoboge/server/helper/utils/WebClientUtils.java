@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;

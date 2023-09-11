@@ -3,7 +3,6 @@ package com.yeoboge.server.domain.dto.auth;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.utils.StringGeneratorUtils;
 
 import java.util.List;
 import java.util.Set;

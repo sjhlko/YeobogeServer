@@ -13,7 +13,7 @@ import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.AuthService;
 import com.yeoboge.server.service.MailService;
-import com.yeoboge.server.utils.StringGeneratorUtils;
+import com.yeoboge.server.helper.utils.StringGeneratorUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

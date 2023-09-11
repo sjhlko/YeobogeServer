@@ -1,7 +1,7 @@
 package com.yeoboge.server.config.security;
 
 import com.yeoboge.server.enums.error.CommonErrorCode;
-import com.yeoboge.server.utils.JsonResponseUtils;
+import com.yeoboge.server.helper.utils.JsonResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

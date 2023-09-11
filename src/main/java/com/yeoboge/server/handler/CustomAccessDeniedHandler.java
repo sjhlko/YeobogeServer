@@ -2,7 +2,7 @@ package com.yeoboge.server.handler;
 
 import com.yeoboge.server.config.security.HttpEndpointChecker;
 import com.yeoboge.server.enums.error.CommonErrorCode;
-import com.yeoboge.server.utils.JsonResponseUtils;
+import com.yeoboge.server.helper.utils.JsonResponseUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

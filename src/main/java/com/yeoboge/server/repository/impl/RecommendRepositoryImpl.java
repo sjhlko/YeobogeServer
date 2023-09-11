@@ -5,6 +5,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.QBookmarkedBoardGame;
 import com.yeoboge.server.domain.entity.QFriend;
 import com.yeoboge.server.domain.entity.QGenreOfBoardGame;
@@ -27,10 +28,10 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Long getMyFavoriteGenreId(Long userId) {
+    public Genre getMyFavoriteGenre(Long userId) {
         QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
 
-        return queryFactory.select(qGenreOfBoardGame.genre.id)
+        return queryFactory.select(qGenreOfBoardGame.genre)
                 .from(qGenreOfBoardGame)
                 .join(rating)
                 .on(qGenreOfBoardGame.boardGame.id.eq(rating.boardGame.id))
@@ -42,7 +43,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long userId, Long genreId) {
+    public List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId) {
         QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
 
         return queryFactory.select(thumbnailConstructorProjection())

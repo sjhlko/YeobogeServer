@@ -1,12 +1,13 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.entity.Genre;
 
 import java.util.List;
 
 public interface RecommendRepository {
-    Long getMyFavoriteGenreId(Long userId);
-    List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long userId, Long genreId);
+    Genre getMyFavoriteGenre(Long userId);
+    List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId);
 
     List<BoardGameThumbnailDto> getFavoriteBoardGamesOfFriends(Long userId);
 

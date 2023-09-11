@@ -40,9 +40,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     public PageResponse getChatRooms (Long id, Pageable pageable) {
         User user = userRepository.getById(id);
-        Page<ChatRoom> results = chatRoomRepository.findAllByCurrentUserOrTargetUser(pageable,user,user);
-        PageResponse responses = new PageResponse(
-                results.map(chatRoom -> ChatRoomResponse.of(chatRoom, user)));
+        Page<ChatRoomResponse> results = chatRoomRepository.getMyChatRoomList(pageable,user);
+        PageResponse responses = new PageResponse(results);
         return responses;
     }
 }

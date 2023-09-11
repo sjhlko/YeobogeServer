@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

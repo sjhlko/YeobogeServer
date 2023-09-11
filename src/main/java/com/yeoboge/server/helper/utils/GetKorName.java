@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;

@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 /**
  * 랜덤 문자열을 생성하는 유틸 클래스

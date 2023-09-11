@@ -8,7 +8,7 @@ import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.Rating;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
 import com.yeoboge.server.repository.CustomRatingRepository;
-import com.yeoboge.server.utils.PagingUtils;
+import com.yeoboge.server.helper.utils.PagingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

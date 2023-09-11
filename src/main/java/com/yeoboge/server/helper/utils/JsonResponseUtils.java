@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;

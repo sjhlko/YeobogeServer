@@ -69,6 +69,7 @@ deploy:
       -e REDIS_HOST=$SERVER_IP
       -e REDIS_PORT=6379
       -e REDIS_PASSWORD=$REDIS_PASSWORD
+      -e WEB_CLIENT_BASE_URL=$WEB_CLIENT_BASE_URL
       -e TZ=Asia/Seoul
       $TAG_LATEST
   environment:

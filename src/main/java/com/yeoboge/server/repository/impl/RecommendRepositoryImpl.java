@@ -97,10 +97,12 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .limit(BASE_SIZE)
                 .fetch();
 
-        return queryFactory.select(thumbnailConstructorProjection())
-                .from(boardGame)
-                .where(boardGame.id.in(randomSelectedBookmark))
-                .fetch();
+        return randomSelectedBookmark.size() == BASE_SIZE
+                ? queryFactory.select(thumbnailConstructorProjection())
+                        .from(boardGame)
+                        .where(boardGame.id.in(randomSelectedBookmark))
+                        .fetch()
+                : Collections.emptyList();
     }
 
     @Override

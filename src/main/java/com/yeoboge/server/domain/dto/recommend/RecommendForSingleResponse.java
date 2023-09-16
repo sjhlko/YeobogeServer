@@ -1,7 +1,6 @@
 package com.yeoboge.server.domain.dto.recommend;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.helper.recommender.RecommendedBySomething;
 
 import java.util.List;
 import java.util.Map;
@@ -16,10 +15,4 @@ public record RecommendForSingleResponse(
         Map<String, List<BoardGameThumbnailDto>> shelves,
         Map<String, String> descriptions
 ) {
-    public void setMetadata(List<RecommendedBySomething> metadataList) {
-        for (RecommendedBySomething metadata : metadataList) {
-            keys.add(metadata.getKey());
-            descriptions.put(metadata.getKey(), metadata.getDescription());
-        }
-    }
 }

@@ -1,6 +1,6 @@
 package com.yeoboge.server.config.security.filter;
 
-import com.yeoboge.server.utils.LogFormatUtils;
+import com.yeoboge.server.helper.utils.LogFormatUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

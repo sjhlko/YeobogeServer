@@ -1,4 +1,4 @@
-package com.yeoboge.server.utils;
+package com.yeoboge.server.helper.utils;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;

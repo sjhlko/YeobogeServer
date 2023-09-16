@@ -1,15 +1,12 @@
 package com.yeoboge.server.service.impl;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
-import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.vo.recommend.*;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
-import com.yeoboge.server.repository.BoardGameRepository;
 import com.yeoboge.server.repository.RecommendRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.RecommenderService;
@@ -22,6 +19,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -30,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 @Service
 @RequiredArgsConstructor
 public class RecommenderServiceImpl implements RecommenderService {
-    private final BoardGameRepository boardGameRepository;
     private final RecommendRepository recommendRepository;
     private final UserRepository userRepository;
 
@@ -38,23 +35,27 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
-        RecommendForSingleResponse response = new RecommendForSingleResponse(
-                new ArrayList<>(), new HashMap<>(), new HashMap<>()
-        );
-        CountDownLatch latch = new CountDownLatch(1);
-
-//        List<BoardGameThumbnailDto> recommends = getRecommendationFromML(userId, latch);
-//        response.shelves().put("recommends", recommends);
-
         List<Genre> favoriteGenres = List.of(recommendRepository.getMyFavoriteGenre(userId));
         String nickname = userRepository.getById(userId).getNickname();
+
         List<RecommendedBySomething> recommenderList = getRecommenderList(userId, nickname, favoriteGenres);
+        recommenderList.add(getModelRecommender(userId, nickname));
 
-        for (RecommendedBySomething recommender : recommenderList)
-            response.shelves().put(recommender.getKey(), recommender.getRecommendedThumbnailList());
-        response.setMetadata(recommenderList);
+        return runAsyncJobsForRecommendation(recommenderList);
+    }
 
-        return response;
+    private RecommendedByModel getModelRecommender(long userId, String nickname) {
+        final String endPoint = "/recommends/{id}";
+        Mono<RecommendWebClientResponse> mono = WebClientUtils.get(
+                webClient, RecommendWebClientResponse.class, endPoint, userId
+        );
+
+        return RecommendedByModel.builder()
+                .repository(recommendRepository)
+                .type(RecommendTypes.PERSONAL_RECOMMEND)
+                .mono(mono)
+                .userNickname(nickname)
+                .build();
     }
 
     private List<RecommendedBySomething> getRecommenderList(long userId, String nickname, List<Genre> genres) {
@@ -64,8 +65,8 @@ public class RecommenderServiceImpl implements RecommenderService {
                 .repository(recommendRepository)
                 .type(RecommendTypes.MY_BOOKMARK)
                 .userId(userId)
-                .userNickname(nickname
-                ).build());
+                .userNickname(nickname)
+                .build());
         recommenderList.add(RecommendedByFriends.builder()
                 .repository(recommendRepository)
                 .type(RecommendTypes.FRIENDS_FAVORITE)
@@ -88,17 +89,18 @@ public class RecommenderServiceImpl implements RecommenderService {
         return recommenderList;
     }
 
-    private List<BoardGameThumbnailDto> getRecommendationFromML(Long userId, CountDownLatch latch) {
-        final String endPoint = "/recommends/{id}";
-        Mono<RecommendWebClientResponse> mono = WebClientUtils.get(
-                webClient, RecommendWebClientResponse.class, endPoint, userId
+    private RecommendForSingleResponse runAsyncJobsForRecommendation(List<RecommendedBySomething> recommenders) {
+        RecommendForSingleResponse response = new RecommendForSingleResponse(
+                new ArrayList<>(), new HashMap<>(), new HashMap<>()
         );
+        CountDownLatch latch = new CountDownLatch(recommenders.size());
 
-        List<BoardGameThumbnailDto> recommends = new ArrayList<>();
-        mono.subscribe(wr -> {
-            getBoardGameData(wr.result(), recommends);
-            latch.countDown();
-        });
+        for (RecommendedBySomething recommender : recommenders) {
+            if (recommender instanceof RecommendedByModel)
+                recommender.addRecommendedDataToResponse(response, latch);
+            else
+                CompletableFuture.runAsync(() -> recommender.addRecommendedDataToResponse(response, latch));
+        }
 
         try {
             latch.await();
@@ -106,19 +108,6 @@ public class RecommenderServiceImpl implements RecommenderService {
             throw new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        return recommends;
-    }
-
-    /**
-     * 추천 API가 생성한 추천 보드게임 ID를 토대로 각 보드게임의 썸네일을 조회한 뒤 리스트에 추가함.
-     *
-     * @param recommendIds 추천된 보드게임 ID 목록
-     * @param thumbnailList 조회한 {@link BoardGameThumbnailDto}를 담을 {@link List}
-     */
-    private void getBoardGameData(List<RecommendIds> recommendIds, List<BoardGameThumbnailDto> thumbnailList) {
-        for (RecommendIds id : recommendIds) {
-            BoardGame boardGame = boardGameRepository.getById(id.id());
-            thumbnailList.add(BoardGameThumbnailDto.of(boardGame));
-        }
+        return response;
     }
 }

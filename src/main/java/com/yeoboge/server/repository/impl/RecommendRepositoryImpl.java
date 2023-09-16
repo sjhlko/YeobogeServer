@@ -43,6 +43,14 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
+    public List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids) {
+        return queryFactory.select(thumbnailConstructorProjection())
+                .from(boardGame)
+                .where(boardGame.id.in(ids))
+                .fetch();
+    }
+
+    @Override
     public List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId) {
         QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
 

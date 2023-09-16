@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface RecommendRepository {
     Genre getMyFavoriteGenre(Long userId);
+    List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids);
     List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId);
 
     List<BoardGameThumbnailDto> getFavoriteBoardGamesOfFriends(Long userId);

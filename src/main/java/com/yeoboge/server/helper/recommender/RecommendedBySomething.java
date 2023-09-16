@@ -1,13 +1,9 @@
 package com.yeoboge.server.helper.recommender;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 
-import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public interface RecommendedBySomething {
-    String getKey();
-
-    String getDescription();
-
-    List<BoardGameThumbnailDto> getRecommendedThumbnailList();
+    void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch);
 }

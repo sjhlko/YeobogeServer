@@ -4,6 +4,7 @@ import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +26,10 @@ public class RecommenderController {
      * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link RecommendForSingleResponse}
      */
     @GetMapping("")
-    Response<RecommendForSingleResponse> get(@AuthenticationPrincipal Long userId) {
+    ResponseEntity<Response<RecommendForSingleResponse>> get(@AuthenticationPrincipal Long userId) {
+        final int cacheMaxAge = 5 * 60;
         RecommendForSingleResponse response = recommenderService.getSingleRecommendation(userId);
-        return Response.success(response);
+
+        return Response.cached(response, cacheMaxAge);
     }
 }

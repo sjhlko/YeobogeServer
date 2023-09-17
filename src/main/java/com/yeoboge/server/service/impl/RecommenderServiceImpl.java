@@ -35,7 +35,7 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
-        List<Genre> favoriteGenres = List.of(recommendRepository.getMyFavoriteGenre(userId));
+        List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
         String nickname = userRepository.getById(userId).getNickname();
 
         List<RecommendedBySomething> recommenderList = getRecommenderList(userId, nickname, favoriteGenres);

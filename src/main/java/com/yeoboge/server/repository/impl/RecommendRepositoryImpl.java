@@ -1,14 +1,12 @@
 package com.yeoboge.server.repository.impl;
 
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.entity.Genre;
-import com.yeoboge.server.domain.entity.QBookmarkedBoardGame;
-import com.yeoboge.server.domain.entity.QFriend;
-import com.yeoboge.server.domain.entity.QGenreOfBoardGame;
+import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,18 +26,36 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Genre getMyFavoriteGenre(Long userId) {
+    public List<Genre> getMyFavoriteGenre(Long userId) {
+        final int FAV_GENRE_SIZE = 3;
         QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
-
-        return queryFactory.select(qGenreOfBoardGame.genre)
+        QFavoriteGenre qFavoriteGenre = QFavoriteGenre.favoriteGenre;
+        List<Genre> favoriteGenres = queryFactory.select(qGenreOfBoardGame.genre)
                 .from(qGenreOfBoardGame)
                 .join(rating)
                 .on(qGenreOfBoardGame.boardGame.id.eq(rating.boardGame.id))
-                .where(rating.user.id.eq(userId), rating.score.goe(4.0))
+                .where(rating.user.id.eq(userId), rating.score.goe(3.5))
                 .groupBy(qGenreOfBoardGame.genre.id)
                 .orderBy(rating.id.avg().desc())
-                .limit(1)
-                .fetchOne();
+                .limit(FAV_GENRE_SIZE)
+                .fetch();
+
+        if (favoriteGenres.size() < FAV_GENRE_SIZE) {
+            List<Long> includedGenreIds = favoriteGenres.stream()
+                    .map(Genre::getId)
+                    .toList();
+            favoriteGenres.addAll(queryFactory.select(qFavoriteGenre.genre)
+                    .from(qFavoriteGenre)
+                    .where(
+                            qFavoriteGenre.user.id.eq(userId),
+                            qFavoriteGenre.genre.id.notIn(includedGenreIds)
+                    ).orderBy(getRandomOrder())
+                    .limit(FAV_GENRE_SIZE - favoriteGenres.size())
+                    .fetch()
+            );
+        }
+
+        return favoriteGenres;
     }
 
     @Override
@@ -93,7 +109,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
         List<Long> randomSelectedBookmark = queryFactory.select(qBookmark.boardGame.id)
                 .from(qBookmark)
                 .where(qBookmark.user.id.eq(userId))
-                .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
+                .orderBy(getRandomOrder())
                 .limit(BASE_SIZE)
                 .fetch();
 
@@ -123,5 +139,9 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 boardGame.name,
                 boardGame.imagePath
         );
+    }
+
+    private OrderSpecifier getRandomOrder() {
+        return Expressions.numberTemplate(Double.class, "function('rand')").asc();
     }
 }

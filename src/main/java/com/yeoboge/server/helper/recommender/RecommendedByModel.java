@@ -30,7 +30,8 @@ public class RecommendedByModel extends RecommendedBySomethingBase implements Re
     public void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch) {
         mono.subscribe(wr -> {
             List<BoardGameThumbnailDto> boardGames = repository.getRecommendedBoardGames(wr.result());
-            addToResponse(response, boardGames, latch);
+            addToResponse(response, boardGames);
+            latch.countDown();
         });
     }
 }

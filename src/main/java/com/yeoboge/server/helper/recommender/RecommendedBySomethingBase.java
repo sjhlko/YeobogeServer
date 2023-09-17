@@ -6,6 +6,7 @@ import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 public class RecommendedBySomethingBase {
@@ -18,14 +19,21 @@ public class RecommendedBySomethingBase {
         this.key = type.getKey();
     }
 
-    protected void addToResponse(
-            RecommendForSingleResponse response, List<BoardGameThumbnailDto> boardGames, CountDownLatch latch
+    protected void addToResponse(RecommendForSingleResponse response, List<BoardGameThumbnailDto> boardGames) {
+        if (boardGames.isEmpty()) return;
+
+        response.keys().add(key);
+        response.shelves().put(key, boardGames);
+        response.descriptions().put(key, description);
+    }
+
+    protected void setAsyncProcessing(
+            CompletableFuture<List<BoardGameThumbnailDto>> future,
+            RecommendForSingleResponse response,
+            CountDownLatch latch
     ) {
-        if (!boardGames.isEmpty()) {
-            response.keys().add(key);
-            response.shelves().put(key, boardGames);
-            response.descriptions().put(key, description);
-        }
-        latch.countDown();
+        future.thenCompose(
+                boardGames -> CompletableFuture.runAsync(() -> addToResponse(response, boardGames))
+        ).thenRun(() -> latch.countDown());
     }
 }

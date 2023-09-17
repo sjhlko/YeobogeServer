@@ -15,7 +15,6 @@ import com.yeoboge.server.service.OAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -32,7 +31,7 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public Tokens socialRegister(SocialRegisterRequest request) {
         List<Genre> favoriteGenres = genreRepository.findAllById(request.favoriteGenreIds());
-        User user = request.toEntity(new HashSet<>(favoriteGenres));
+        User user = request.toEntity(favoriteGenres);
         user = userRepository.save(user);
 
         return generateToken(user.getId());

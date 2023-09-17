@@ -5,8 +5,8 @@ import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 회원 가입  클라이언트에서 넘겨 주는 사용자 기본 정보
@@ -30,13 +30,16 @@ public record RegisterRequest(
      * @param favoriteGenres 선호하는 {@link Genre} Set
      * @return {@link User} 엔티티
      */
-    public User toEntity(String hashedPassword, Set<Genre> favoriteGenres) {
-        return User.builder()
+    public User toEntity(String hashedPassword, List<Genre> favoriteGenres) {
+        User newUser = User.builder()
                 .email(email)
                 .password(hashedPassword)
                 .nickname(nickname)
                 .role(Role.USER)
-                .favoriteGenres(favoriteGenres)
+                .favoriteGenres(new HashSet<>())
                 .build();
+        newUser.addFavoriteGenres(favoriteGenres);
+
+        return newUser;
     }
 }

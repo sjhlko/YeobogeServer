@@ -17,10 +17,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.*;
 
 /**
  * {@link RecommenderService} 구현체
@@ -35,7 +33,7 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
-        List<Genre> favoriteGenres = List.of(recommendRepository.getMyFavoriteGenre(userId));
+        List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
         String nickname = userRepository.getById(userId).getNickname();
 
         List<RecommendedBySomething> recommenderList = getRecommenderList(userId, nickname, favoriteGenres);
@@ -91,16 +89,12 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     private RecommendForSingleResponse runAsyncJobsForRecommendation(List<RecommendedBySomething> recommenders) {
         RecommendForSingleResponse response = new RecommendForSingleResponse(
-                new ArrayList<>(), new HashMap<>(), new HashMap<>()
+                new ConcurrentLinkedQueue<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>()
         );
         CountDownLatch latch = new CountDownLatch(recommenders.size());
 
-        for (RecommendedBySomething recommender : recommenders) {
-            if (recommender instanceof RecommendedByModel)
-                recommender.addRecommendedDataToResponse(response, latch);
-            else
-                CompletableFuture.runAsync(() -> recommender.addRecommendedDataToResponse(response, latch));
-        }
+        for (RecommendedBySomething recommender : recommenders)
+            recommender.addRecommendedDataToResponse(response, latch);
 
         try {
             latch.await();

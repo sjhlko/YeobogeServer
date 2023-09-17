@@ -1,7 +1,10 @@
 package com.yeoboge.server.domain.vo.response;
 
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 클라이언트에 전달할 HTTP 공통 응답 VO
@@ -52,5 +55,11 @@ public record Response<T>(String resultCode, T result) {
      */
     public static ResponseEntity deleted() {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    public static <T> ResponseEntity<Response<T>> cached(T body, int maxAge) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(maxAge, TimeUnit.SECONDS))
+                .body(Response.success(body));
     }
 }

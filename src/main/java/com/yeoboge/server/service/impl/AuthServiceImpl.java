@@ -20,7 +20,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -44,10 +43,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(AuthenticationErrorCode.USER_DUPLICATED);
 
         List<Genre> favoriteGenres = genreRepository.findAllById(request.favoriteGenreIds());
-        User newUser = request.toEntity(
-                encodePassword(request.password()),
-                new HashSet<>(favoriteGenres)
-        );
+        User newUser = request.toEntity(encodePassword(request.password()), favoriteGenres);
 
         User saved = userRepository.save(newUser);
         return RegisterResponse.fromEntity(saved);

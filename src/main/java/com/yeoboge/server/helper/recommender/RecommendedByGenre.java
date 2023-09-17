@@ -1,15 +1,14 @@
 package com.yeoboge.server.helper.recommender;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.Builder;
 
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-public class RecommendedByGenre extends RecommendedBySomethingBase implements RecommendedBySomething {
+public class RecommendedByGenre extends RecommendedBySQL {
     private long genreId;
 
     @Builder
@@ -28,7 +27,7 @@ public class RecommendedByGenre extends RecommendedBySomethingBase implements Re
 
     @Override
     public void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch) {
-        List<BoardGameThumbnailDto> boardGames = repository.getPopularBoardGamesOfFavoriteGenre(genreId);
-        addToResponse(response, boardGames, latch);
+        this.future = CompletableFuture.supplyAsync(() -> repository.getPopularBoardGamesOfFavoriteGenre(genreId));
+        setAsyncProcessing(response, latch);
     }
 }

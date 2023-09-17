@@ -33,13 +33,8 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String profileImagePath;
 
-    @ManyToMany
-    @JoinTable(
-            name = "favorite_genre",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id")
-    )
-    private Set<Genre> favoriteGenres;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FavoriteGenre> favoriteGenres;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Friend> friends;
@@ -50,6 +45,14 @@ public class User {
     List<ChatRoom> targetUserChatRooms  = new ArrayList<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<ChatMessage> chatMessages  = new ArrayList<>();
+
+    public void addFavoriteGenres(List<Genre> genres) {
+        for (Genre favGenre : genres)
+            favoriteGenres.add(FavoriteGenre.builder()
+                            .user(this)
+                            .genre(favGenre)
+                            .build());
+    }
 
     /**
      * 기존 회원의 비밀번호만을 바꾸고자하는 비밀번호로 변경한다.

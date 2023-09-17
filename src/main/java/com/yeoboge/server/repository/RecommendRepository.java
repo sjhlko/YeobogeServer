@@ -6,7 +6,7 @@ import com.yeoboge.server.domain.entity.Genre;
 import java.util.List;
 
 public interface RecommendRepository {
-    Genre getMyFavoriteGenre(Long userId);
+    List<Genre> getMyFavoriteGenre(Long userId);
     List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids);
     List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId);
 

@@ -8,7 +8,7 @@ import lombok.Builder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-public class RecommendedByFriends extends RecommendedBySomethingBase implements RecommendedBySomething {
+public class RecommendedByFriends extends RecommendedBySQL {
     private long userId;
 
     @Builder
@@ -22,8 +22,7 @@ public class RecommendedByFriends extends RecommendedBySomethingBase implements 
 
     @Override
     public void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch) {
-        setAsyncProcessing(CompletableFuture.supplyAsync(
-                () -> repository.getFavoriteBoardGamesOfFriends(userId)
-        ), response, latch);
+        this.future = CompletableFuture.supplyAsync(() -> repository.getFavoriteBoardGamesOfFriends(userId));
+        setAsyncProcessing(response, latch);
     }
 }

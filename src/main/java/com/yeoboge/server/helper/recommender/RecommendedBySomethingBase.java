@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-public class RecommendedBySomethingBase {
+public abstract class RecommendedBySomethingBase implements RecommendedBySomething {
     protected RecommendRepository repository;
     protected String key;
     protected String description;
@@ -36,4 +36,6 @@ public class RecommendedBySomethingBase {
                 boardGames -> CompletableFuture.runAsync(() -> addToResponse(response, boardGames))
         ).thenRun(() -> latch.countDown());
     }
+
+    public abstract void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch);
 }

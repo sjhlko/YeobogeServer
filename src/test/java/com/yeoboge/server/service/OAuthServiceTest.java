@@ -55,9 +55,10 @@ public class OAuthServiceTest {
         User expectedUser = User.builder().id(userId)
                 .email(request.email())
                 .nickname(request.nickname())
-                .favoriteGenres(new HashSet<>(favoriteGenres))
+                .favoriteGenres(new HashSet<>())
                 .role(Role.USER)
                 .build();
+        expectedUser.addFavoriteGenres(favoriteGenres);
         Tokens expected = makeTokens();
 
         // when

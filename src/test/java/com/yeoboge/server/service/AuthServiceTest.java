@@ -65,9 +65,10 @@ public class AuthServiceTest {
                 .email(request.email())
                 .password(hashedPassword)
                 .nickname(request.nickname())
-                .favoriteGenres(new HashSet<>(favoriteGenres))
+                .favoriteGenres(new HashSet<>())
                 .role(Role.USER)
                 .build();
+        expected.addFavoriteGenres(favoriteGenres);
 
         // when
         when(userRepository.save(any())).thenReturn(expected);

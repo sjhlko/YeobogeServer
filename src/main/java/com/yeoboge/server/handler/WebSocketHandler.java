@@ -1,6 +1,7 @@
 package com.yeoboge.server.handler;
 
 import com.yeoboge.server.config.security.JwtProvider;
+import com.yeoboge.server.domain.entity.IsRead;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         obj.put("sender", currentUserId);
         //여기서 룸 아이디 유효성 검증 또는 사람 아이디로 받고 검증
         HashMap<String, Object> temp = new HashMap<>();
+        int openedSessionCount = 0;
         if(sessionList.size() > 0) {
             for(int i=0; i<sessionList.size(); i++) {
                 String roomNumber = (String) sessionList.get(i).get("roomId"); //세션리스트의 저장된 방번호를 가져와서
@@ -53,7 +55,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     break;
                 }
             }
-
             //해당 방의 세션들만 찾아서 메시지를 발송해준다.
             for(String k : temp.keySet()) {
                 if(k.equals("roomId")) { //다만 방번호일 경우에는 건너뛴다.
@@ -61,8 +62,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
 
                 WebSocketSession wss = (WebSocketSession) temp.get(k);
+
                 if(wss != null) {
                     try {
+                        openedSessionCount++;
                         wss.sendMessage(new TextMessage(obj.toJSONString()));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -70,7 +73,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
-        chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId);
+        if(openedSessionCount==2)
+            chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId, IsRead.YES);
+        else chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId, IsRead.NO);
     }
 
     @Override

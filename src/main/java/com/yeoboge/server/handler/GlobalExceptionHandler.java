@@ -5,8 +5,10 @@ import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.domain.vo.response.ErrorResponse;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,6 +52,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handler(DataIntegrityViolationException e) {
         return handleExceptionInternal(CommonErrorCode.BAD_REQUEST);
+    }
+
+    /**
+     * JDBC Connection 관련 예외를 처리함.
+     *
+     * @param e JDBC 연결 관련 예외 {@link CannotGetJdbcConnectionException}, {@link CannotAcquireLockException}
+     * @return HTTP 500 응답
+     */
+    @ExceptionHandler({CannotGetJdbcConnectionException.class, CannotAcquireLockException.class})
+    public ResponseEntity<?> handler(Exception e) {
+        return handleExceptionInternal(CommonErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     /**

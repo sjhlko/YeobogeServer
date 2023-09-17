@@ -4,8 +4,8 @@ import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.Role;
 import com.yeoboge.server.domain.entity.User;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 소셜 로그인으로 회원 가입 시 클라이언트에서 넘겨주는 사용자 가입 정보
@@ -22,12 +22,15 @@ public record SocialRegisterRequest(String email, String nickname, List<Long> fa
      * @param favoriteGenres 선호하는 {@link Genre} Set
      * @return {@link User} 엔티티
      */
-    public User toEntity(Set<Genre> favoriteGenres) {
-        return User.builder()
+    public User toEntity(List<Genre> favoriteGenres) {
+        User newUser = User.builder()
                 .email(email)
                 .nickname(nickname)
                 .role(Role.USER)
-                .favoriteGenres(favoriteGenres)
+                .favoriteGenres(new HashSet<>())
                 .build();
+        newUser.addFavoriteGenres(favoriteGenres);
+
+        return newUser;
     }
 }

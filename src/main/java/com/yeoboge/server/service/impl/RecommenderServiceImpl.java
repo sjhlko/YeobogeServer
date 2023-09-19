@@ -8,7 +8,6 @@ import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
 import com.yeoboge.server.repository.RecommendRepository;
-import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.RecommenderService;
 import com.yeoboge.server.helper.utils.WebClientUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,22 +26,20 @@ import java.util.concurrent.*;
 @RequiredArgsConstructor
 public class RecommenderServiceImpl implements RecommenderService {
     private final RecommendRepository recommendRepository;
-    private final UserRepository userRepository;
 
     private final WebClient webClient;
 
     @Override
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
         List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
-        String nickname = userRepository.getById(userId).getNickname();
 
-        List<RecommendedBySomething> recommenderList = getRecommenderList(userId, nickname, favoriteGenres);
-        recommenderList.add(getModelRecommender(userId, nickname));
+        List<RecommendedBySomething> recommenderList = getRecommenderList(userId, favoriteGenres);
+        recommenderList.add(getModelRecommender(userId));
 
         return runAsyncJobsForRecommendation(recommenderList);
     }
 
-    private RecommendedByModel getModelRecommender(long userId, String nickname) {
+    private RecommendedByModel getModelRecommender(long userId) {
         final String endPoint = "/recommends/{id}";
         Mono<RecommendWebClientResponse> mono = WebClientUtils.get(
                 webClient, RecommendWebClientResponse.class, endPoint, userId
@@ -52,24 +49,21 @@ public class RecommenderServiceImpl implements RecommenderService {
                 .repository(recommendRepository)
                 .type(RecommendTypes.PERSONAL_RECOMMEND)
                 .mono(mono)
-                .userNickname(nickname)
                 .build();
     }
 
-    private List<RecommendedBySomething> getRecommenderList(long userId, String nickname, List<Genre> genres) {
+    private List<RecommendedBySomething> getRecommenderList(long userId, List<Genre> genres) {
         List<RecommendedBySomething> recommenderList = new ArrayList<>();
 
         recommenderList.add(RecommendedByBookmark.builder()
                 .repository(recommendRepository)
                 .type(RecommendTypes.MY_BOOKMARK)
                 .userId(userId)
-                .userNickname(nickname)
                 .build());
         recommenderList.add(RecommendedByFriends.builder()
                 .repository(recommendRepository)
                 .type(RecommendTypes.FRIENDS_FAVORITE)
                 .userId(userId)
-                .userNickname(nickname)
                 .build());
         recommenderList.add(RecommendedByTop10.builder()
                 .repository(recommendRepository)
@@ -79,7 +73,6 @@ public class RecommenderServiceImpl implements RecommenderService {
             recommenderList.add(RecommendedByGenre.builder()
                     .repository(recommendRepository)
                     .type(RecommendTypes.FAVORITE_GENRE)
-                    .userNickname(nickname)
                     .genreId(genre.getId())
                     .genreName(genre.getName())
                     .build());

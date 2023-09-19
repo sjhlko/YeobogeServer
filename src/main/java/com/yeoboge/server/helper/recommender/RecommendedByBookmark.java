@@ -13,11 +13,11 @@ public class RecommendedByBookmark extends RecommendedBySQL {
 
     @Builder
     public RecommendedByBookmark(
-            RecommendRepository repository, RecommendTypes type, long userId, String userNickname
+            RecommendRepository repository, RecommendTypes type, long userId
     ) {
         super(repository, type);
         this.userId = userId;
-        this.description = userNickname + "님이 찜한 보드게임 🔖";
+        this.description = "내가 찜한 보드게임 🔖";
     }
 
     @Override

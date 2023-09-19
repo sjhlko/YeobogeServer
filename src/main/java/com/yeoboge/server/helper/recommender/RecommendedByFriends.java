@@ -12,12 +12,10 @@ public class RecommendedByFriends extends RecommendedBySQL {
     private long userId;
 
     @Builder
-    public RecommendedByFriends(
-            RecommendRepository repository, RecommendTypes type, long userId, String userNickname
-    ) {
+    public RecommendedByFriends(RecommendRepository repository, RecommendTypes type, long userId) {
         super(repository, type);
         this.userId = userId;
-        this.description = userNickname + "님의 친구들이 좋아하는 보드게임 👥";
+        this.description =  "친구들이 좋아하는 보드게임 👥";
     }
 
     @Override

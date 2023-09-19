@@ -11,10 +11,9 @@ public class RecommendedByModel extends RecommendedByML {
     public RecommendedByModel(
             RecommendRepository  repository,
             RecommendTypes type,
-            Mono<RecommendWebClientResponse> mono,
-            String userNickname
+            Mono<RecommendWebClientResponse> mono
     ) {
         super(repository, mono, type);
-        this.description = userNickname + "님만을 위한 추천 💘";
+        this.description = "회원님만을 위한 추천 💘";
     }
 }

@@ -16,13 +16,12 @@ public class RecommendedByGenre extends RecommendedBySQL {
             RecommendRepository repository,
             RecommendTypes type,
             long genreId,
-            String userNickname,
             String genreName
     ) {
         super(repository, type);
         this.genreId = genreId;
         this.key = type.getKey() + genreName;
-        this.description = userNickname + "님이 좋아하는 " + genreName + " 보드게임 🎲";
+        this.description =  "내가 좋아하는 " + genreName + " 보드게임 🎲";
     }
 
     @Override

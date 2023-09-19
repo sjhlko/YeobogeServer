@@ -2,18 +2,16 @@ package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.entity.Genre;
-import com.yeoboge.server.domain.vo.recommend.*;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
+import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.RecommendRepository;
 import com.yeoboge.server.service.RecommenderService;
-import com.yeoboge.server.helper.utils.WebClientUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +24,7 @@ import java.util.concurrent.*;
 @RequiredArgsConstructor
 public class RecommenderServiceImpl implements RecommenderService {
     private final RecommendRepository recommendRepository;
+    private final RatingRepository ratingRepository;
 
     private final WebClient webClient;
 
@@ -33,26 +32,39 @@ public class RecommenderServiceImpl implements RecommenderService {
     public RecommendForSingleResponse getSingleRecommendation(Long userId) {
         List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
 
-        List<RecommendedBySomething> recommenderList = getRecommenderList(userId, favoriteGenres);
-        recommenderList.add(getModelRecommender(userId));
+        List<RecommendedBySomething> recommenderList = getRecommenderList(userId);
+        recommenderList.addAll(getGenreRecommender(userId, favoriteGenres));
 
         return runAsyncJobsForRecommendation(recommenderList);
     }
 
-    private RecommendedByModel getModelRecommender(long userId) {
-        final String endPoint = "/recommends/{id}";
-        Mono<RecommendWebClientResponse> mono = WebClientUtils.get(
-                webClient, RecommendWebClientResponse.class, endPoint, userId
-        );
+    private List<RecommendedBySomething> getGenreRecommender(long userId, List<Genre> genres) {
+        long numRating = ratingRepository.countByUser(userId);
 
-        return RecommendedByModel.builder()
-                .repository(recommendRepository)
-                .type(RecommendTypes.PERSONAL_RECOMMEND)
-                .mono(mono)
-                .build();
+        List<RecommendedBySomething> genreRecommenders = new ArrayList<>();
+        for (Genre genre : genres) {
+            RecommendedBySomething recommender = numRating >= 10
+                    ? RecommendedByGenreMl.builder()
+                        .repository(recommendRepository)
+                        .type(RecommendTypes.FAVORITE_GENRE)
+                        .client(webClient)
+                        .userId(userId)
+                        .genreId(genre.getId())
+                        .genreName(genre.getName())
+                        .build()
+                    : RecommendedByGenreSql.builder()
+                        .repository(recommendRepository)
+                        .type(RecommendTypes.FAVORITE_GENRE)
+                        .genreId(genre.getId())
+                        .genreName(genre.getName())
+                        .build();
+            genreRecommenders.add(recommender);
+        }
+
+        return genreRecommenders;
     }
 
-    private List<RecommendedBySomething> getRecommenderList(long userId, List<Genre> genres) {
+    private List<RecommendedBySomething> getRecommenderList(long userId) {
         List<RecommendedBySomething> recommenderList = new ArrayList<>();
 
         recommenderList.add(RecommendedByBookmark.builder()
@@ -69,13 +81,6 @@ public class RecommenderServiceImpl implements RecommenderService {
                 .repository(recommendRepository)
                 .type(RecommendTypes.TOP_10)
                 .build());
-        for (Genre genre : genres)
-            recommenderList.add(RecommendedByGenre.builder()
-                    .repository(recommendRepository)
-                    .type(RecommendTypes.FAVORITE_GENRE)
-                    .genreId(genre.getId())
-                    .genreName(genre.getName())
-                    .build());
 
         return recommenderList;
     }

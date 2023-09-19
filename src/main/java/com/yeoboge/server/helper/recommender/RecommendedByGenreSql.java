@@ -8,11 +8,11 @@ import lombok.Builder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-public class RecommendedByGenre extends RecommendedBySQL {
+public class RecommendedByGenreSql extends RecommendedBySQL {
     private long genreId;
 
     @Builder
-    public RecommendedByGenre(
+    public RecommendedByGenreSql(
             RecommendRepository repository,
             RecommendTypes type,
             long genreId,

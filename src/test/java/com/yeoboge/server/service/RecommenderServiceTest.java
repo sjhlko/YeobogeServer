@@ -3,6 +3,7 @@ package com.yeoboge.server.service;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.entity.Genre;
+import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.RecommendRepository;
@@ -15,7 +16,10 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -85,9 +89,7 @@ public class RecommenderServiceTest {
         RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
-        assertThat(actual.keys().size()).isEqualTo(response.keys().size());
-        assertThat(actual.shelves()).isEqualTo(response.shelves());
-        assertThat(actual.descriptions()).isEqualTo(response.descriptions());
+        assertResponse(actual);
         verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
     }
 
@@ -110,12 +112,45 @@ public class RecommenderServiceTest {
         RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
-        assertThat(actual.keys().size()).isEqualTo(response.keys().size());
-        for (String key : response.keys()) {
-            assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);
-            assertThat(actual.descriptions().get(key)).isEqualTo(response.descriptions().get(key));
-        }
+        assertResponse(actual);
         verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+    }
+
+    @Test
+    @DisplayName("개인 추천 성공: AI 추천 로직 포함")
+    public void recommendSuccessWithAI() {
+        // given
+        List<String> keys = List.of(
+                RecommendTypes.MY_BOOKMARK.getKey(),
+                RecommendTypes.TOP_10.getKey(),
+                RecommendTypes.FRIENDS_FAVORITE.getKey(),
+                RecommendTypes.FAVORITE_GENRE.getKey() + "Strategy",
+                RecommendTypes.FAVORITE_GENRE.getKey() + "Abstract",
+                RecommendTypes.FAVORITE_GENRE.getKey() + "Party"
+        );
+        setUpResponse(keys);
+        List<Long> recommendedByAi = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L);
+        Mono<RecommendWebClientResponse> monoResponse = Mono.just(
+                new RecommendWebClientResponse(recommendedByAi)
+        );
+
+        // when
+        when(webClient.method(HttpMethod.POST)
+                .uri(anyString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(any())
+                .retrieve()
+                .onStatus(any(), any())
+                .onStatus(any(), any())
+                .bodyToMono(RecommendWebClientResponse.class)
+        ).thenReturn(monoResponse);
+        mockSqlRepositories(10, true);
+        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+
+        // then
+        assertResponse(actual);
+        verify(recommendRepository, times(3))
+                .getRecommendedBoardGames(recommendedByAi);
     }
 
     private void mockSqlRepositories(long numRating, boolean hasData) {
@@ -123,10 +158,21 @@ public class RecommenderServiceTest {
 
         when(recommendRepository.getMyFavoriteGenre(userId)).thenReturn(favoriteGenres);
         when(ratingRepository.countByUser(userId)).thenReturn(numRating);
-        when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
         when(recommendRepository.getTopTenBoardGames()).thenReturn(thumbnails);
         when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
         when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);
+        if (numRating < 10)
+            when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
+        else
+            when(recommendRepository.getRecommendedBoardGames(anyList())).thenReturn(thumbnails);
+    }
+
+    private void assertResponse(RecommendForSingleResponse actual) {
+        assertThat(actual.keys().size()).isEqualTo(response.keys().size());
+        for (String key : response.keys()) {
+            assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);
+            assertThat(actual.descriptions().get(key)).isEqualTo(response.descriptions().get(key));
+        }
     }
 
     private List<String> setDescriptionByKey(List<String> keys) {

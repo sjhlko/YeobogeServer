@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,7 +32,7 @@ public class RecommenderServiceTest {
     private RecommendRepository recommendRepository;
     @Mock
     private RatingRepository ratingRepository;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
 
     private long userId;
@@ -80,15 +81,10 @@ public class RecommenderServiceTest {
         setUpResponse(keys);
 
         // when
-        when(recommendRepository.getMyFavoriteGenre(userId)).thenReturn(favoriteGenres);
-        when(ratingRepository.countByUser(userId)).thenReturn(0L);
-        when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
-        when(recommendRepository.getTopTenBoardGames()).thenReturn(thumbnails);
-        when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(Collections.emptyList());
-        when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(Collections.emptyList());
+        mockSqlRepositories(0, false);
+        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
         assertThat(actual.keys().size()).isEqualTo(response.keys().size());
         assertThat(actual.shelves()).isEqualTo(response.shelves());
         assertThat(actual.descriptions()).isEqualTo(response.descriptions());
@@ -110,22 +106,27 @@ public class RecommenderServiceTest {
         setUpResponse(keys);
 
         // when
-        when(recommendRepository.getMyFavoriteGenre(userId)).thenReturn(favoriteGenres);
-        when(ratingRepository.countByUser(userId)).thenReturn(0L);
-        when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
-        when(recommendRepository.getTopTenBoardGames()).thenReturn(thumbnails);
-        when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(thumbnails);
-        when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(thumbnails);
-
-        // then
+        mockSqlRepositories(0, true);
         RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
 
+        // then
         assertThat(actual.keys().size()).isEqualTo(response.keys().size());
         for (String key : response.keys()) {
             assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);
             assertThat(actual.descriptions().get(key)).isEqualTo(response.descriptions().get(key));
         }
         verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+    }
+
+    private void mockSqlRepositories(long numRating, boolean hasData) {
+        List<BoardGameThumbnailDto> listByNumRating = hasData ? thumbnails : Collections.emptyList();
+
+        when(recommendRepository.getMyFavoriteGenre(userId)).thenReturn(favoriteGenres);
+        when(ratingRepository.countByUser(userId)).thenReturn(numRating);
+        when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
+        when(recommendRepository.getTopTenBoardGames()).thenReturn(thumbnails);
+        when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
+        when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);
     }
 
     private List<String> setDescriptionByKey(List<String> keys) {

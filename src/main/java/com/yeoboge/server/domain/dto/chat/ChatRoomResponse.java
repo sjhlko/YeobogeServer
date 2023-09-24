@@ -15,6 +15,7 @@ public record ChatRoomResponse(
         String lastMessage,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern ="yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt,
+        Long unReadMessage,
         FriendInfoDto userInfo
 ) {
     public static ChatRoomResponse of(ChatRoom chatRoom, User user){

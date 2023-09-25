@@ -37,4 +37,30 @@ public class WebClientUtils {
                 )
                 .bodyToMono(responseDtoClass);
     }
+
+    /**
+     * 외부 API로 POST 요청을 비동기로 보낸 후 응답의 Response Body를 {@link Mono} 형태로 반환함.
+     *
+     * @param client {@link WebClient}
+     * @param responseDtoClass 요청한 API에서 응답하는 Response Body와 매핑할 클래스 타입
+     * @param request API 요청 시 요청 데이터에 포함할 Request Body
+     * @param endpoint 요청할 API 엔드포인트
+     * @return 해당 API 응답의 Response Body에 해당하는 정보를 {@code T} 형태로 매핑한 {@link Mono} 객체
+     * @param <T> API에서 응답으로 넘겨주는 Body와 매핑할 클래스 타입
+     * @param <E> 요청에 포함할 Request Body 클래스 타입
+     */
+    public static <T, E> Mono<T> post(WebClient client, Class<T> responseDtoClass, E request, String endpoint) {
+        return client.method(HttpMethod.POST)
+                .uri(endpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::is4xxClientError,
+                        clientResponse -> Mono.error(new AppException(CommonErrorCode.NOT_FOUND))
+                ).onStatus(
+                        HttpStatusCode::is5xxServerError,
+                        clientResponse -> Mono.error(new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR))
+                ).bodyToMono(responseDtoClass);
+    }
 }

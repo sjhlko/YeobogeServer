@@ -8,6 +8,10 @@ import lombok.Builder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * 평가한 보드게임이 적은 초기 사용자에게 선호하는 장르 별
+ * 인기 보드게임 목록을 생성하는 로직을 구현한 클래스
+ */
 public class RecommendedByGenreSql extends RecommendedBySQL {
     private long genreId;
 

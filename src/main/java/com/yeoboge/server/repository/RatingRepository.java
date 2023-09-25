@@ -24,6 +24,12 @@ public interface RatingRepository extends JpaRepository<Rating, Long>, CustomRat
     @Query("SELECT r FROM Rating r WHERE r.user.id = :userId and r.boardGame.id = :boardGameId")
     Optional<Rating> findByParentId(Long userId, Long boardGameId);
 
+    /**
+     * 사용자가 평가한 보드게임의 전체 개수를 조회함.
+     *
+     * @param userId 조회한 사용자 ID
+     * @return 해당 사용자가 평가한 전체 보드게임 수
+     */
     @Query("SELECT COUNT(r) FROM Rating r WHERE r.user.id = :userId")
     long countByUser(long userId);
 

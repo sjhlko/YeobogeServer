@@ -8,6 +8,9 @@ import lombok.Builder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * 장르 통합 인기 보드게임 목록을 추천 결과에 저장하는 구현한 클래스
+ */
 public class RecommendedByTop10 extends RecommendedBySQL {
     @Builder
     public RecommendedByTop10(RecommendRepository repository, RecommendTypes type) {

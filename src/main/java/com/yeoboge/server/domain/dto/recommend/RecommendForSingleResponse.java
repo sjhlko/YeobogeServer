@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Queue;
 
 /**
- * 개인 사용자에게 추천 및 보드게임 목록을 전달할 VO
+ * 개인 사용자에게 추천 및 보드게임 목록을 전달할 DTO
  *
  * @param shelves 각 카테고리 별로 {@link BoardGameThumbnailDto} 목록이 연결된 {@link Map}
  */

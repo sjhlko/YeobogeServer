@@ -27,7 +27,7 @@ public class RecommenderController {
      */
     @GetMapping("")
     ResponseEntity<Response<RecommendForSingleResponse>> get(@AuthenticationPrincipal Long userId) {
-        final int cacheMaxAge = 5 * 60;
+        final int cacheMaxAge = 4 * 60;
         RecommendForSingleResponse response = recommenderService.getSingleRecommendation(userId);
 
         return Response.cached(response, cacheMaxAge);

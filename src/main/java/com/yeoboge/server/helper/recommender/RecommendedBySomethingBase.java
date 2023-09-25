@@ -21,9 +21,9 @@ public abstract class RecommendedBySomethingBase implements RecommendedBySomethi
     protected void addToResponse(RecommendForSingleResponse response, List<BoardGameThumbnailDto> boardGames) {
         if (boardGames.isEmpty()) return;
 
-        response.keys().add(key);
-        response.shelves().put(key, boardGames);
-        response.descriptions().put(key, description);
+        response.addKey(key);
+        response.addBoardGameThumbnails(key, boardGames);
+        response.addDescription(key, description);
     }
 
     public abstract void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch);

@@ -1,13 +1,19 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Genre;
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.enums.error.CommonErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
+import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.RecommendRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +21,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -23,8 +31,12 @@ import java.util.concurrent.*;
 @Service
 @RequiredArgsConstructor
 public class RecommenderServiceImpl implements RecommenderService {
+    private final Map<UserGpsDto, Set<Long>> userPool = new ConcurrentHashMap<>();
+
     private final RecommendRepository recommendRepository;
     private final RatingRepository ratingRepository;
+    private final UserRepository userRepository;
+    private final FriendRepository friendRepository;
 
     private final WebClient webClient;
 
@@ -36,6 +48,19 @@ public class RecommenderServiceImpl implements RecommenderService {
         recommenderList.addAll(getGenreRecommender(userId, favoriteGenres));
 
         return runAsyncJobsForRecommendation(recommenderList);
+    }
+
+    @Override
+    public GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto) {
+        userPool.computeIfAbsent(gpsDto, k -> new ConcurrentSkipListSet<>()).add(userId);
+
+        waitForSeconds(5000L);
+        List<UserInfoDto> groupMembers = findGroupMembers(userId, gpsDto);
+
+        waitForSeconds(2000L);
+        removeFromUserPool(userId, gpsDto);
+
+        return GroupMembersResponse.builder().group(groupMembers).build();
     }
 
     /**
@@ -121,5 +146,34 @@ public class RecommenderServiceImpl implements RecommenderService {
         }
 
         return response;
+    }
+
+    private void waitForSeconds(long milliSeconds) {
+        try {
+            Thread.sleep(milliSeconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<UserInfoDto> findGroupMembers(long userId, UserGpsDto gpsDto) {
+        Set<Long> usersInSameArea = userPool.get(gpsDto);
+        List<Long> groupIds = friendRepository.findFriendIdsInIdList(userId, usersInSameArea.stream().toList());
+        groupIds.add(0, userId);
+
+        List<UserInfoDto> userInfos = new ArrayList<>();
+        for (long id : groupIds) {
+            User user = userRepository.getById(id);
+            userInfos.add(UserInfoDto.of(user));
+        }
+
+        return userInfos;
+    }
+
+    private void removeFromUserPool(long userId, UserGpsDto gpsDto) {
+        Set<Long> usersInSameArea = userPool.get(gpsDto);
+        usersInSameArea.remove(userId);
+        userPool.put(gpsDto, usersInSameArea);
+        if (userPool.get(gpsDto).isEmpty()) userPool.remove(gpsDto);
     }
 }

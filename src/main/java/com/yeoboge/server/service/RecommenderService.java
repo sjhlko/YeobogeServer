@@ -1,6 +1,8 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 
 /**
  * 추천 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
@@ -15,4 +17,6 @@ public interface RecommenderService {
      * @return 카테고리 별 추천 보드게임 목록 관련 메타데이터가 담긴 {@link RecommendForSingleResponse}
      */
     RecommendForSingleResponse getSingleRecommendation(Long userId);
+
+    GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto);
 }

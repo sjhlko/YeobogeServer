@@ -40,7 +40,7 @@ public class RecommenderController {
      * @param gpsDto 사용자의 현재 GPS 정보를 담은 {@link UserGpsDto}
      * @return 해당 그룹 구성원들의 기본 정보 리스트가 포함된 {@link GroupMembersResponse}
      */
-    @PostMapping("/group")
+    @PostMapping("/group-match")
     Response<GroupMembersResponse> getGroupMembers(
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto
     ) {

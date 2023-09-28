@@ -33,6 +33,13 @@ public class RecommenderController {
         return Response.cached(response, cacheMaxAge);
     }
 
+    /**
+     * 사용자와 현재 같은 위치인 친구와 그룹을 맺는 API
+     *
+     * @param userId 그룹 맺기를 요청한 사용자 ID
+     * @param gpsDto 사용자의 현재 GPS 정보를 담은 {@link UserGpsDto}
+     * @return 해당 그룹 구성원들의 기본 정보 리스트가 포함된 {@link GroupMembersResponse}
+     */
     @PostMapping("/group")
     Response<GroupMembersResponse> getGroupMembers(
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto

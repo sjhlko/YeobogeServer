@@ -148,6 +148,11 @@ public class RecommenderServiceImpl implements RecommenderService {
         return response;
     }
 
+    /**
+     * 특정 시간 동안 스레드의 동작을 대기시킴.
+     *
+     * @param milliSeconds 스레드가 대기할 시간
+     */
     private void waitForSeconds(long milliSeconds) {
         try {
             Thread.sleep(milliSeconds);
@@ -156,6 +161,13 @@ public class RecommenderServiceImpl implements RecommenderService {
         }
     }
 
+    /**
+     * {@code userPool}에서 사용자와 같은 위치인 친구들만 그룹에 포함시킴.
+     *
+     * @param userId 그룹 맺기를 요청한 사용자 ID
+     * @param gpsDto 사용자의 현재 GPS 정보가 담긴 {@link UserGpsDto}
+     * @return 사용자와 매칭된 그룹 구성원들의 {@link UserInfoDto} 리스트
+     */
     private List<UserInfoDto> findGroupMembers(long userId, UserGpsDto gpsDto) {
         Set<Long> usersInSameArea = userPool.get(gpsDto);
         List<Long> groupIds = friendRepository.findFriendIdsInIdList(userId, usersInSameArea.stream().toList());
@@ -170,6 +182,12 @@ public class RecommenderServiceImpl implements RecommenderService {
         return userInfos;
     }
 
+    /**
+     * 그룹 매칭 후 사용자를 {@code userPool}에서 제거함.
+     *
+     * @param userId 제거할 사용자 ID
+     * @param gpsDto 사용자의 현재 GPS {@link UserGpsDto}
+     */
     private void removeFromUserPool(long userId, UserGpsDto gpsDto) {
         Set<Long> usersInSameArea = userPool.get(gpsDto);
         usersInSameArea.remove(userId);

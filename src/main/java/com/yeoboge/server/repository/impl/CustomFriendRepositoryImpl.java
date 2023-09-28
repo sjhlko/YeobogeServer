@@ -4,7 +4,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.repository.CustomFriendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,8 +26,8 @@ public class CustomFriendRepositoryImpl implements CustomFriendRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<FriendInfoDto> getFriendsPage(Long id, Pageable pageable) {
-        List<FriendInfoDto> content = getFriendList(id, pageable);
+    public Page<UserInfoDto> getFriendsPage(Long id, Pageable pageable) {
+        List<UserInfoDto> content = getFriendList(id, pageable);
         JPAQuery<Long> countQuery = getFriendCountQuery(id);
 
         /* count가 필요하지 않을 때 해당 쿼리를 실행하지 않음 */
@@ -39,11 +39,11 @@ public class CustomFriendRepositoryImpl implements CustomFriendRepository {
      *
      * @param id 조회할 회원 ID
      * @param pageable 페이징 정보가 담긴 {@link Pageable}
-     * @return {@link FriendInfoDto} 리스트
+     * @return {@link UserInfoDto} 리스트
      */
-    private List<FriendInfoDto> getFriendList(Long id, Pageable pageable) {
+    private List<UserInfoDto> getFriendList(Long id, Pageable pageable) {
         return getFriendQueryBase(id,
-                Projections.constructor(FriendInfoDto.class,
+                Projections.constructor(UserInfoDto.class,
                         user.id,
                         user.nickname,
                         user.profileImagePath.as("imagePath")

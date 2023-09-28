@@ -6,7 +6,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.repository.CustomChatRoomRepository;
@@ -58,7 +58,7 @@ public class CustomChatRoomRepositoryImpl extends QuerydslRepositorySupport impl
                             chatMessage.message,
                             chatMessage.createdAt,
                             Projections.constructor(
-                                    FriendInfoDto.class,
+                                    UserInfoDto.class,
                                     user.id,
                                     user.nickname,
                                     user.profileImagePath

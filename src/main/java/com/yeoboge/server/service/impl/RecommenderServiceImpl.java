@@ -8,6 +8,7 @@ import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.enums.error.CommonErrorCode;
+import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
 import com.yeoboge.server.repository.FriendRepository;
@@ -171,7 +172,13 @@ public class RecommenderServiceImpl implements RecommenderService {
     private List<UserInfoDto> findGroupMembers(long userId, UserGpsDto gpsDto) {
         Set<Long> usersInSameArea = userPool.get(gpsDto);
         List<Long> groupIds = friendRepository.findFriendIdsInIdList(userId, usersInSameArea.stream().toList());
+
+        if (groupIds.isEmpty())
+            throw new AppException(GroupErrorCode.NO_GROUP_MEMBER);
+
         groupIds.add(0, userId);
+        if (groupIds.size() >= 10)
+            throw new AppException(GroupErrorCode.OVER_LIMIT_GROUP_MEMBER);
 
         List<UserInfoDto> userInfos = new ArrayList<>();
         for (long id : groupIds) {

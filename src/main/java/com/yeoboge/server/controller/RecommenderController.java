@@ -26,7 +26,7 @@ public class RecommenderController {
      * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link RecommendForSingleResponse}
      */
     @GetMapping("")
-    ResponseEntity<Response<RecommendForSingleResponse>> get(@AuthenticationPrincipal Long userId) {
+    ResponseEntity<Response<RecommendForSingleResponse>> getRecommendationForMe(@AuthenticationPrincipal Long userId) {
         final int cacheMaxAge = 4 * 60;
         RecommendForSingleResponse response = recommenderService.getSingleRecommendation(userId);
 

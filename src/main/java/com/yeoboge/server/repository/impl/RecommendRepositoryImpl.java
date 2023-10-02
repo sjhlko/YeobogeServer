@@ -18,6 +18,9 @@ import static com.yeoboge.server.domain.entity.immutable.QRecentRatings.recentRa
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
 import static com.yeoboge.server.domain.entity.QRating.rating;
 
+/**
+ * {@link RecommendRepository} 구현체
+ */
 @Repository
 @RequiredArgsConstructor
 public class RecommendRepositoryImpl implements RecommendRepository {
@@ -132,6 +135,11 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .fetch();
     }
 
+    /**
+     * 전체 조회 쿼리가 공통으로 사용하는 {@link BoardGameThumbnailDto} DTO 매핑 {@code Expression}을 반환함.
+     *
+     * @return DTO 매핑에 대한 {@link ConstructorExpression}
+     */
     private ConstructorExpression<BoardGameThumbnailDto> thumbnailConstructorProjection() {
         return Projections.constructor(
                 BoardGameThumbnailDto.class,
@@ -141,6 +149,12 @@ public class RecommendRepositoryImpl implements RecommendRepository {
         );
     }
 
+    /**
+     * DB 조회 시 결과 데이터들을 랜덤으로 가져오기 위해
+     * 해당 SQL 함수의 {@link Expressions}에 대한 정렬 {@link OrderSpecifier}를 반환함.
+     *
+     * @return SQL 랜덤 함수에 대한 {@link OrderSpecifier}
+     */
     private OrderSpecifier getRandomOrder() {
         return Expressions.numberTemplate(Double.class, "function('rand')").asc();
     }

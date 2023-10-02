@@ -1,7 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.domain.vo.user.RequestFriendRequest;
@@ -53,11 +53,11 @@ public class FriendController {
      * 친구 요청을 보내기 위해 특정 사용자의 닉네임으로 사용자를 검색함
      *
      * @param nickname 친구요청을 보내고픈 사용자의 닉네임
-     * @return 해당 닉네임을 가진 사용자의 정보를 담은 {@link FriendInfoDto} DTO
+     * @return 해당 닉네임을 가진 사용자의 정보를 담은 {@link UserInfoDto} DTO
      */
     @GetMapping("/requests/search")
-    public Response<FriendInfoDto> searchUserByNickname(@RequestParam String nickname) {
-        FriendInfoDto response = friendService.searchUserByNickname(nickname);
+    public Response<UserInfoDto> searchUserByNickname(@RequestParam String nickname) {
+        UserInfoDto response = friendService.searchUserByNickname(nickname);
         return Response.success(response);
     }
 

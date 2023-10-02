@@ -1,7 +1,7 @@
 package com.yeoboge.server.domain.dto.chat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
@@ -16,13 +16,13 @@ public record ChatRoomResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern ="yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt,
         Long unReadMessage,
-        FriendInfoDto userInfo
+        UserInfoDto userInfo
 ) {
     public static ChatRoomResponse of(ChatRoom chatRoom, User user){
         User friend = chatRoom.getTargetUser();
         if(Objects.equals(chatRoom.getTargetUser().getId(), user.getId()))
             friend = chatRoom.getCurrentUser();
-        FriendInfoDto friendInfoDto = FriendInfoDto.builder()
+        UserInfoDto friendInfoDto = UserInfoDto.builder()
                 .imagePath(friend.getProfileImagePath())
                 .id(friend.getId())
                 .nickname(friend.getNickname())

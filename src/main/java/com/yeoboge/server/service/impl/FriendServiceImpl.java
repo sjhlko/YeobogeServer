@@ -1,7 +1,7 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Friend;
 import com.yeoboge.server.domain.entity.FriendRequest;
 import com.yeoboge.server.domain.entity.User;
@@ -41,9 +41,9 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public FriendInfoDto searchUserByNickname(String nickname) {
+    public UserInfoDto searchUserByNickname(String nickname) {
         User user = userRepository.getByNickname(nickname);
-        return FriendInfoDto.of(user);
+        return UserInfoDto.of(user);
     }
 
     @Override

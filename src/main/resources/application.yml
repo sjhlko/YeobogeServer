@@ -49,6 +49,10 @@ cloud:
 logging:
   config: classpath:log4j2.xml
 
+fcm:
+  key:
+    path: fcm-key.json
+
 server:
   servlet:
     context-path: /api/v1

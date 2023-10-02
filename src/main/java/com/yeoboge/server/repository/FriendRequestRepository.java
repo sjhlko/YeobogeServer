@@ -1,6 +1,6 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.FriendRequest;
 import com.yeoboge.server.enums.error.FriendRequestErrorCode;
 import com.yeoboge.server.handler.AppException;
@@ -19,9 +19,9 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
      *
      * @param id 조회할 회원 ID
      * @param pageable 페이징 정보가 담긴 {@link Pageable}
-     * @return 페이징된 친구 요청한 사용자의 {@link FriendInfoDto} 목록
+     * @return 페이징된 친구 요청한 사용자의 {@link UserInfoDto} 목록
      */
-    Page<FriendInfoDto> getFriendRequestsPage(final Long id, final Pageable pageable);
+    Page<UserInfoDto> getFriendRequestsPage(final Long id, final Pageable pageable);
 
     /**
      * 친구 요청 수신자와 송신자의 아이디로 친구 요청이 이미 존재하는지 확인함

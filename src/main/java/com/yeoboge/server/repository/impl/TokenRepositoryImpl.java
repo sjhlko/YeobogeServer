@@ -43,4 +43,17 @@ public class TokenRepositoryImpl implements TokenRepository {
 
         return Optional.of(refreshToken);
     }
+
+    @Override
+    public void saveFcmToken(final Long id, final String token) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.set(id.toString(), token);
+    }
+
+    @Override
+    public Optional<String> findFcmToken(final Long id) {
+        String refreshToken = (String) redisTemplate.opsForValue().get(id.toString());
+        if (Objects.isNull(refreshToken)) return Optional.empty();
+        return Optional.of(refreshToken);
+    }
 }

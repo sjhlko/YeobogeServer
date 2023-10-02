@@ -1,6 +1,6 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,7 +10,7 @@ public interface CustomFriendRequestRepository {
      *
      * @param id 조회할 회원 ID
      * @param pageable 페이징 정보가 담긴 {@link Pageable}
-     * @return 페이징된 친구 요청한 사용자의 {@link FriendInfoDto} 목록
+     * @return 페이징된 친구 요청한 사용자의 {@link UserInfoDto} 목록
      */
-    Page<FriendInfoDto> getFriendRequestsPage(final Long id, final Pageable pageable);
+    Page<UserInfoDto> getFriendRequestsPage(final Long id, final Pageable pageable);
 }

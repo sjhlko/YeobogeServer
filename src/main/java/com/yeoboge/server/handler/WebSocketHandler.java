@@ -2,8 +2,11 @@ package com.yeoboge.server.handler;
 
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.entity.IsRead;
+import com.yeoboge.server.domain.vo.pushAlarm.ChattingPushAlarmRequest;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
+import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,11 +18,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -28,9 +27,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
-
+    private final TokenRepository tokenRepository;
+    private final PushAlarmService pushAlarmService;
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message){
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException, InterruptedException {
         //메시지 발송
         String payload = message.getPayload();
         JSONObject obj = jsonToObjectParser(payload);
@@ -47,23 +47,23 @@ public class WebSocketHandler extends TextWebSocketHandler {
         //여기서 룸 아이디 유효성 검증 또는 사람 아이디로 받고 검증
         HashMap<String, Object> temp = new HashMap<>();
         int openedSessionCount = 0;
-        if(sessionList.size() > 0) {
-            for(int i=0; i<sessionList.size(); i++) {
+        if (sessionList.size() > 0) {
+            for (int i = 0; i < sessionList.size(); i++) {
                 String roomNumber = (String) sessionList.get(i).get("roomId"); //세션리스트의 저장된 방번호를 가져와서
-                if(roomNumber.equals(roomId)) { //같은값의 방이 존재한다면
+                if (roomNumber.equals(roomId)) { //같은값의 방이 존재한다면
                     temp = sessionList.get(i); //해당 방번호의 세션리스트의 존재하는 모든 object값을 가져온다.
                     break;
                 }
             }
             //해당 방의 세션들만 찾아서 메시지를 발송해준다.
-            for(String k : temp.keySet()) {
-                if(k.equals("roomId")) { //다만 방번호일 경우에는 건너뛴다.
+            for (String k : temp.keySet()) {
+                if (k.equals("roomId")) { //다만 방번호일 경우에는 건너뛴다.
                     continue;
                 }
 
                 WebSocketSession wss = (WebSocketSession) temp.get(k);
 
-                if(wss != null) {
+                if (wss != null) {
                     try {
                         openedSessionCount++;
                         wss.sendMessage(new TextMessage(obj.toJSONString()));
@@ -73,9 +73,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
-        if(openedSessionCount==2)
-            chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId, IsRead.YES);
-        else chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId),currentUserId, IsRead.NO);
+        if (openedSessionCount == 2)
+            chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.YES);
+        else {
+            chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.NO);
+            Optional<String> fcmToken = tokenRepository.findFcmToken(Long.valueOf(targetUserId));
+            if(fcmToken.isEmpty()) return;
+            ChattingPushAlarmRequest request = ChattingPushAlarmRequest.builder()
+                    .targetToken(fcmToken.get())
+                    .message(msg)
+                    .userId(Long.valueOf(targetUserId))
+                    .build();
+            pushAlarmService.sendPushAlarmForChatting(request);
+        }
     }
 
     @Override
@@ -91,10 +101,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 currentUserId,
                 Long.parseLong(targetUserId)));
         int idx = sessionList.size(); //방의 사이즈를 조사한다.
-        if(sessionList.size() > 0) {
-            for(int i=0; i<sessionList.size(); i++) {
+        if (sessionList.size() > 0) {
+            for (int i = 0; i < sessionList.size(); i++) {
                 String roomId = (String) sessionList.get(i).get("roomId");
-                if(roomId.equals(roomNumber)) {
+                if (roomId.equals(roomNumber)) {
                     flag = true;
                     idx = i;
                     break;
@@ -102,10 +112,10 @@ public class WebSocketHandler extends TextWebSocketHandler {
             }
         }
 
-        if(flag) { //존재하는 방이라면 세션만 추가한다.
+        if (flag) { //존재하는 방이라면 세션만 추가한다.
             HashMap<String, Object> map = sessionList.get(idx);
             map.put(session.getId(), session);
-        }else { //최초 생성하는 방이라면 방번호와 세션을 추가한다.
+        } else { //최초 생성하는 방이라면 방번호와 세션을 추가한다.
             HashMap<String, Object> map = new HashMap<String, Object>();
             map.put("roomId", roomNumber);
             map.put(session.getId(), session);
@@ -124,13 +134,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         //소켓 종료
-        if(sessionList.size() > 0) { //소켓이 종료되면 해당 세션값들을 찾아서 지운다.
-            for(int i=0; i<sessionList.size(); i++) {
+        if (sessionList.size() > 0) { //소켓이 종료되면 해당 세션값들을 찾아서 지운다.
+            for (int i = 0; i < sessionList.size(); i++) {
                 sessionList.get(i).remove(session.getId());
             }
         }
         super.afterConnectionClosed(session, status);
     }
+
     private static JSONObject jsonToObjectParser(String jsonStr) {
         JSONParser parser = new JSONParser();
         JSONObject obj = null;

@@ -32,6 +32,9 @@ public interface TokenRepository {
      */
     Optional<String> findByToken(final String accessToken);
 
+    void saveFcmToken(final Long id, final String token);
+    Optional<String> findFcmToken(final Long id);
+
     default String getByToken(final String accessToken) {
         return findByToken(accessToken)
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));

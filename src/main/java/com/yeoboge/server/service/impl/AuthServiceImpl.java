@@ -139,6 +139,15 @@ public class AuthServiceImpl implements AuthService {
         return generateToken(userId);
     }
 
+    @Override
+    public MessageResponse updateFcmToken(FcmToken request, Long id) {
+        User user = userRepository.getById(id);
+        tokenRepository.saveFcmToken(user.getId(), request.token());
+        return MessageResponse.builder()
+                .message("fcm 토큰 저장 성공")
+                .build();
+    }
+
     /**
      * 비밀번호 암호화를 위해 해시를 적용함.
      *

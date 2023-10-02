@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.FriendRequestRepository;
 import com.yeoboge.server.service.impl.FriendServiceImpl;
@@ -37,7 +37,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(0, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -57,7 +57,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(1, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -77,7 +77,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(4, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -97,7 +97,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(0, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -117,7 +117,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(1, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -137,7 +137,7 @@ public class FriendServiceTest {
         // given
         Long userId = 1L;
         Pageable pageable = PageRequest.of(4, 1);
-        List<FriendInfoDto> friends = getFriendDtoList();
+        List<UserInfoDto> friends = getFriendDtoList();
         Page page = getFriendDtoPage(pageable, 5);
 
         // when
@@ -151,13 +151,13 @@ public class FriendServiceTest {
         assertThat(actual.getNextPage()).isNull();
     }
 
-    private Page<FriendInfoDto> getFriendDtoPage(Pageable pageable, int total) {
-        List<FriendInfoDto> content = getFriendDtoList();
+    private Page<UserInfoDto> getFriendDtoPage(Pageable pageable, int total) {
+        List<UserInfoDto> content = getFriendDtoList();
         return new PageImpl<>(content, pageable, total);
     }
 
-    private List<FriendInfoDto> getFriendDtoList() {
-        FriendInfoDto dto = FriendInfoDto.builder()
+    private List<UserInfoDto> getFriendDtoList() {
+        UserInfoDto dto = UserInfoDto.builder()
                 .id(1L)
                 .nickname("nickname")
                 .imagePath("image_path")

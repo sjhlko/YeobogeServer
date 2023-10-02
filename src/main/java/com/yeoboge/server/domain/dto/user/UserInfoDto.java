@@ -1,4 +1,4 @@
-package com.yeoboge.server.domain.dto.friend;
+package com.yeoboge.server.domain.dto.user;
 
 import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
@@ -11,9 +11,9 @@ import lombok.Builder;
  * @param imagePath 회원 프로필 이미지 링크
  */
 @Builder
-public record FriendInfoDto(Long id, String nickname, String imagePath) {
-    public static FriendInfoDto of(User user){
-        return FriendInfoDto.builder()
+public record UserInfoDto(Long id, String nickname, String imagePath) {
+    public static UserInfoDto of(User user){
+        return UserInfoDto.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imagePath(user.getProfileImagePath())

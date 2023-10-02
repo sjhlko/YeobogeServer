@@ -29,7 +29,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
 
     @Override
-    public void saveMessage(String message, String timeStamp, Long chatRoomId, Long userId) {
+    public void saveMessage(String message, String timeStamp, Long chatRoomId, Long userId, IsRead isRead) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if (chatRoom.isEmpty()) throw new AppException(ChattingErrorCode.CHAT_ROOM_NOT_FOUND);
         User user = userRepository.getById(userId);
@@ -39,7 +39,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .message(message)
                 .user(user)
                 .createdAt(LocalDateTime.parse(timeStamp,formatter))
-                .isRead(IsRead.NO)
+                .isRead(isRead)
                 .build();
         chatMessageRepository.save(chatMessage);
     }

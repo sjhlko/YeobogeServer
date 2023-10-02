@@ -3,11 +3,13 @@ package com.yeoboge.server.repository.impl;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
-import com.yeoboge.server.domain.dto.friend.FriendInfoDto;
+import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.ChatRoom;
+import com.yeoboge.server.domain.entity.IsRead;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.repository.CustomChatRoomRepository;
 import org.springframework.data.domain.Page;
@@ -57,8 +59,13 @@ public class CustomChatRoomRepositoryImpl extends QuerydslRepositorySupport impl
                             chatRoom.id,
                             chatMessage.message,
                             chatMessage.createdAt,
+                            JPAExpressions.select(chatMessage.count())
+                                    .from(chatMessage)
+                                    .where(chatMessage.user.id.eq(user.id))
+                                    .where(chatMessage.chatRoom.id.eq(chatRoom.id))
+                                    .where(chatMessage.isRead.eq(IsRead.NO)),
                             Projections.constructor(
-                                    FriendInfoDto.class,
+                                    UserInfoDto.class,
                                     user.id,
                                     user.nickname,
                                     user.profileImagePath

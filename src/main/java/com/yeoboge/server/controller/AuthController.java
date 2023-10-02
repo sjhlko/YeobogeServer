@@ -141,4 +141,12 @@ public class AuthController {
         MessageResponse messageResponse = authService.unregister(id, header);
         return Response.success(messageResponse);
     }
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PatchMapping("/fcm-token")
+    public Response<MessageResponse> updateFcmToken(@RequestBody FcmToken request,
+                                                    @AuthenticationPrincipal Long id) {
+        MessageResponse messageResponse = authService.updateFcmToken(request, id);
+        return Response.success(messageResponse);
+    }
 }

@@ -87,4 +87,5 @@ public interface AuthService {
      * @return 재발급된 토큰들을 담은 {@link Tokens}
      */
     Tokens refreshTokens(Tokens tokens);
+    MessageResponse updateFcmToken(FcmToken request, Long id);
 }

@@ -32,14 +32,14 @@ publish:
   services:
     - docker:24.0.4-dind
   before_script:
-    - cd ../
+    - cd ../../
     - ls
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker pull $TAG_LATEST || true
-    - docker build --cache-from $TAG_LATEST -t $TAG_LATEST -t $TAG_COMMIT .
-    - docker push $TAG_LATEST
-    - docker push $TAG_COMMIT
+    # - docker pull $TAG_LATEST || true
+    # - docker build --cache-from $TAG_LATEST -t $TAG_LATEST -t $TAG_COMMIT .
+    # - docker push $TAG_LATEST
+    # - docker push $TAG_COMMIT
 
 deploy:
   image: docker:24.0.4

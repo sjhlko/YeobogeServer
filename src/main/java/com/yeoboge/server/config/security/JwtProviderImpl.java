@@ -107,7 +107,7 @@ public class JwtProviderImpl implements JwtProvider {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(SIGNING_KEY)
                 .build()
                 .parseClaimsJws(token)

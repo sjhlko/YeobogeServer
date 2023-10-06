@@ -33,7 +33,7 @@ publish:
     - docker:24.0.4-dind
   before_script:
     - cd ../../../
-    - pwd
+    - ls
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker pull $TAG_LATEST || true

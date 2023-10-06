@@ -51,9 +51,9 @@ deploy:
   before_script:
     - docker --version
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker stop $CI_PROJECT_NAME || true
-    - docker rm $CI_PROJECT_NAME || true
-    - docker rmi $TAG_LATEST
+    # - docker stop $CI_PROJECT_NAME || true
+    # - docker rm $CI_PROJECT_NAME || true
+    # - docker rmi $TAG_LATEST
     - docker pull $TAG_LATEST
   script:
     - docker run --name $CI_PROJECT_NAME -d

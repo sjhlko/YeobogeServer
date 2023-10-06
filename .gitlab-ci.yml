@@ -32,7 +32,6 @@ publish:
   services:
     - docker:24.0.4-dind
   before_script:
-    - cd ../../../home/$EC2_USER_NAME
     - ls
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:

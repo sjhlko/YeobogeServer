@@ -32,7 +32,6 @@ publish:
   services:
     - docker:24.0.4-dind
   before_script:
-    - scp $EC2_USER_NAME@$SERVER_IP:/home/ubuntu/fcm-key.json /src/main/resources
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker pull $TAG_LATEST || true
@@ -48,7 +47,6 @@ deploy:
   tags: 
     - deployment
   before_script:
-    - scp $EC2_USER_NAME@$SERVER_IP:/home/ubuntu/fcm-key.json /src/main/resources
     - docker --version
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker stop $CI_PROJECT_NAME || true

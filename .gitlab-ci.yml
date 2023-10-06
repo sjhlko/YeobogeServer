@@ -32,8 +32,7 @@ publish:
   services:
     - docker:24.0.4-dind
   before_script:
-    - rm fcm-key.json
-    - echo $FCM_KEY  > fcm-key.json
+    - echo $FCM_KEY > fcm-key.json
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - ls

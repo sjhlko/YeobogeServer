@@ -79,7 +79,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     private FcmMessage.Data makeDataForChatting(User user){
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING.getKey())
-                .id(user.getId())
+                .id(user.getId().toString())
                 .build();
 
     }

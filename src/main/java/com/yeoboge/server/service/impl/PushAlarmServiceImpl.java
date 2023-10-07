@@ -53,7 +53,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
                         .notification(FcmMessage.Notification.builder()
                                 .title(user.getNickname())
                                 .body(request.message())
-                                .image(user.getProfileImagePath())
+                                .imageUrl(user.getProfileImagePath())
                                 .build()
                         )
                         .data(makeDataForChatting(user))

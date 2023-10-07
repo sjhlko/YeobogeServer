@@ -73,7 +73,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
-        if (openedSessionCount == 2)
+        if (openedSessionCount >= 2)
             chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.YES);
         else {
             chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.NO);
@@ -82,7 +82,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             ChattingPushAlarmRequest request = ChattingPushAlarmRequest.builder()
                     .targetToken(fcmToken.get())
                     .message(msg)
-                    .userId(Long.valueOf(targetUserId))
+                    .currentUserId(currentUserId)
                     .build();
             pushAlarmService.sendPushAlarmForChatting(request);
         }

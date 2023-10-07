@@ -34,10 +34,7 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class Data {
-
-        //맵 형식으로 바꾸기
         private PushAlarmType pushAlarmType;
-        private String keys;
-        private String data;
+        private Long id;
     }
 }

@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PushAlarmType {
-    CHATTING("chatting");
+    CHATTING("chatting"),
+    RATING("rating"),
+    FRIEND("friend");
     private String key;
 }

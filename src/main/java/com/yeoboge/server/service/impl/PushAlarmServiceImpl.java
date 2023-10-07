@@ -6,7 +6,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.pushAlarm.ChattingPushAlarmRequest;
 import com.yeoboge.server.domain.vo.pushAlarm.FcmMessage;
-import com.yeoboge.server.enums.pushAlarm.PushAlarmDataForChatting;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.PushAlarmService;
@@ -19,10 +18,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +45,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     private String makeMessageForChatting(ChattingPushAlarmRequest request) throws JsonProcessingException {
-        User user = userRepository.getById(request.userId());
+        User user = userRepository.getById(request.currentUserId());
 
         FcmMessage fcmMessage = FcmMessage.builder()
                 .message(FcmMessage.Message.builder()
@@ -81,17 +77,9 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     private FcmMessage.Data makeDataForChatting(User user){
-        Map<String,String> map = new HashMap<>();
-        map.put(PushAlarmDataForChatting.id.name(), user.getId().toString());
-        map.put(PushAlarmDataForChatting.nickname.name(), user.getNickname());
-        map.put(PushAlarmDataForChatting.img.name(), user.getProfileImagePath());
-        List<String> list = new ArrayList<>(map.keySet());
-        System.out.println(map);
-        System.out.println(list);
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING)
-                .data(map.toString())
-                .keys(list.toString())
+                .id(user.getId())
                 .build();
 
     }

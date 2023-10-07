@@ -34,7 +34,7 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class Data {
-        private PushAlarmType pushAlarmType;
+        private String pushAlarmType;
         private Long id;
     }
 }

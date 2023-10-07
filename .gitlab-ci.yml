@@ -1,5 +1,5 @@
 stages:
-  # - test
+  - test
   - publish
   - deploy
 
@@ -16,15 +16,15 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
-# test:
-#   image: gradle:jdk17
-#   stage: test
-#   script:
-#     - ./gradlew check
-#   artifacts:
-#     when: always
-#     reports:
-#       junit: build/test-results/test/**/TEST-*.xml
+test:
+ image: gradle:jdk17
+ stage: test
+ script:
+   - ./gradlew check
+ artifacts:
+   when: always
+   reports:
+     junit: build/test-results/test/**/TEST-*.xml
 
 publish:
   image: docker:24.0.4
@@ -35,7 +35,6 @@ publish:
     - echo "$FCM_KEY" > ./src/main/resources/fcm-key.json
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - cat ./src/main/resources/fcm-key.json
     - docker pull $TAG_LATEST || true
     - docker build --cache-from $TAG_LATEST -t $TAG_LATEST -t $TAG_COMMIT .
     - docker push $TAG_LATEST

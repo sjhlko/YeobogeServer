@@ -1,19 +1,19 @@
 package com.yeoboge.server.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.pushAlarm.ChattingPushAlarmRequest;
 import com.yeoboge.server.domain.vo.pushAlarm.FcmMessage;
+import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
+import com.yeoboge.server.enums.error.PushAlarmErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -59,24 +59,25 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
 
-    private String getAccessToken() throws IOException {
-        String firebaseConfigPath = "/fcm-key.json";
-
-        GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
-                .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
-
-        googleCredentials.refreshIfExpired();
-        return googleCredentials.getAccessToken().getTokenValue();
-    }
-
-    private FcmMessage.Data makeDataForChatting(User user, ChattingPushAlarmRequest request){
+    private FcmMessage.Data makeDataForChatting(PushAlarmRequest request){
+        User user = userRepository.getById(request.currentUserId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING.getKey())
                 .title(user.getNickname())
                 .body(request.message())
                 .image(user.getProfileImagePath())
                 .id(user.getId().toString())
+                .build();
+
+    }
+
+    private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request){
+        User user = userRepository.getById(request.currentUserId());
+        return FcmMessage.Data.builder()
+                .pushAlarmType(PushAlarmType.FRIEND_REQUEST.getKey())
+                .title(PushAlarmType.FRIEND_REQUEST.getTitle())
+                .body(user.getNickname() + PushAlarmType.FRIEND_REQUEST.getMessage())
+                .image(user.getProfileImagePath())
                 .build();
 
     }

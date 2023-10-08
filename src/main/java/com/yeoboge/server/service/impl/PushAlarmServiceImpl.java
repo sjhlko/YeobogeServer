@@ -52,7 +52,6 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     private String getAccessToken() {
         try {
             String firebaseConfigPath = "/fcm-key.json";
-
             GoogleCredentials googleCredentials = GoogleCredentials
                     .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
                     .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
@@ -69,6 +68,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         try {
             FcmMessage.Data data = makeDataForChatting(request);
             if(request.pushAlarmType()==PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
+            if(request.pushAlarmType()==PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
             FcmMessage fcmMessage = FcmMessage.builder()
                     .message(FcmMessage.Message.builder()
                             .token(request.targetToken())
@@ -85,7 +85,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     private FcmMessage.Data makeDataForChatting(PushAlarmRequest request){
-        User user = userRepository.getById(request.currentUserId());
+        User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING.getKey())
                 .title(user.getNickname())
@@ -97,11 +97,22 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request){
-        User user = userRepository.getById(request.currentUserId());
+        User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.FRIEND_REQUEST.getKey())
                 .title(PushAlarmType.FRIEND_REQUEST.getTitle())
                 .body(user.getNickname() + PushAlarmType.FRIEND_REQUEST.getMessage())
+                .image(user.getProfileImagePath())
+                .build();
+
+    }
+
+    private FcmMessage.Data makeDataForFriendAccept(PushAlarmRequest request){
+        User user = userRepository.getById(request.userId());
+        return FcmMessage.Data.builder()
+                .pushAlarmType(PushAlarmType.FRIEND_ACCEPT.getKey())
+                .title(PushAlarmType.FRIEND_ACCEPT.getTitle())
+                .body(user.getNickname() + PushAlarmType.FRIEND_ACCEPT.getMessage())
                 .image(user.getProfileImagePath())
                 .build();
 

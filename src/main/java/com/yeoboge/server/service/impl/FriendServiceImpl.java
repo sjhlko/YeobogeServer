@@ -71,7 +71,7 @@ public class FriendServiceImpl implements FriendService {
         if (fcmToken.isPresent()) {
             PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
                     .pushAlarmType(PushAlarmType.FRIEND_REQUEST)
-                    .currentUserId(id)
+                    .userId(id)
                     .targetToken(fcmToken.get())
                     .build();
             pushAlarmService.sendPushAlarm(pushAlarmRequest);
@@ -96,6 +96,15 @@ public class FriendServiceImpl implements FriendService {
                 .owner(receiver)
                 .build();
         friendRepository.save(friend);
+        Optional<String> fcmToken = tokenRepository.findFcmToken(id);
+        if (fcmToken.isPresent()) {
+            PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
+                    .pushAlarmType(PushAlarmType.FRIEND_ACCEPT)
+                    .userId(currentUserId)
+                    .targetToken(fcmToken.get())
+                    .build();
+            pushAlarmService.sendPushAlarm(pushAlarmRequest);
+        }
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 수락되었습니다.")
                 .build();

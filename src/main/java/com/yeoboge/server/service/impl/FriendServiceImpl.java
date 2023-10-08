@@ -5,18 +5,24 @@ import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Friend;
 import com.yeoboge.server.domain.entity.FriendRequest;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.user.RequestFriendRequest;
 import com.yeoboge.server.enums.error.FriendRequestErrorCode;
+import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.FriendRequestRepository;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.FriendService;
+import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * {@link FriendService} 구현체
@@ -27,6 +33,8 @@ public class FriendServiceImpl implements FriendService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final PushAlarmService pushAlarmService;
+    private final TokenRepository tokenRepository;
 
     @Override
     public PageResponse getFriends(Long id, Pageable pageable) {
@@ -50,7 +58,7 @@ public class FriendServiceImpl implements FriendService {
     public MessageResponse requestFriend(Long id, RequestFriendRequest request) {
         User requester = userRepository.getById(id);
         User receiver = userRepository.getById(request.id());
-        if (friendRequestRepository.existsByReceiverIdAndRequesterId(receiver.getId(), requester.getId())){
+        if (friendRequestRepository.existsByReceiverIdAndRequesterId(receiver.getId(), requester.getId())) {
             throw new AppException(FriendRequestErrorCode.REQUEST_ALREADY_EXISTS);
         }
         checkFriend(receiver.getId(), requester.getId());
@@ -59,6 +67,15 @@ public class FriendServiceImpl implements FriendService {
                 .receiver(receiver)
                 .build();
         friendRequestRepository.save(friendRequest);
+        Optional<String> fcmToken = tokenRepository.findFcmToken(request.id());
+        if (fcmToken.isPresent()) {
+            PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
+                    .pushAlarmType(PushAlarmType.FRIEND_REQUEST)
+                    .currentUserId(id)
+                    .targetToken(fcmToken.get())
+                    .build();
+            pushAlarmService.sendPushAlarm(pushAlarmRequest);
+        }
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 전송되었습니다.")
                 .build();
@@ -71,8 +88,8 @@ public class FriendServiceImpl implements FriendService {
         FriendRequest friendRequest = friendRequestRepository.getByReceiverIdAndRequesterId(currentUserId, id);
         checkFriend(receiver.getId(), requester.getId());
         friendRequestRepository.delete(friendRequest);
-        if(friendRequestRepository.existsByReceiverIdAndRequesterId(id, currentUserId)){
-            friendRequestRepository.delete(friendRequestRepository.getByReceiverIdAndRequesterId(id,currentUserId));
+        if (friendRequestRepository.existsByReceiverIdAndRequesterId(id, currentUserId)) {
+            friendRequestRepository.delete(friendRequestRepository.getByReceiverIdAndRequesterId(id, currentUserId));
         }
         Friend friend = Friend.builder()
                 .follower(requester)
@@ -101,13 +118,13 @@ public class FriendServiceImpl implements FriendService {
      * 두 회원이 이미 회원인지 확인함
      *
      * @param followerId 친구인지 확인할 유저 중 한명
-     * @param ownerId 친구인지 확인할 유저 중 나머지 한명
+     * @param ownerId    친구인지 확인할 유저 중 나머지 한명
      * @throws {@link AppException}
      */
-    private void checkFriend(Long followerId, Long ownerId){
+    private void checkFriend(Long followerId, Long ownerId) {
         if (friendRepository.existsByFollowerIdAndOwnerId(followerId, ownerId) ||
                 friendRepository.existsByFollowerIdAndOwnerId(ownerId, followerId)
-        ){
+        ) {
             throw new AppException(FriendRequestErrorCode.IS_ALREADY_FRIEND);
         }
     }

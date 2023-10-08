@@ -33,6 +33,7 @@ public interface TokenRepository {
     Optional<String> findByToken(final String accessToken);
 
     void saveFcmToken(final Long id, final String token);
+    void deleteFcmToken(final Long id);
     Optional<String> findFcmToken(final Long id);
 
     default String getByToken(final String accessToken) {

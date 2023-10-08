@@ -79,8 +79,9 @@ public class AuthController {
      */
     @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/logout")
-    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header) {
-        MessageResponse response = authService.logout(header);
+    public Response<MessageResponse> logout(@RequestHeader("Authorization") String header
+            , @AuthenticationPrincipal Long id) {
+        MessageResponse response = authService.logout(header, id);
         return Response.success(response);
     }
 
@@ -114,7 +115,7 @@ public class AuthController {
      * 비밀번호를 변경하는 API
      *
      * @param request 현재 비밀번호와 변경할 비밀번호에 대한 {@link UpdatePasswordRequest} VO
-     * @param id 현재 로그인한 회원의 인덱스
+     * @param id      현재 로그인한 회원의 인덱스
      * @return 비밀번호 변경 성공됨 메세지를 포함한 HTTP 200 응답
      * @see MessageResponse
      */
@@ -129,7 +130,7 @@ public class AuthController {
     /**
      * 회원 탈퇴 API
      *
-     * @param id 현재 로그인한 회원의 인덱스
+     * @param id     현재 로그인한 회원의 인덱스
      * @param header 탈퇴할 사용자의 Access Token 값을 가진 HTTP Header
      * @return 회원 탈퇴 성공됨 메세지를 포함한 HTTP 200 응답
      * @see MessageResponse

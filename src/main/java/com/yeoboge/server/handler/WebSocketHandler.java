@@ -100,6 +100,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
         String roomNumber = String.valueOf(chatRoomService.findChatRoomIdByUsers(
                 currentUserId,
                 Long.parseLong(targetUserId)));
+        //방 접속시 읽음 상태를 변경
+        chatMessageService.changeReadStatus(Long.parseLong(roomNumber),currentUserId);
         int idx = sessionList.size(); //방의 사이즈를 조사한다.
         if (sessionList.size() > 0) {
             for (int i = 0; i < sessionList.size(); i++) {

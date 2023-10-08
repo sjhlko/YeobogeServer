@@ -27,36 +27,61 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
     @Override
-    public void sendPushAlarmForChatting(ChattingPushAlarmRequest request) throws IOException, InterruptedException {
-        String message = makeMessageForChatting(request);
-        HttpRequest fcmRequest = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
-                .header("accept", "application/json")
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + getAccessToken())
-                .method("POST", HttpRequest.BodyPublishers.ofString(message))
-                .build();
+    public void sendPushAlarm(PushAlarmRequest request){
+        try {
+            String message = makeMessage(request);
+            HttpRequest fcmRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(API_URL))
+                    .header("accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + getAccessToken())
+                    .method("POST", HttpRequest.BodyPublishers.ofString(message))
+                    .build();
 
-        HttpResponse<String> response = HttpClient.newHttpClient().send(
-                fcmRequest,
-                HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    fcmRequest,
+                    HttpResponse.BodyHandlers.ofString());
 
-        System.out.println(response.body());
+            System.out.println(response.body());
+        } catch (Exception e){
+            throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
+        }
+
     }
 
-    private String makeMessageForChatting(ChattingPushAlarmRequest request) throws JsonProcessingException {
-        User user = userRepository.getById(request.currentUserId());
+    private String getAccessToken() {
+        try {
+            String firebaseConfigPath = "/fcm-key.json";
 
-        FcmMessage fcmMessage = FcmMessage.builder()
-                .message(FcmMessage.Message.builder()
-                        .token(request.targetToken())
-                        .data(makeDataForChatting(user, request))
-                        .build()
-                )
-                .validate_only(false)
-                .build();
+            GoogleCredentials googleCredentials = GoogleCredentials
+                    .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
+                    .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
-        return objectMapper.writeValueAsString(fcmMessage);
+            googleCredentials.refreshIfExpired();
+            return googleCredentials.getAccessToken().getTokenValue();
+        } catch (Exception e){
+            throw new AppException(PushAlarmErrorCode.CAN_NOT_MAKE_ACCESS_TOKEN);
+        }
+
+    }
+
+    private String makeMessage(PushAlarmRequest request){
+        try {
+            FcmMessage.Data data = makeDataForChatting(request);
+            if(request.pushAlarmType()==PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
+            FcmMessage fcmMessage = FcmMessage.builder()
+                    .message(FcmMessage.Message.builder()
+                            .token(request.targetToken())
+                            .data(data)
+                            .build()
+                    )
+                    .validate_only(false)
+                    .build();
+
+            return objectMapper.writeValueAsString(fcmMessage);
+        } catch (Exception e){
+            throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
+        }
     }
 
     private FcmMessage.Data makeDataForChatting(PushAlarmRequest request){

@@ -6,6 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface ChatMessageService {
     void saveMessage(String message, String timeStamp, Long ChatRoomId, Long userId, IsRead isRead);
-
     PageResponse getChatMessages(Long currentUserId, Long id, Pageable pageable);
+    void changeReadStatus(Long chatRoomId, Long userId);
 }

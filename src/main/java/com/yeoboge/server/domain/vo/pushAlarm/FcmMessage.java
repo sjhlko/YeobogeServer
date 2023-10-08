@@ -1,6 +1,5 @@
 package com.yeoboge.server.domain.vo.pushAlarm;
 
-import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +15,6 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private Notification notification;
         private String token;
         private Data data;
     }
@@ -24,17 +22,11 @@ public class FcmMessage {
     @Builder
     @AllArgsConstructor
     @Getter
-    public static class Notification {
+    public static class Data {
+        private String pushAlarmType;
         private String title;
         private String body;
         private String image;
-    }
-
-    @Builder
-    @AllArgsConstructor
-    @Getter
-    public static class Data {
-        private String pushAlarmType;
         private String id;
     }
 }

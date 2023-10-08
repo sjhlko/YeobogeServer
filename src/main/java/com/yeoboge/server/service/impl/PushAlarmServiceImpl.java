@@ -50,13 +50,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         FcmMessage fcmMessage = FcmMessage.builder()
                 .message(FcmMessage.Message.builder()
                         .token(request.targetToken())
-                        .notification(FcmMessage.Notification.builder()
-                                .title(user.getNickname())
-                                .body(request.message())
-                                .image(user.getProfileImagePath())
-                                .build()
-                        )
-                        .data(makeDataForChatting(user))
+                        .data(makeDataForChatting(user, request))
                         .build()
                 )
                 .validate_only(false)
@@ -76,9 +70,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         return googleCredentials.getAccessToken().getTokenValue();
     }
 
-    private FcmMessage.Data makeDataForChatting(User user){
+    private FcmMessage.Data makeDataForChatting(User user, ChattingPushAlarmRequest request){
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING.getKey())
+                .title(user.getNickname())
+                .body(request.message())
+                .image(user.getProfileImagePath())
                 .id(user.getId().toString())
                 .build();
 

@@ -2,7 +2,8 @@ package com.yeoboge.server.handler;
 
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.entity.IsRead;
-import com.yeoboge.server.domain.vo.pushAlarm.ChattingPushAlarmRequest;
+import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
+import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
@@ -79,12 +80,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
             chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.NO);
             Optional<String> fcmToken = tokenRepository.findFcmToken(Long.valueOf(targetUserId));
             if(fcmToken.isEmpty()) return;
-            ChattingPushAlarmRequest request = ChattingPushAlarmRequest.builder()
+            PushAlarmRequest request = PushAlarmRequest.builder()
+                    .pushAlarmType(PushAlarmType.CHATTING)
                     .targetToken(fcmToken.get())
                     .message(msg)
                     .currentUserId(currentUserId)
                     .build();
-            pushAlarmService.sendPushAlarmForChatting(request);
+            pushAlarmService.sendPushAlarm(request);
         }
     }
 

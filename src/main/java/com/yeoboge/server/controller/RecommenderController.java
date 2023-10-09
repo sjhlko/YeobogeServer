@@ -4,6 +4,7 @@ import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.response.Response;
+import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class RecommenderController {
     private final RecommenderService recommenderService;
+    private final GroupRecommenderService groupRecommenderService;
 
     /**
      * 사용자 개인 맞춤 추천 및 카테고리 별 보드게임 목록을 조회하는 API
@@ -44,7 +46,7 @@ public class RecommenderController {
     Response<GroupMembersResponse> getGroupMembers(
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto
     ) {
-        GroupMembersResponse response = recommenderService.getGroupMembers(userId, gpsDto);
+        GroupMembersResponse response = groupRecommenderService.getGroupMembers(userId, gpsDto);
         return Response.success(response);
     }
 }

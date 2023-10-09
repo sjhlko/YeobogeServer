@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record PushAlarmRequest(
         PushAlarmType pushAlarmType,
-        Long currentUserId,
+        Long userId,
         String message,
         String targetToken
 ) { }

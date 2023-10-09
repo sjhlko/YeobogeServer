@@ -174,14 +174,16 @@ public class AuthServiceTest {
         // given
         String header = "Bearer access_token";
         String accessToken = "access_token";
+        Long userId = 0L;
         MessageResponse expected = MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();
 
         // when
         doNothing().when(tokenRepository).delete(accessToken);
+        doNothing().when(tokenRepository).deleteFcmToken(userId);
 
-        MessageResponse actual = authService.logout(header);
+        MessageResponse actual = authService.logout(header, userId);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -193,12 +195,13 @@ public class AuthServiceTest {
         // given
         String header = "Bearer invalid_access_token";
         String invalidToken = "invalid_access_token";
+        Long userId = 0L;
 
         // when
         doThrow(AppException.class).when(tokenRepository).delete(invalidToken);
 
         // then
-        assertThatThrownBy(() -> authService.logout(header))
+        assertThatThrownBy(() -> authService.logout(header, userId))
                 .isInstanceOf(AppException.class);
     }
 

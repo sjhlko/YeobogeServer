@@ -81,11 +81,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse logout(String header) {
+    public MessageResponse logout(String header, Long id) {
         String accessToken = header.substring(TOKEN_SPLIT_INDEX);
 
         tokenRepository.delete(accessToken);
-
+        tokenRepository.deleteFcmToken(id);
         return MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();

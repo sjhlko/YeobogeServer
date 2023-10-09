@@ -84,7 +84,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     .pushAlarmType(PushAlarmType.CHATTING)
                     .targetToken(fcmToken.get())
                     .message(msg)
-                    .currentUserId(currentUserId)
+                    .userId(currentUserId)
                     .build();
             pushAlarmService.sendPushAlarm(request);
         }

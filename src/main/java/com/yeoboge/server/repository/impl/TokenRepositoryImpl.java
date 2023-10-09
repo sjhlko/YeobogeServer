@@ -52,7 +52,7 @@ public class TokenRepositoryImpl implements TokenRepository {
 
     @Override
     public void deleteFcmToken(Long id) {
-        if (Boolean.FALSE.equals(redisTemplate.delete(id)))
+        if (Boolean.FALSE.equals(redisTemplate.delete(id.toString())))
             throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
     }
 

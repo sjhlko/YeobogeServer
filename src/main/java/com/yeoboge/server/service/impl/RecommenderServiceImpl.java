@@ -3,9 +3,8 @@ package com.yeoboge.server.service.impl;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.enums.RecommendTypes;
-import com.yeoboge.server.enums.error.CommonErrorCode;
-import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.*;
+import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.RecommendRepository;
 import com.yeoboge.server.service.RecommenderService;
@@ -109,16 +108,12 @@ public class RecommenderServiceImpl implements RecommenderService {
         RecommendForSingleResponse response = new RecommendForSingleResponse(
                 new ConcurrentLinkedQueue<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>()
         );
-        CountDownLatch latch = new CountDownLatch(recommenders.size());
+        CountDownLatch latch = ThreadUtils.getThreadAwaiter(recommenders.size());
 
         for (RecommendedBySomething recommender : recommenders)
             recommender.addRecommendedDataToResponse(response, latch);
 
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-        }
+        ThreadUtils.awaitUntilJobsDone(latch);
 
         return response;
     }

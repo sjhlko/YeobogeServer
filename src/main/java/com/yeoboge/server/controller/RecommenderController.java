@@ -1,8 +1,10 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
+import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.RecommenderService;
@@ -47,6 +49,12 @@ public class RecommenderController {
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto
     ) {
         GroupMembersResponse response = groupRecommenderService.getGroupMembers(userId, gpsDto);
+        return Response.success(response);
+    }
+
+    @PostMapping("/group")
+    Response<GroupRecommendationResponse> getGroupRecommendation(@RequestBody GroupRecommendationRequest request) {
+        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(request);
         return Response.success(response);
     }
 }

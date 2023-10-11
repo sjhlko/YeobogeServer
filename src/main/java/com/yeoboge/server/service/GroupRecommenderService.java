@@ -1,7 +1,9 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
+import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 
 /**
  * 그룹 추천 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
@@ -15,4 +17,6 @@ public interface GroupRecommenderService {
      * @return 사용자와 매칭된 그룹에 대한 {@link GroupMembersResponse}
      */
     GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto);
+
+    GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
 }

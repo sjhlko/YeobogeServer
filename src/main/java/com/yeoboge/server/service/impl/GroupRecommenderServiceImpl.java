@@ -1,17 +1,27 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
+import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.utils.ThreadUtils;
+import com.yeoboge.server.helper.utils.WebClientUtils;
+import com.yeoboge.server.repository.BoardGameRepository;
 import com.yeoboge.server.repository.FriendRepository;
+import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.GroupRecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link GroupRecommenderService} 구현체
@@ -27,8 +38,13 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @RequiredArgsConstructor
 public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final Map<UserGpsDto, Set<Long>> userPool = new ConcurrentHashMap<>();
+
     private final UserRepository userRepository;
+    private final RatingRepository ratingRepository;
     private final FriendRepository friendRepository;
+    private final BoardGameRepository boardGameRepository;
+
+    private final WebClient webClient;
 
     @Override
     public GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto) {
@@ -41,6 +57,36 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         removeFromUserPool(userId, gpsDto);
 
         return GroupMembersResponse.builder().group(groupMembers).build();
+    }
+
+    @Override
+    @Transactional
+    public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
+        GroupRecommendationResponse response = new GroupRecommendationResponse(new CopyOnWriteArrayList<>());
+        request.setRecommendableMembers(findRecommendableMembers(request.members()));
+        Mono<RecommendWebClientResponse> mono = WebClientUtils.post(
+                webClient,
+                RecommendWebClientResponse.class,
+                request,
+                "/recommends/group"
+        );
+
+        List<Long> recommendedIds = mono.block().result();
+        List<BoardGameDetailedThumbnailDto> recommendation = boardGameRepository.findBoardGameInIdList(recommendedIds);
+        response.addRecommendationBoardGames(recommendation);
+
+        return response;
+    }
+
+    private List<Long> findRecommendableMembers(List<Long> members) {
+        List<Long> recommendableMembers = new ArrayList<>();
+
+        for (long memberId : members) {
+            long numRating = ratingRepository.countByUser(memberId);
+            if (numRating >= 10) recommendableMembers.add(memberId);
+        }
+
+        return recommendableMembers;
     }
 
     /**

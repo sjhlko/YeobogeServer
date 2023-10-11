@@ -261,9 +261,9 @@ public class BoardGameServiceImpl implements BoardGameService {
             Pageable pageable,
             SearchBoardGameRequest request
     ) {
-        Page<BoardGame> searchResults = boardGameRepository
+        Page<BoardGameDetailedThumbnailDto> searchResults = boardGameRepository
                 .findBoardGameBySearchOption(pageable, request);
-        PageResponse responses = new PageResponse(searchResults.map(BoardGameDetailedThumbnailDto::of));
+        PageResponse responses = new PageResponse(searchResults);
         return responses;
     }
 

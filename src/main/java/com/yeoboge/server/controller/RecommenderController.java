@@ -2,7 +2,7 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.response.Response;
@@ -27,12 +27,12 @@ public class RecommenderController {
      * 사용자 개인 맞춤 추천 및 카테고리 별 보드게임 목록을 조회하는 API
      *
      * @param userId 조회할 사용자 ID
-     * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link RecommendForSingleResponse}
+     * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link IndividualRecommendationResponse}
      */
     @GetMapping("")
-    ResponseEntity<Response<RecommendForSingleResponse>> getRecommendationForMe(@AuthenticationPrincipal Long userId) {
+    ResponseEntity<Response<IndividualRecommendationResponse>> getRecommendationForMe(@AuthenticationPrincipal Long userId) {
         final int cacheMaxAge = 4 * 60;
-        RecommendForSingleResponse response = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse response = recommenderService.getSingleRecommendation(userId);
 
         return Response.cached(response, cacheMaxAge);
     }

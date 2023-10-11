@@ -1,6 +1,6 @@
 package com.yeoboge.server.service.impl;
 
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.helper.recommender.*;
@@ -28,7 +28,7 @@ public class RecommenderServiceImpl implements RecommenderService {
     private final WebClient webClient;
 
     @Override
-    public RecommendForSingleResponse getSingleRecommendation(Long userId) {
+    public IndividualRecommendationResponse getSingleRecommendation(Long userId) {
         List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
 
         List<RecommendedBySomething> recommenderList = getRecommenderList(userId);
@@ -98,14 +98,14 @@ public class RecommenderServiceImpl implements RecommenderService {
     }
 
     /**
-     * 사용자에게 추천할 보드게임 카테고리마다 추천 목록을 생성후 해당 메타데이터를 {@link RecommendForSingleResponse}에 추가함.
-     * 그리고 모든 로직은 비동기로 동작되므로 모든 로직이 완료될 때까지 대기한 뒤 {@link RecommendForSingleResponse}를 반환함.
+     * 사용자에게 추천할 보드게임 카테고리마다 추천 목록을 생성후 해당 메타데이터를 {@link IndividualRecommendationResponse}에 추가함.
+     * 그리고 모든 로직은 비동기로 동작되므로 모든 로직이 완료될 때까지 대기한 뒤 {@link IndividualRecommendationResponse}를 반환함.
      *
      * @param recommenders 카테고리별 추천 목록 생성 메서드를 제공하는 {@link RecommendedBySomething} 리스트
-     * @return 추천할 보드게임 목록의 메타데이터들이 담긴 {@link RecommendForSingleResponse}
+     * @return 추천할 보드게임 목록의 메타데이터들이 담긴 {@link IndividualRecommendationResponse}
      */
-    private RecommendForSingleResponse runAsyncJobsForRecommendation(List<RecommendedBySomething> recommenders) {
-        RecommendForSingleResponse response = new RecommendForSingleResponse(
+    private IndividualRecommendationResponse runAsyncJobsForRecommendation(List<RecommendedBySomething> recommenders) {
+        IndividualRecommendationResponse response = new IndividualRecommendationResponse(
                 new ConcurrentLinkedQueue<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>()
         );
         CountDownLatch latch = ThreadUtils.getThreadAwaiter(recommenders.size());

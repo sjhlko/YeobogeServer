@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
@@ -42,7 +42,7 @@ public class RecommenderServiceTest {
     private long userId;
     private List<Genre> favoriteGenres;
     private List<BoardGameThumbnailDto> thumbnails;
-    private RecommendForSingleResponse response;
+    private IndividualRecommendationResponse response;
 
     @BeforeEach
     public void setUp() {
@@ -64,7 +64,7 @@ public class RecommenderServiceTest {
                 new BoardGameThumbnailDto(9L, "board_game9", "image_path9"),
                 new BoardGameThumbnailDto(10L, "board_game10", "image_path10")
         );
-        response = new RecommendForSingleResponse(
+        response = new IndividualRecommendationResponse(
                 new LinkedList<>(),
                 new HashMap<>(),
                 new HashMap<>()
@@ -86,7 +86,7 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, false);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -109,7 +109,7 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, true);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -145,7 +145,7 @@ public class RecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         mockSqlRepositories(10, true);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -167,7 +167,7 @@ public class RecommenderServiceTest {
             when(recommendRepository.getRecommendedBoardGames(anyList())).thenReturn(thumbnails);
     }
 
-    private void assertResponse(RecommendForSingleResponse actual) {
+    private void assertResponse(IndividualRecommendationResponse actual) {
         assertThat(actual.keys().size()).isEqualTo(response.keys().size());
         for (String key : response.keys()) {
             assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);

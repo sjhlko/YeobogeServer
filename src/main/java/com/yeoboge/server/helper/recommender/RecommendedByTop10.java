@@ -1,6 +1,6 @@
 package com.yeoboge.server.helper.recommender;
 
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.Builder;
@@ -19,7 +19,7 @@ public class RecommendedByTop10 extends RecommendedBySQL {
     }
 
     @Override
-    public void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch) {
+    public void addRecommendedDataToResponse(IndividualRecommendationResponse response, CountDownLatch latch) {
         this.future = CompletableFuture.supplyAsync(() -> repository.getTopTenBoardGames());
         setAsyncProcessing(response, latch);
     }

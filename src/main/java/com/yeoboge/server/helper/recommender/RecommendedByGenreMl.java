@@ -1,7 +1,7 @@
 package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendWithGenreRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
@@ -34,7 +34,7 @@ public class RecommendedByGenreMl extends RecommendedByML {
     }
 
     @Override
-    public void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch) {
+    public void addRecommendedDataToResponse(IndividualRecommendationResponse response, CountDownLatch latch) {
         final String endPoint = "/recommends";
         Mono<RecommendWebClientResponse> mono = getWebClientMono(RecommendWebClientResponse.class, endPoint);
         mono.subscribe(wr -> {

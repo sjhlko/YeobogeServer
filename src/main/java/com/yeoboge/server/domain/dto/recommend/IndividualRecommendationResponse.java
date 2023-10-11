@@ -11,7 +11,7 @@ import java.util.Queue;
  *
  * @param shelves 각 카테고리 별로 {@link BoardGameThumbnailDto} 목록이 연결된 {@link Map}
  */
-public record RecommendForSingleResponse(
+public record IndividualRecommendationResponse(
         Queue<String> keys,
         Map<String, List<BoardGameThumbnailDto>> shelves,
         Map<String, String> descriptions

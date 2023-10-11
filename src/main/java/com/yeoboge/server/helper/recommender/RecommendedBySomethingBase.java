@@ -1,7 +1,7 @@
 package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 
@@ -25,12 +25,12 @@ public abstract class RecommendedBySomethingBase implements RecommendedBySomethi
     /**
      * 추천 보드게임 목록이 생성된 카테고리에 대해서만
      * 해당 카테고리의 key, {@link BoardGameThumbnailDto} 리스트, 타이틀을
-     * {@link RecommendForSingleResponse}에 추가함.
+     * {@link IndividualRecommendationResponse}에 추가함.
      *
-     * @param response {@link RecommendForSingleResponse}
+     * @param response {@link IndividualRecommendationResponse}
      * @param boardGames 사용자에게 추천할 보드게임 {@link BoardGameThumbnailDto} 리스트
      */
-    protected void addToResponse(RecommendForSingleResponse response, List<BoardGameThumbnailDto> boardGames) {
+    protected void addToResponse(IndividualRecommendationResponse response, List<BoardGameThumbnailDto> boardGames) {
         if (boardGames.isEmpty()) return;
 
         response.addKey(key);
@@ -38,5 +38,5 @@ public abstract class RecommendedBySomethingBase implements RecommendedBySomethi
         response.addDescription(key, description);
     }
 
-    public abstract void addRecommendedDataToResponse(RecommendForSingleResponse response, CountDownLatch latch);
+    public abstract void addRecommendedDataToResponse(IndividualRecommendationResponse response, CountDownLatch latch);
 }

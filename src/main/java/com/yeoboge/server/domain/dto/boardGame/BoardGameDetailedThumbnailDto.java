@@ -19,7 +19,7 @@ import java.util.List;
  * @param weight 보드게임의 장르
  */
 @Builder
-public record SearchBoardGameResponse(
+public record BoardGameDetailedThumbnailDto(
         Long id,
         String name,
         String imagePath,
@@ -35,8 +35,8 @@ public record SearchBoardGameResponse(
      *
      * @param boardGame 보드게임 검색 결과 DTO를 생성할 보드게임 entity
      */
-    public static SearchBoardGameResponse of(BoardGame boardGame) {
-        return SearchBoardGameResponse.builder()
+    public static BoardGameDetailedThumbnailDto of(BoardGame boardGame) {
+        return BoardGameDetailedThumbnailDto.builder()
                 .id(boardGame.getId())
                 .name(boardGame.getName())
                 .imagePath(boardGame.getImagePath())

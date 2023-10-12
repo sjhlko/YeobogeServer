@@ -90,7 +90,7 @@ public class RecommenderServiceTest {
 
         // then
         assertResponse(actual);
-        verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+        verify(recommendRepository, never()).getRecommendedBoardGamesForIndividual(anyList());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class RecommenderServiceTest {
 
         // then
         assertResponse(actual);
-        verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+        verify(recommendRepository, never()).getRecommendedBoardGamesForIndividual(anyList());
     }
 
     @Test
@@ -150,7 +150,7 @@ public class RecommenderServiceTest {
         // then
         assertResponse(actual);
         verify(recommendRepository, times(3))
-                .getRecommendedBoardGames(recommendedByAi);
+                .getRecommendedBoardGamesForIndividual(recommendedByAi);
     }
 
     private void mockSqlRepositories(long numRating, boolean hasData) {
@@ -164,7 +164,7 @@ public class RecommenderServiceTest {
         if (numRating < 10)
             when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
         else
-            when(recommendRepository.getRecommendedBoardGames(anyList())).thenReturn(thumbnails);
+            when(recommendRepository.getRecommendedBoardGamesForIndividual(anyList())).thenReturn(thumbnails);
     }
 
     private void assertResponse(IndividualRecommendationResponse actual) {

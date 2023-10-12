@@ -46,15 +46,6 @@ public class CustomBoardGameRepositoryImpl implements CustomBoardGameRepository 
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
     }
 
-    @Override
-    public List<BoardGameDetailedThumbnailDto> findBoardGameInIdList(List<Long> boardGameIds) {
-        return getBaseQuery(boardGame)
-                .where(boardGame.id.in(boardGameIds))
-                .fetch()
-                .stream().map(BoardGameDetailedThumbnailDto::of)
-                .toList();
-    }
-
     private <T> JPAQuery<T> getBaseQuery(Expression<T> selectExpression) {
         return queryFactory.select(selectExpression)
                 .from(boardGame)

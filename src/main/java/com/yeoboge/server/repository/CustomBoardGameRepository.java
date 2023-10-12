@@ -5,8 +5,6 @@ import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 /**
  * 보드게임 관련 {@code QueryDsl} 쿼리를 정의하는 인터페이스
  */
@@ -19,6 +17,4 @@ public interface CustomBoardGameRepository {
      * @return 검색 조건에 부합하는 보드게임 {@link BoardGameDetailedThumbnailDto}
      */
     Page<BoardGameDetailedThumbnailDto> findBoardGameBySearchOption(Pageable pageable, SearchBoardGameRequest request);
-
-    List<BoardGameDetailedThumbnailDto> findBoardGameInIdList(List<Long> boardGameIds);
 }

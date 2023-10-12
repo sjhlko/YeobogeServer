@@ -45,7 +45,7 @@ public class AIIndividualRecommender extends AbstractIndividualRecommender {
                 client, RecommendWebClientResponse.class, requestBody, END_POINT
         );
         mono.subscribe(wr -> {
-            List<BoardGameThumbnailDto> boardGames = repository.getRecommendedBoardGames(wr.result());
+            List<BoardGameThumbnailDto> boardGames = repository.getRecommendedBoardGamesForIndividual(wr.result());
             response.addRecommendationsForIndividual(boardGames, key, description);
             latch.countDown();
         });

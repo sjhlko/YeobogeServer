@@ -24,7 +24,9 @@ public interface RecommendRepository {
      * @param ids AI가 추천한 보드게임 ID 리스트
      * @return 해당 ID들의 {@link BoardGameThumbnailDto} 리스트
      */
-    List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids);
+    List<BoardGameThumbnailDto> getRecommendedBoardGamesForIndividual(List<Long> ids);
+
+    List<BoardGameDetailedThumbnailDto> getRecommendedBoardGamesForGroup(List<Long> ids);
 
     /**
      * 사용자가 선호하는 장르의 인기 보드게임 목록을 조회함.

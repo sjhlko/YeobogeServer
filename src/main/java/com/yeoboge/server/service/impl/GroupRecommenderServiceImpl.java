@@ -12,9 +12,9 @@ import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.helper.utils.WebClientUtils;
-import com.yeoboge.server.repository.BoardGameRepository;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.RatingRepository;
+import com.yeoboge.server.repository.RecommendRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.GroupRecommenderService;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,7 +39,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final UserRepository userRepository;
     private final RatingRepository ratingRepository;
     private final FriendRepository friendRepository;
-    private final BoardGameRepository boardGameRepository;
+    private final RecommendRepository recommendRepository;
 
     private final WebClient webClient;
 
@@ -72,7 +69,8 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         );
 
         List<Long> recommendedIds = mono.block().result();
-        List<BoardGameDetailedThumbnailDto> recommendation = boardGameRepository.findBoardGameInIdList(recommendedIds);
+        List<BoardGameDetailedThumbnailDto> recommendation =
+                recommendRepository.getRecommendedBoardGamesForGroup(recommendedIds);
         response.addRecommendationBoardGames(recommendation);
 
         return response;

@@ -162,7 +162,7 @@ public class RecommenderServiceTest {
         when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
         when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);
         if (numRating < 10)
-            when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
+            when(recommendRepository.getPopularBoardGamesOfGenreForIndividual(any())).thenReturn(thumbnails);
         else
             when(recommendRepository.getRecommendedBoardGamesForIndividual(anyList())).thenReturn(thumbnails);
     }

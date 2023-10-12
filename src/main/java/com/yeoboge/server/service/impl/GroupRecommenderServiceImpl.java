@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
+import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
@@ -60,7 +61,37 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     @Transactional
     public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
         GroupRecommendationResponse response = new GroupRecommendationResponse(new CopyOnWriteArrayList<>());
-        request.setRecommendableMembers(findRecommendableMembers(request.members()));
+        List<Long> recommendableMembers = findRecommendableMembers(request.members());
+
+        // TODO
+        //  - Genre Group Recommender에서 처리
+        if (recommendableMembers.size() == 0) {
+            Map<Long, Integer> favoriteGenresOfMember = new HashMap<>();
+            for (long memberId : request.members()) {
+                List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(memberId);
+                for (Genre genre : favoriteGenres) {
+                    favoriteGenresOfMember.put(genre.getId(), favoriteGenresOfMember.getOrDefault(genre.getId(), 0) + 1);
+                }
+            }
+
+            long mostFavoriteGenreId = favoriteGenresOfMember.keySet().stream().toList().get(0);
+            int genreSelectedCount = favoriteGenresOfMember.get(mostFavoriteGenreId);
+            for (long genreId : favoriteGenresOfMember.keySet()) {
+                if (favoriteGenresOfMember.get(genreId) > genreSelectedCount) {
+                    mostFavoriteGenreId = genreId;
+                    genreSelectedCount = favoriteGenresOfMember.get(genreId);
+                }
+            }
+
+            List<BoardGameDetailedThumbnailDto> recommendation =
+                    recommendRepository.getPopularBoardGamesOfGenreForGroup(mostFavoriteGenreId);
+            response.addRecommendationsForGroup(recommendation);
+            return response;
+        }
+
+        // TODO
+        //  - AI Group Recommender에서 처리
+        request.setRecommendableMembers(recommendableMembers);
         Mono<RecommendWebClientResponse> mono = WebClientUtils.post(
                 webClient,
                 RecommendWebClientResponse.class,
@@ -71,7 +102,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         List<Long> recommendedIds = mono.block().result();
         List<BoardGameDetailedThumbnailDto> recommendation =
                 recommendRepository.getRecommendedBoardGamesForGroup(recommendedIds);
-        response.addRecommendationBoardGames(recommendation);
+        response.addRecommendationsForGroup(recommendation);
 
         return response;
     }

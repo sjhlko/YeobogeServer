@@ -1,5 +1,6 @@
 package com.yeoboge.server.repository;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.Genre;
 
@@ -34,7 +35,9 @@ public interface RecommendRepository {
      * @param genreId 조회할 보드게임 장르 ID
      * @return 해당 장르의 인기 보드게임 {@link BoardGameThumbnailDto} 리스트
      */
-    List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId);
+    List<BoardGameThumbnailDto> getPopularBoardGamesOfGenreForIndividual(long genreId);
+
+    List<BoardGameDetailedThumbnailDto> getPopularBoardGamesOfGenreForGroup(long genreId);
 
     /**
      * 사용자의 친구들이 좋은 평가를 준 보드게임 목록을 조회함.

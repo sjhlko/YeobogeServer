@@ -30,7 +30,9 @@ public class GenreIndividualRecommender extends AbstractIndividualSQLRecommender
 
     @Override
     public void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch) {
-        this.future = CompletableFuture.supplyAsync(() -> repository.getPopularBoardGamesOfFavoriteGenre(genreId));
+        this.future = CompletableFuture.supplyAsync(
+                () -> repository.getPopularBoardGamesOfGenreForIndividual(genreId)
+        );
         setAsyncProcessing(response, latch);
     }
 }

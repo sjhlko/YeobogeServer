@@ -1,6 +1,7 @@
 package com.yeoboge.server.repository.impl;
 
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
@@ -84,19 +85,17 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId) {
-        QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
-
-        return queryFactory.select(thumbnailConstructorProjection())
-                .from(boardGame)
-                .join(qGenreOfBoardGame)
-                .on(boardGame.id.eq(qGenreOfBoardGame.boardGame.id))
-                .join(recentRatings)
-                .on(boardGame.id.eq(recentRatings.boardGameId))
-                .where(qGenreOfBoardGame.genre.id.eq(genreId))
-                .orderBy(recentRatings.ratings.desc())
-                .limit(BASE_SIZE)
+    public List<BoardGameThumbnailDto> getPopularBoardGamesOfGenreForIndividual(long genreId) {
+        return getGenrePopularBoardGameQuery(thumbnailConstructorProjection(), genreId)
                 .fetch();
+    }
+
+    @Override
+    public List<BoardGameDetailedThumbnailDto> getPopularBoardGamesOfGenreForGroup(long genreId) {
+        return getGenrePopularBoardGameQuery(boardGame, genreId)
+                .fetch()
+                .stream().map(BoardGameDetailedThumbnailDto::of)
+                .toList();
     }
 
     @Override

@@ -15,7 +15,7 @@ public record IndividualRecommendationResponse(
         Queue<String> keys,
         Map<String, List<BoardGameThumbnailDto>> shelves,
         Map<String, String> descriptions
-) {
+) implements RecommendationResponse {
     /**
      * 사용자에게 추천할 보드게임 카테고리의 타입에 따른 key 값을 추가함.
      *
@@ -43,5 +43,14 @@ public record IndividualRecommendationResponse(
      */
     public void addDescription(String key, String description) {
         this.descriptions.put(key, description);
+    }
+
+    @Override
+    public void addRecommendationsForIndividual(
+            List<BoardGameThumbnailDto> boardGames, String key, String description
+    ) {
+        keys.add(key);
+        shelves.put(key, boardGames);
+        descriptions.put(key, description);
     }
 }

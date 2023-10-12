@@ -1,6 +1,6 @@
 package com.yeoboge.server.helper.recommender;
 
-import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.Builder;
@@ -12,11 +12,11 @@ import java.util.concurrent.CountDownLatch;
  * 평가한 보드게임이 적은 초기 사용자에게 선호하는 장르 별
  * 인기 보드게임 목록을 생성하는 로직을 구현한 클래스
  */
-public class RecommendedByGenreSql extends RecommendedBySQL {
+public class GenreIndividualRecommender extends AbstractIndividualSQLRecommender {
     private long genreId;
 
     @Builder
-    public RecommendedByGenreSql(
+    public GenreIndividualRecommender(
             RecommendRepository repository,
             RecommendTypes type,
             long genreId,
@@ -29,7 +29,7 @@ public class RecommendedByGenreSql extends RecommendedBySQL {
     }
 
     @Override
-    public void addRecommendedDataToResponse(IndividualRecommendationResponse response, CountDownLatch latch) {
+    public void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch) {
         this.future = CompletableFuture.supplyAsync(() -> repository.getPopularBoardGamesOfFavoriteGenre(genreId));
         setAsyncProcessing(response, latch);
     }

@@ -9,6 +9,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * {@link IndividualRecommenderFactory} 구현체
+ */
 @Builder
 public class IndividualRecommenderFactoryImpl implements IndividualRecommenderFactory {
     private RecommendRepository repository;

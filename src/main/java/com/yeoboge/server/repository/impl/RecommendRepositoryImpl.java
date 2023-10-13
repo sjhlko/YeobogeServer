@@ -148,6 +148,14 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .fetch();
     }
 
+    /**
+     * 선호하는 장르의 인기 보드게임을 조회하는 쿼리를 반환함.
+     *
+     * @param select 조회할 엔티티의 컬럼이 지정된 {@link Expression}
+     * @param genreId 선호하는 장르 ID
+     * @return 해당 장르의 인기 보드게임 목록을 조회하는 {@link JPAQuery}
+     * @param <T> 데이터 조회 시 결과를 매핑할 DTO 클래스 타입
+     */
     private <T> JPAQuery<T> getGenrePopularBoardGameQuery(Expression<T> select, long genreId) {
         return queryFactory.select(select)
                 .from(boardGame)

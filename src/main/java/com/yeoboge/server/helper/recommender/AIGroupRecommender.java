@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * 보드게임 평가 데이터가 쌓인 그룹 구성원들에 대해
+ * AI 모델을 통해 추천 목록을 생성하는 로직을 구현한 클래스
+ */
 public class AIGroupRecommender extends AbstractGroupRecommender {
     private final String END_POINT = "/recommend/group";
     private WebClient client;
@@ -35,6 +39,11 @@ public class AIGroupRecommender extends AbstractGroupRecommender {
         response.addRecommendations(recommendation);
     }
 
+    /**
+     * 외부 AI API로 추천 요청을 보내 응답 결과를 반환함.
+     *
+     * @return AI API로 부터 응답 받은 추천 보드게임 ID 리스트
+     */
     private List<Long> getRecommendedBoardGamesFromAI() {
         request.setRecommendableMembers(recommendableMembers);
         Mono<RecommendWebClientResponse> mono = WebClientUtils.post(

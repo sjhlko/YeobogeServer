@@ -2,16 +2,15 @@ package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.recommender.GroupRecommender;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
-import com.yeoboge.server.helper.recommender.Recommender;
-import com.yeoboge.server.helper.recommender.RecommenderFactory;
+import com.yeoboge.server.helper.recommender.GroupRecommenderFactoryImpl;
 import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.RatingRepository;
@@ -20,13 +19,11 @@ import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.GroupRecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link GroupRecommenderService} 구현체
@@ -57,20 +54,25 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     @Override
-    @Transactional
-    public RecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
+    public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
 
-        RecommenderFactory factory = GroupRecommenderFactory.builder()
+        GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)
                 .repository(recommendRepository)
                 .request(request)
                 .build();
-        List<Recommender> recommenders = factory.getRecommenders(webClient);
+        GroupRecommender recommender = factory.getRecommender(webClient);
 
-        return getRecommendationResponse(recommenders);
+        return getRecommendationResponse(recommender);
     }
 
+    /**
+     * 그룹 구성원 중 AI 모델을 통해 추천을 받을 수 있는 구성원만 필터링함.
+     *
+     * @param members 기존 추천을 요청한 전체 그룹 구성원 ID 리스트
+     * @return AI 추천을 받을 수 있는 그룹 구성원 ID 리스트
+     */
     private List<Long> findRecommendableMembers(List<Long> members) {
         List<Long> recommendableMembers = new ArrayList<>();
 
@@ -82,10 +84,16 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         return recommendableMembers;
     }
 
-    private RecommendationResponse getRecommendationResponse(List<Recommender> recommenders) {
-        RecommendationResponse response = new GroupRecommendationResponse(new CopyOnWriteArrayList<>());
-        for (Recommender recommender : recommenders)
-            recommender.addRecommendationsToResponse(response);
+    /**
+     * {@link GroupRecommender}에서 생성한 추천 보드게임 목록을 {@link GroupRecommendationResponse}에 담아 반환함.
+     *
+     * @param recommender 추천 목록 생성 로직을 담당하는 {@link GroupRecommender}
+     * @return 추천 보드게임 목록이 담긴 {@link GroupRecommendationResponse}
+     */
+    private GroupRecommendationResponse getRecommendationResponse(GroupRecommender recommender) {
+        GroupRecommendationResponse response = new GroupRecommendationResponse(new ArrayList<>());
+        recommender.addRecommendationsToResponse(response);
+
         return response;
     }
 

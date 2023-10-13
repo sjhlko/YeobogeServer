@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 
 @AllArgsConstructor
-public abstract class AbstractGroupRecommender implements Recommender {
+public abstract class AbstractGroupRecommender implements GroupRecommender {
     protected RecommendRepository repository;
     protected GroupRecommendationRequest request;
     protected List<Long> recommendableMembers;

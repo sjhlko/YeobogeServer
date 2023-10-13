@@ -1,8 +1,8 @@
 package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.RecommendWithGenreRequest;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.helper.utils.WebClientUtils;
@@ -40,13 +40,16 @@ public class AIIndividualRecommender extends AbstractIndividualRecommender {
     }
 
     @Override
-    public void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch) {
+    public void addRecommendationsToResponse(
+            IndividualRecommendationResponse response, CountDownLatch latch
+    ) {
         Mono<RecommendWebClientResponse> mono = WebClientUtils.post(
                 client, RecommendWebClientResponse.class, requestBody, END_POINT
         );
         mono.subscribe(wr -> {
-            List<BoardGameThumbnailDto> boardGames = repository.getRecommendedBoardGamesForIndividual(wr.result());
-            response.addRecommendationsForIndividual(boardGames, key, description);
+            List<BoardGameThumbnailDto> boardGames =
+                    repository.getRecommendedBoardGamesForIndividual(wr.result());
+            response.addRecommendations(boardGames, key, description);
             latch.countDown();
         });
     }

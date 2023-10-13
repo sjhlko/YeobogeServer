@@ -6,9 +6,8 @@ import java.util.List;
 
 public record GroupRecommendationResponse(
         List<BoardGameDetailedThumbnailDto> recommendations
-) implements RecommendationResponse {
-    @Override
-    public void addRecommendationsForGroup(List<BoardGameDetailedThumbnailDto> boardGames) {
+) {
+    public void addRecommendations(List<BoardGameDetailedThumbnailDto> boardGames) {
         recommendations.addAll(boardGames);
     }
 }

@@ -1,7 +1,7 @@
 package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.helper.utils.WebClientUtils;
@@ -28,11 +28,11 @@ public class AIGroupRecommender extends AbstractGroupRecommender {
     }
 
     @Override
-    public void addRecommendationsToResponse(RecommendationResponse response) {
+    public void addRecommendationsToResponse(GroupRecommendationResponse response) {
         List<Long> recommendedIds = getRecommendedBoardGamesFromAI();
         List<BoardGameDetailedThumbnailDto> recommendation =
                 repository.getRecommendedBoardGamesForGroup(recommendedIds);
-        response.addRecommendationsForGroup(recommendation);
+        response.addRecommendations(recommendation);
     }
 
     private List<Long> getRecommendedBoardGamesFromAI() {

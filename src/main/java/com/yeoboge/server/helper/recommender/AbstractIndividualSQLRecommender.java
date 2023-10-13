@@ -2,7 +2,6 @@ package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 
@@ -27,10 +26,10 @@ public abstract class AbstractIndividualSQLRecommender extends AbstractIndividua
      * @param response 추천 목록 관련 메타데이터를 담기 위한 {@link IndividualRecommendationResponse}
      * @param latch 비동기 로직 완료를 기다리기 위한 {@link CountDownLatch}
      */
-    protected void setAsyncProcessing(RecommendationResponse response, CountDownLatch latch) {
+    protected void setAsyncProcessing(IndividualRecommendationResponse response, CountDownLatch latch) {
         future.thenCompose(
                 boardGames -> CompletableFuture.runAsync(
-                        () -> response.addRecommendationsForIndividual(boardGames, key, description)
+                        () -> response.addRecommendations(boardGames, key, description)
                 )
         ).thenRun(() -> latch.countDown());
     }

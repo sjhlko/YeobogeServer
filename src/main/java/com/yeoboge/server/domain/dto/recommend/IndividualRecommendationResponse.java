@@ -15,7 +15,7 @@ public record IndividualRecommendationResponse(
         Queue<String> keys,
         Map<String, List<BoardGameThumbnailDto>> shelves,
         Map<String, String> descriptions
-) implements RecommendationResponse {
+) {
     /**
      * 추천 보드게임 목록 카테고리에 따라 해당하는 key, 타이틀, 추천 목록을 {@code Map}에 추가함.
      *
@@ -23,8 +23,7 @@ public record IndividualRecommendationResponse(
      * @param key 추천 보드게임 목록 카테고리 key
      * @param description 추천 보드게임 목록 카테고리 타이틀
      */
-    @Override
-    public void addRecommendationsForIndividual(
+    public void addRecommendations(
             List<BoardGameThumbnailDto> boardGames, String key, String description
     ) {
         if (boardGames.isEmpty()) return;

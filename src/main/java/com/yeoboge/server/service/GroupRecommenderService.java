@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 
@@ -18,5 +18,11 @@ public interface GroupRecommenderService {
      */
     GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto);
 
-    RecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
+    /**
+     * 그룹 구성원들에게 적절한 추천 보드게임 목록을 생성해 응답 DTO에 담아 반환함.
+     *
+     * @param request 추천을 요청한 그룹 구성원에 대한 정보가 담긴 {@link GroupRecommendationRequest}
+     * @return 추천 보드게임 목록의 상세 썸네일이 포함된 {@link GroupRecommendationResponse}
+     */
+    GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
 }

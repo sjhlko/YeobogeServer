@@ -1,6 +1,6 @@
 package com.yeoboge.server.helper.recommender;
 
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.enums.RecommendTypes;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.Builder;
@@ -24,8 +24,12 @@ public class BookmarkIndividualRecommender extends AbstractIndividualSQLRecommen
     }
 
     @Override
-    public void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch) {
-        this.future = CompletableFuture.supplyAsync(() -> repository.getMyBookmarkedBoardGames(userId));
+    public void addRecommendationsToResponse(
+            IndividualRecommendationResponse response, CountDownLatch latch
+    ) {
+        this.future = CompletableFuture.supplyAsync(
+                () -> repository.getMyBookmarkedBoardGames(userId)
+        );
         setAsyncProcessing(response, latch);
     }
 }

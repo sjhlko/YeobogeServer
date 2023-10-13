@@ -1,7 +1,7 @@
 package com.yeoboge.server.helper.recommender;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.repository.RecommendRepository;
@@ -23,11 +23,11 @@ public class GenreGroupRecommender extends AbstractGroupRecommender {
     }
 
     @Override
-    public void addRecommendationsToResponse(RecommendationResponse response) {
+    public void addRecommendationsToResponse(GroupRecommendationResponse response) {
         long mostFavoriteGenreId = getGroupMostFavoriteGenre();
         List<BoardGameDetailedThumbnailDto> recommendation =
                 repository.getPopularBoardGamesOfGenreForGroup(mostFavoriteGenreId);
-        response.addRecommendationsForGroup(recommendation);
+        response.addRecommendations(recommendation);
     }
 
     private long getGroupMostFavoriteGenre() {

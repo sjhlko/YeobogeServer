@@ -2,6 +2,7 @@ package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
@@ -42,7 +43,7 @@ public class RecommenderServiceTest {
     private long userId;
     private List<Genre> favoriteGenres;
     private List<BoardGameThumbnailDto> thumbnails;
-    private IndividualRecommendationResponse response;
+    private RecommendationResponse response;
 
     @BeforeEach
     public void setUp() {
@@ -86,7 +87,7 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, false);
-        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
+        RecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -109,7 +110,7 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, true);
-        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
+        RecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -145,7 +146,7 @@ public class RecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         mockSqlRepositories(10, true);
-        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
+        RecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
@@ -162,16 +163,20 @@ public class RecommenderServiceTest {
         when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
         when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);
         if (numRating < 10)
-            when(recommendRepository.getPopularBoardGamesOfGenreForIndividual(any())).thenReturn(thumbnails);
+            when(recommendRepository.getPopularBoardGamesOfGenreForIndividual(anyLong())).thenReturn(thumbnails);
         else
             when(recommendRepository.getRecommendedBoardGamesForIndividual(anyList())).thenReturn(thumbnails);
     }
 
-    private void assertResponse(IndividualRecommendationResponse actual) {
-        assertThat(actual.keys().size()).isEqualTo(response.keys().size());
-        for (String key : response.keys()) {
-            assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);
-            assertThat(actual.descriptions().get(key)).isEqualTo(response.descriptions().get(key));
+    private void assertResponse(RecommendationResponse actual) {
+        assertThat(actual).isInstanceOf(IndividualRecommendationResponse.class);
+
+        IndividualRecommendationResponse actualIR = (IndividualRecommendationResponse) actual;
+        IndividualRecommendationResponse responseIR = (IndividualRecommendationResponse) response;
+        assertThat(actualIR.keys().size()).isEqualTo(responseIR.keys().size());
+        for (String key : responseIR.keys()) {
+            assertThat(actualIR.shelves().get(key)).isEqualTo(thumbnails);
+            assertThat(actualIR.descriptions().get(key)).isEqualTo(responseIR.descriptions().get(key));
         }
     }
 
@@ -197,10 +202,8 @@ public class RecommenderServiceTest {
 
     private void setUpResponse(List<String> keys) {
         List<String> descriptions = setDescriptionByKey(keys);
-        response.keys().addAll(keys);
         for (int i = 0; i < keys.size(); i++) {
-            response.shelves().put(keys.get(i), thumbnails);
-            response.descriptions().put(keys.get(i), descriptions.get(i));
+            response.addRecommendationsForIndividual(thumbnails, keys.get(i), descriptions.get(i));
         }
     }
 }

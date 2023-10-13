@@ -1,6 +1,7 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.helper.recommender.IndividualRecommenderFactory;
 import com.yeoboge.server.helper.recommender.Recommender;
@@ -28,7 +29,7 @@ public class RecommenderServiceImpl implements RecommenderService {
     private final WebClient webClient;
 
     @Override
-    public IndividualRecommendationResponse getSingleRecommendation(Long userId) {
+    public RecommendationResponse getSingleRecommendation(Long userId) {
         List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
         long numRating = ratingRepository.countByUser(userId);
 
@@ -50,8 +51,8 @@ public class RecommenderServiceImpl implements RecommenderService {
      * @param recommenders 카테고리별 추천 목록 생성 메서드를 제공하는 {@link Recommender} 리스트
      * @return 추천할 보드게임 목록의 메타데이터들이 담긴 {@link IndividualRecommendationResponse}
      */
-    private IndividualRecommendationResponse runAsyncJobsForRecommendation(List<Recommender> recommenders) {
-        IndividualRecommendationResponse response = new IndividualRecommendationResponse(
+    private RecommendationResponse runAsyncJobsForRecommendation(List<Recommender> recommenders) {
+        RecommendationResponse response = new IndividualRecommendationResponse(
                 new ConcurrentLinkedQueue<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>()
         );
         CountDownLatch latch = ThreadUtils.getThreadAwaiter(recommenders.size());

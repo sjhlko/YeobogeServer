@@ -1,18 +1,18 @@
 package com.yeoboge.server.service.impl;
 
-import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
-import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
-import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
+import com.yeoboge.server.helper.recommender.Recommender;
+import com.yeoboge.server.helper.recommender.RecommenderFactory;
 import com.yeoboge.server.helper.utils.ThreadUtils;
-import com.yeoboge.server.helper.utils.WebClientUtils;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.RatingRepository;
 import com.yeoboge.server.repository.RecommendRepository;
@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,52 +58,17 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
 
     @Override
     @Transactional
-    public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
-        GroupRecommendationResponse response = new GroupRecommendationResponse(new CopyOnWriteArrayList<>());
+    public RecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
 
-        // TODO
-        //  - Genre Group Recommender에서 처리
-        if (recommendableMembers.size() == 0) {
-            Map<Long, Integer> favoriteGenresOfMember = new HashMap<>();
-            for (long memberId : request.members()) {
-                List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(memberId);
-                for (Genre genre : favoriteGenres) {
-                    favoriteGenresOfMember.put(genre.getId(), favoriteGenresOfMember.getOrDefault(genre.getId(), 0) + 1);
-                }
-            }
+        RecommenderFactory factory = GroupRecommenderFactory.builder()
+                .recommendableMembers(recommendableMembers)
+                .repository(recommendRepository)
+                .request(request)
+                .build();
+        List<Recommender> recommenders = factory.getRecommenders(webClient);
 
-            long mostFavoriteGenreId = favoriteGenresOfMember.keySet().stream().toList().get(0);
-            int genreSelectedCount = favoriteGenresOfMember.get(mostFavoriteGenreId);
-            for (long genreId : favoriteGenresOfMember.keySet()) {
-                if (favoriteGenresOfMember.get(genreId) > genreSelectedCount) {
-                    mostFavoriteGenreId = genreId;
-                    genreSelectedCount = favoriteGenresOfMember.get(genreId);
-                }
-            }
-
-            List<BoardGameDetailedThumbnailDto> recommendation =
-                    recommendRepository.getPopularBoardGamesOfGenreForGroup(mostFavoriteGenreId);
-            response.addRecommendationsForGroup(recommendation);
-            return response;
-        }
-
-        // TODO
-        //  - AI Group Recommender에서 처리
-        request.setRecommendableMembers(recommendableMembers);
-        Mono<RecommendWebClientResponse> mono = WebClientUtils.post(
-                webClient,
-                RecommendWebClientResponse.class,
-                request,
-                "/recommends/group"
-        );
-
-        List<Long> recommendedIds = mono.block().result();
-        List<BoardGameDetailedThumbnailDto> recommendation =
-                recommendRepository.getRecommendedBoardGamesForGroup(recommendedIds);
-        response.addRecommendationsForGroup(recommendation);
-
-        return response;
+        return getRecommendationResponse(recommenders);
     }
 
     private List<Long> findRecommendableMembers(List<Long> members) {
@@ -116,6 +80,13 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         }
 
         return recommendableMembers;
+    }
+
+    private RecommendationResponse getRecommendationResponse(List<Recommender> recommenders) {
+        RecommendationResponse response = new GroupRecommendationResponse(new CopyOnWriteArrayList<>());
+        for (Recommender recommender : recommenders)
+            recommender.addRecommendationsToResponse(response);
+        return response;
     }
 
     /**

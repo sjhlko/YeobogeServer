@@ -19,5 +19,7 @@ public interface Recommender {
      * @param response {@link RecommendationResponse}
      * @param latch 비동기 작업의 완료될 때까지 대기하기 위한 {@link CountDownLatch}
      */
-    void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch);
+    default void addRecommendationsToResponse(RecommendationResponse response, CountDownLatch latch) {}
+
+    default void addRecommendationsToResponse(RecommendationResponse response) {}
 }

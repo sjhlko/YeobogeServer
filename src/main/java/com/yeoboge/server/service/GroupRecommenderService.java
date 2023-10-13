@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
-import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 
@@ -18,5 +18,5 @@ public interface GroupRecommenderService {
      */
     GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto);
 
-    GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
+    RecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
 }

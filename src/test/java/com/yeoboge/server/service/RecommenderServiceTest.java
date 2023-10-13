@@ -47,23 +47,16 @@ public class RecommenderServiceTest {
     @BeforeEach
     public void setUp() {
         userId = 1L;
+
         favoriteGenres = List.of(
                 Genre.builder().id(1L).name("Strategy").build(),
                 Genre.builder().id(2L).name("Abstract").build(),
                 Genre.builder().id(3L).name("Party").build()
         );
-        thumbnails = List.of(
-                new BoardGameThumbnailDto(1L, "board_game1", "image_path1"),
-                new BoardGameThumbnailDto(2L, "board_game2", "image_path2"),
-                new BoardGameThumbnailDto(3L, "board_game3", "image_path3"),
-                new BoardGameThumbnailDto(4L, "board_game4", "image_path4"),
-                new BoardGameThumbnailDto(5L, "board_game5", "image_path5"),
-                new BoardGameThumbnailDto(6L, "board_game6", "image_path6"),
-                new BoardGameThumbnailDto(7L, "board_game7", "image_path7"),
-                new BoardGameThumbnailDto(8L, "board_game8", "image_path8"),
-                new BoardGameThumbnailDto(9L, "board_game9", "image_path9"),
-                new BoardGameThumbnailDto(10L, "board_game10", "image_path10")
-        );
+
+        BoardGameThumbnailDto dto = new BoardGameThumbnailDto(1L, "board_game", "image_path");
+        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
+
         response = new IndividualRecommendationResponse(
                 new LinkedList<>(),
                 new HashMap<>(),

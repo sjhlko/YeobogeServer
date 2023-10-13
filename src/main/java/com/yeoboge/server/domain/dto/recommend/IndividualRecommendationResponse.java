@@ -27,6 +27,8 @@ public record IndividualRecommendationResponse(
     public void addRecommendationsForIndividual(
             List<BoardGameThumbnailDto> boardGames, String key, String description
     ) {
+        if (boardGames.isEmpty()) return;
+
         keys.add(key);
         shelves.put(key, boardGames);
         descriptions.put(key, description);

@@ -44,7 +44,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupMembersResponse getGroupMembers(long userId, UserGpsDto gpsDto) {
         userPool.computeIfAbsent(gpsDto, k -> new ConcurrentSkipListSet<>()).add(userId);
 
-        ThreadUtils.waitForSeconds(5000L);
+        ThreadUtils.waitForSeconds(3000L);
         List<UserInfoDto> groupMembers = findGroupMembers(userId, gpsDto);
 
         ThreadUtils.waitForSeconds(2000L);

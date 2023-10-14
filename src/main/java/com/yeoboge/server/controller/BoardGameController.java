@@ -3,7 +3,7 @@ package com.yeoboge.server.controller;
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
-import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.response.Response;
@@ -90,7 +90,7 @@ public class BoardGameController {
      * 보드게임 검색 API
      * @param pageable 페이징 정보가 담긴 {@link Pageable}
      * @param request 보드게임 검색 조건이 담긴 {@link SearchBoardGameRequest} VO
-     * @return 보드게임 검색 결과에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO
+     * @return 보드게임 검색 결과에 대한 정보가 담긴 {@link BoardGameDetailedThumbnailDto} DTO
      */
     @GetMapping("/search")
     public Response<PageResponse> searchBoardGame(

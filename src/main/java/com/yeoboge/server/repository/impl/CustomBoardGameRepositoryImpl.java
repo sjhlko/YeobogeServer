@@ -1,19 +1,21 @@
 package com.yeoboge.server.repository.impl;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.yeoboge.server.domain.entity.BoardGame;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.repository.CustomBoardGameRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Objects;
 
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
 import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGame;
@@ -22,46 +24,63 @@ import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGam
  * {@link CustomBoardGameRepository} 구현체
  */
 @Repository
-public class CustomBoardGameRepositoryImpl extends QuerydslRepositorySupport implements CustomBoardGameRepository {
+@RequiredArgsConstructor
+public class CustomBoardGameRepositoryImpl implements CustomBoardGameRepository {
     private final JPAQueryFactory queryFactory;
 
-    public CustomBoardGameRepositoryImpl(JPAQueryFactory queryFactory) {
-        super(BoardGame.class);
-        this.queryFactory = queryFactory;
-    }
-
-    /**
-     * 페이징을 적용하여 보드게임 검색 결과를 리턴함
-     *
-     * @param pageable 페이징 정보가 담긴 {@link Pageable}
-     * @param request 검색 조건이 담긴 {@link SearchBoardGameRequest} VO
-     * @return {@link BoardGame} 리스트
-     */
     @Override
-    public Page<BoardGame> findBoardGameBySearchOption(
+    public Page<BoardGameDetailedThumbnailDto> findBoardGameBySearchOption(
             Pageable pageable,
             SearchBoardGameRequest request
     ) {
-        JPAQuery<BoardGame> query = queryFactory
-                .selectFrom(boardGame)
-                .join(genreOfBoardGame)
-                .on(genreOfBoardGame.boardGame.id.eq(boardGame.id))
-                .where(checkGenre(request))
-                .where(checkNumOfPlayer(request))
-                .where(boardGame.name.contains(request.searchWord()));
-        long count = query.fetch().size();
-        List<BoardGame> boardGames = Objects.requireNonNull(this.getQuerydsl())
-                .applyPagination(pageable, query).fetch();
-        return new PageImpl<>(boardGames, pageable, count);
+        List<BoardGameDetailedThumbnailDto> content = getBaseQuery(boardGame)
+                .where(whereConditionOnSearching(request))
+                .orderBy(boardGame.name.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch()
+                .stream().map(BoardGameDetailedThumbnailDto::of)
+                .toList();
+        JPAQuery<Long> countQuery = getCountQuery(request);
+
+        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
     }
 
-    private BooleanExpression checkNumOfPlayer(SearchBoardGameRequest request){
-        if (request.player() == 0) return null;
-        return boardGame.playerMin.gt(request.player() - 1);
+    private <T> JPAQuery<T> getBaseQuery(Expression<T> selectExpression) {
+        return queryFactory.select(selectExpression)
+                .from(boardGame)
+                .distinct()
+                .leftJoin(genreOfBoardGame)
+                .on(genreOfBoardGame.boardGame.id.eq(boardGame.id));
     }
 
-    private BooleanExpression checkGenre(SearchBoardGameRequest request){
-        if (request.genre()==null) return null;
-        return genreOfBoardGame.genre.id.in(request.genre());
+    private JPAQuery<Long> getCountQuery(SearchBoardGameRequest request) {
+        return getBaseQuery(boardGame.count())
+                .where(whereConditionOnSearching(request));
+    }
+
+    private Predicate whereConditionOnSearching(SearchBoardGameRequest request) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(checkGenre(request.genre()));
+        builder.and(checkNumOfPlayer(request.player()));
+        builder.and(checkNameKeyword(request.searchWord()));
+
+        return builder.getValue();
+    }
+
+    private BooleanExpression checkNumOfPlayer(int numPlayer){
+        if (numPlayer == 0) return null;
+        return boardGame.playerMin.loe(numPlayer).and(boardGame.playerMax.goe(numPlayer));
+    }
+
+    private BooleanExpression checkGenre(List<Long> genreIds){
+        if (genreIds == null) return null;
+        return genreOfBoardGame.genre.id.in(genreIds);
+    }
+
+    private BooleanExpression checkNameKeyword(String keyword) {
+        if (keyword == null) return null;
+        return boardGame.name.contains(keyword);
     }
 }

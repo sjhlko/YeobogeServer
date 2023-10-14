@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
  * 선호하는 장르 별 추천 목록을 생성하는 로직을 구현한 클래스
  */
 public class AIIndividualRecommender extends AbstractIndividualRecommender {
-    private final String END_POINT = "/recommend";
+    private final String END_POINT = "/recommends";
     private WebClient client;
     protected RecommendWithGenreRequest requestBody;
 

@@ -17,7 +17,7 @@ import java.util.List;
  * AI 모델을 통해 추천 목록을 생성하는 로직을 구현한 클래스
  */
 public class AIGroupRecommender extends AbstractGroupRecommender {
-    private final String END_POINT = "/recommend/group";
+    private final String END_POINT = "/recommends/group";
     private WebClient client;
 
     @Builder

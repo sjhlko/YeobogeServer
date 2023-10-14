@@ -51,6 +51,12 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
+    public void deleteFcmToken(Long id) {
+        if (Boolean.FALSE.equals(redisTemplate.delete(id.toString())))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
+    }
+
+    @Override
     public Optional<String> findFcmToken(final Long id) {
         String refreshToken = (String) redisTemplate.opsForValue().get(id.toString());
         if (Objects.isNull(refreshToken)) return Optional.empty();

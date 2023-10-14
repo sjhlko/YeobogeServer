@@ -37,4 +37,7 @@ public class ChatMessage {
     private IsRead isRead;
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
+    public void updateReadStatus(IsRead isRead) {
+        this.isRead = isRead;
+    }
 }

@@ -1,10 +1,13 @@
 package com.yeoboge.server.repository.impl;
 
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.repository.RecommendRepository;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collections;
 import java.util.List;
 
+import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGame;
 import static com.yeoboge.server.domain.entity.immutable.QRecentRatings.recentRatings;
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
 import static com.yeoboge.server.domain.entity.QRating.rating;
@@ -31,14 +35,13 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     @Override
     public List<Genre> getMyFavoriteGenre(Long userId) {
         final int FAV_GENRE_SIZE = 3;
-        QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
         QFavoriteGenre qFavoriteGenre = QFavoriteGenre.favoriteGenre;
-        List<Genre> favoriteGenres = queryFactory.select(qGenreOfBoardGame.genre)
-                .from(qGenreOfBoardGame)
+        List<Genre> favoriteGenres = queryFactory.select(genreOfBoardGame.genre)
+                .from(genreOfBoardGame)
                 .join(rating)
-                .on(qGenreOfBoardGame.boardGame.id.eq(rating.boardGame.id))
+                .on(genreOfBoardGame.boardGame.id.eq(rating.boardGame.id))
                 .where(rating.user.id.eq(userId), rating.score.goe(3.5))
-                .groupBy(qGenreOfBoardGame.genre.id)
+                .groupBy(genreOfBoardGame.genre.id)
                 .orderBy(rating.id.avg().desc())
                 .limit(FAV_GENRE_SIZE)
                 .fetch();
@@ -62,7 +65,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids) {
+    public List<BoardGameThumbnailDto> getRecommendedBoardGamesForIndividual(List<Long> ids) {
         return queryFactory.select(thumbnailConstructorProjection())
                 .from(boardGame)
                 .where(boardGame.id.in(ids))
@@ -70,19 +73,29 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId) {
-        QGenreOfBoardGame qGenreOfBoardGame = QGenreOfBoardGame.genreOfBoardGame;
-
-        return queryFactory.select(thumbnailConstructorProjection())
+    public List<BoardGameDetailedThumbnailDto> getRecommendedBoardGamesForGroup(List<Long> ids) {
+        return queryFactory.select(boardGame)
                 .from(boardGame)
-                .join(qGenreOfBoardGame)
-                .on(boardGame.id.eq(qGenreOfBoardGame.boardGame.id))
-                .join(recentRatings)
-                .on(boardGame.id.eq(recentRatings.boardGameId))
-                .where(qGenreOfBoardGame.genre.id.eq(genreId))
-                .orderBy(recentRatings.ratings.desc())
-                .limit(BASE_SIZE)
+                .leftJoin(genreOfBoardGame)
+                .on(genreOfBoardGame.boardGame.id.eq(boardGame.id))
+                .where(boardGame.id.in(ids))
+                .fetch()
+                .stream().map(BoardGameDetailedThumbnailDto::of)
+                .toList();
+    }
+
+    @Override
+    public List<BoardGameThumbnailDto> getPopularBoardGamesOfGenreForIndividual(long genreId) {
+        return getGenrePopularBoardGameQuery(thumbnailConstructorProjection(), genreId)
                 .fetch();
+    }
+
+    @Override
+    public List<BoardGameDetailedThumbnailDto> getPopularBoardGamesOfGenreForGroup(long genreId) {
+        return getGenrePopularBoardGameQuery(boardGame, genreId)
+                .fetch()
+                .stream().map(BoardGameDetailedThumbnailDto::of)
+                .toList();
     }
 
     @Override
@@ -133,6 +146,26 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .orderBy(recentRatings.ratings.desc())
                 .limit(BASE_SIZE)
                 .fetch();
+    }
+
+    /**
+     * 선호하는 장르의 인기 보드게임을 조회하는 쿼리를 반환함.
+     *
+     * @param select 조회할 엔티티의 컬럼이 지정된 {@link Expression}
+     * @param genreId 선호하는 장르 ID
+     * @return 해당 장르의 인기 보드게임 목록을 조회하는 {@link JPAQuery}
+     * @param <T> 데이터 조회 시 결과를 매핑할 DTO 클래스 타입
+     */
+    private <T> JPAQuery<T> getGenrePopularBoardGameQuery(Expression<T> select, long genreId) {
+        return queryFactory.select(select)
+                .from(boardGame)
+                .join(genreOfBoardGame)
+                .on(boardGame.id.eq(genreOfBoardGame.boardGame.id))
+                .join(recentRatings)
+                .on(boardGame.id.eq(recentRatings.boardGameId))
+                .where(genreOfBoardGame.genre.id.eq(genreId))
+                .orderBy(recentRatings.ratings.desc())
+                .limit(BASE_SIZE);
     }
 
     /**

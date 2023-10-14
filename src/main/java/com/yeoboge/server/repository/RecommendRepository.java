@@ -1,12 +1,13 @@
 package com.yeoboge.server.repository;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.Genre;
 
 import java.util.List;
 
 /**
- * 개인 추천 목록 생성과 관련된 SQL 쿼리를 제공하는 인터페이스
+ * 추천 목록 생성과 관련된 SQL 쿼리를 제공하는 인터페이스
  */
 public interface RecommendRepository {
     /**
@@ -24,7 +25,16 @@ public interface RecommendRepository {
      * @param ids AI가 추천한 보드게임 ID 리스트
      * @return 해당 ID들의 {@link BoardGameThumbnailDto} 리스트
      */
-    List<BoardGameThumbnailDto> getRecommendedBoardGames(List<Long> ids);
+    List<BoardGameThumbnailDto> getRecommendedBoardGamesForIndividual(List<Long> ids);
+
+    /**
+     * 외부 AI API가 생성한 추천 보드게임 ID 리스트에 대해
+     * {@link BoardGameDetailedThumbnailDto}에 해당하는 컬럼 데이터를 조회함.
+     *
+     * @param ids AI가 추천한 보드게임 ID 리스트
+     * @return 해당 ID들의 {@link BoardGameDetailedThumbnailDto} 리스트
+     */
+    List<BoardGameDetailedThumbnailDto> getRecommendedBoardGamesForGroup(List<Long> ids);
 
     /**
      * 사용자가 선호하는 장르의 인기 보드게임 목록을 조회함.
@@ -32,7 +42,15 @@ public interface RecommendRepository {
      * @param genreId 조회할 보드게임 장르 ID
      * @return 해당 장르의 인기 보드게임 {@link BoardGameThumbnailDto} 리스트
      */
-    List<BoardGameThumbnailDto> getPopularBoardGamesOfFavoriteGenre(Long genreId);
+    List<BoardGameThumbnailDto> getPopularBoardGamesOfGenreForIndividual(long genreId);
+
+    /**
+     * 그룹 구성원이 선호하는 장르의 인기 보드게임 목록을 조회함.
+     *
+     * @param genreId 조회할 보드게임 장르 ID
+     * @return 해당 장르의 인기 보드게임 {@link BoardGameDetailedThumbnailDto} 리스트
+     */
+    List<BoardGameDetailedThumbnailDto> getPopularBoardGamesOfGenreForGroup(long genreId);
 
     /**
      * 사용자의 친구들이 좋은 평가를 준 보드게임 목록을 조회함.

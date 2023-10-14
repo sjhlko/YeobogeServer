@@ -3,7 +3,7 @@ package com.yeoboge.server.service;
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
-import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.data.domain.Pageable;
@@ -76,7 +76,7 @@ public interface BoardGameService {
      *
      * @param pageable 페이징 관련한 정보가 담긴 {@link Pageable}
      * @param request 보드게임 검색 시의 검색 조건이 담긴 DTO {@link SearchBoardGameRequest}
-     * @return 검색 조건에 부합하는 보드게임에 대한 정보가 담긴 {@link SearchBoardGameResponse} DTO를
+     * @return 검색 조건에 부합하는 보드게임에 대한 정보가 담긴 {@link BoardGameDetailedThumbnailDto} DTO를
      * 페이징을 적용하여 리턴함
      */
     PageResponse searchBoardGame(Pageable pageable, SearchBoardGameRequest request);

@@ -1,9 +1,9 @@
 package com.yeoboge.server.controller;
 
-import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
-import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
+import com.yeoboge.server.domain.dto.recommend.*;
+import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.response.Response;
+import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +18,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class RecommenderController {
     private final RecommenderService recommenderService;
+    private final GroupRecommenderService groupRecommenderService;
 
     /**
      * 사용자 개인 맞춤 추천 및 카테고리 별 보드게임 목록을 조회하는 API
      *
      * @param userId 조회할 사용자 ID
-     * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link RecommendForSingleResponse}
+     * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link IndividualRecommendationResponse}
      */
     @GetMapping("")
-    ResponseEntity<Response<RecommendForSingleResponse>> getRecommendationForMe(@AuthenticationPrincipal Long userId) {
+    ResponseEntity<Response<IndividualRecommendationResponse>> getRecommendationForMe(
+            @AuthenticationPrincipal Long userId
+    ) {
         final int cacheMaxAge = 4 * 60;
-        RecommendForSingleResponse response = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse response = recommenderService.getSingleRecommendation(userId);
 
         return Response.cached(response, cacheMaxAge);
     }
@@ -44,7 +47,21 @@ public class RecommenderController {
     Response<GroupMembersResponse> getGroupMembers(
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto
     ) {
-        GroupMembersResponse response = recommenderService.getGroupMembers(userId, gpsDto);
+        GroupMembersResponse response = groupRecommenderService.getGroupMembers(userId, gpsDto);
+        return Response.success(response);
+    }
+
+    /**
+     * 그룹 구성원들의 취향에 따라 보드게임 목록을 추천하는 API
+     *
+     * @param request 추천을 받을 그룹 구성원에 관한 정보를 담은 {@link GroupRecommendationRequest}
+     * @return 추천된 보드게임 목록의 상세 썸네일 정보를 포함한 {@link GroupRecommendationResponse}
+     */
+    @PostMapping("/group")
+    Response<GroupRecommendationResponse> getGroupRecommendation(
+            @RequestBody GroupRecommendationRequest request
+    ) {
+        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(request);
         return Response.success(response);
     }
 }

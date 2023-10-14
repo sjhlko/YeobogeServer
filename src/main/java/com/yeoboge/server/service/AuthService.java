@@ -50,9 +50,10 @@ public interface AuthService {
      * 로그아웃 후 사용자의 토큰들을 삭제함.
      *
      * @param header 사용자의 Access Token
+     * @param id 사용자의 id
      * @return {@link MessageResponse}
      */
-    MessageResponse logout(String header);
+    MessageResponse logout(String header, Long id);
 
     /**
      * 임시 비밀번호를 생성하고 회원의 비밀번호를 임시 비밀번호로 변경한 뒤 임시 비밀번호를 메일로 전송함

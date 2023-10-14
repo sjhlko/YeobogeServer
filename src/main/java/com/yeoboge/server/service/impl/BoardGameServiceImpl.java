@@ -3,7 +3,7 @@ package com.yeoboge.server.service.impl;
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
 import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
-import com.yeoboge.server.domain.dto.boardGame.SearchBoardGameResponse;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
@@ -261,9 +261,9 @@ public class BoardGameServiceImpl implements BoardGameService {
             Pageable pageable,
             SearchBoardGameRequest request
     ) {
-        Page<BoardGame> searchResults = boardGameRepository
+        Page<BoardGameDetailedThumbnailDto> searchResults = boardGameRepository
                 .findBoardGameBySearchOption(pageable, request);
-        PageResponse responses = new PageResponse(searchResults.map(SearchBoardGameResponse::of));
+        PageResponse responses = new PageResponse(searchResults);
         return responses;
     }
 

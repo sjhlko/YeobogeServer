@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,5 +56,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         PageResponse responses = new PageResponse(
                 results.map(chatMessage -> ChatMessageResponse.of(chatMessage, currentUser)));
         return responses;
+    }
+
+    @Override
+    public void changeReadStatus(Long chatRoomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.getById(chatRoomId);
+        User currentUser = userRepository.getById(userId);
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllByChatRoomAndUserIsNotAndIsReadIs(
+                chatRoom, currentUser, IsRead.NO);
+        for (ChatMessage chatMessage : chatMessages) {
+            chatMessage.updateReadStatus(IsRead.YES);
+            chatMessageRepository.save(chatMessage);
+        }
     }
 }

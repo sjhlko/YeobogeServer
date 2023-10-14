@@ -1,7 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.dto.recommend.RecommendForSingleResponse;
+import com.yeoboge.server.domain.dto.recommend.IndividualRecommendationResponse;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.RecommendTypes;
@@ -42,29 +42,22 @@ public class RecommenderServiceTest {
     private long userId;
     private List<Genre> favoriteGenres;
     private List<BoardGameThumbnailDto> thumbnails;
-    private RecommendForSingleResponse response;
+    private IndividualRecommendationResponse response;
 
     @BeforeEach
     public void setUp() {
         userId = 1L;
+
         favoriteGenres = List.of(
                 Genre.builder().id(1L).name("Strategy").build(),
                 Genre.builder().id(2L).name("Abstract").build(),
                 Genre.builder().id(3L).name("Party").build()
         );
-        thumbnails = List.of(
-                new BoardGameThumbnailDto(1L, "board_game1", "image_path1"),
-                new BoardGameThumbnailDto(2L, "board_game2", "image_path2"),
-                new BoardGameThumbnailDto(3L, "board_game3", "image_path3"),
-                new BoardGameThumbnailDto(4L, "board_game4", "image_path4"),
-                new BoardGameThumbnailDto(5L, "board_game5", "image_path5"),
-                new BoardGameThumbnailDto(6L, "board_game6", "image_path6"),
-                new BoardGameThumbnailDto(7L, "board_game7", "image_path7"),
-                new BoardGameThumbnailDto(8L, "board_game8", "image_path8"),
-                new BoardGameThumbnailDto(9L, "board_game9", "image_path9"),
-                new BoardGameThumbnailDto(10L, "board_game10", "image_path10")
-        );
-        response = new RecommendForSingleResponse(
+
+        BoardGameThumbnailDto dto = new BoardGameThumbnailDto(1L, "board_game", "image_path");
+        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
+
+        response = new IndividualRecommendationResponse(
                 new LinkedList<>(),
                 new HashMap<>(),
                 new HashMap<>()
@@ -86,11 +79,11 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, false);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
-        verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+        verify(recommendRepository, never()).getRecommendedBoardGamesForIndividual(anyList());
     }
 
     @Test
@@ -109,11 +102,11 @@ public class RecommenderServiceTest {
 
         // when
         mockSqlRepositories(0, true);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
-        verify(recommendRepository, never()).getRecommendedBoardGames(anyList());
+        verify(recommendRepository, never()).getRecommendedBoardGamesForIndividual(anyList());
     }
 
     @Test
@@ -145,12 +138,12 @@ public class RecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         mockSqlRepositories(10, true);
-        RecommendForSingleResponse actual = recommenderService.getSingleRecommendation(userId);
+        IndividualRecommendationResponse actual = recommenderService.getSingleRecommendation(userId);
 
         // then
         assertResponse(actual);
         verify(recommendRepository, times(3))
-                .getRecommendedBoardGames(recommendedByAi);
+                .getRecommendedBoardGamesForIndividual(recommendedByAi);
     }
 
     private void mockSqlRepositories(long numRating, boolean hasData) {
@@ -162,12 +155,12 @@ public class RecommenderServiceTest {
         when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
         when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);
         if (numRating < 10)
-            when(recommendRepository.getPopularBoardGamesOfFavoriteGenre(any())).thenReturn(thumbnails);
+            when(recommendRepository.getPopularBoardGamesOfGenreForIndividual(anyLong())).thenReturn(thumbnails);
         else
-            when(recommendRepository.getRecommendedBoardGames(anyList())).thenReturn(thumbnails);
+            when(recommendRepository.getRecommendedBoardGamesForIndividual(anyList())).thenReturn(thumbnails);
     }
 
-    private void assertResponse(RecommendForSingleResponse actual) {
+    private void assertResponse(IndividualRecommendationResponse actual) {
         assertThat(actual.keys().size()).isEqualTo(response.keys().size());
         for (String key : response.keys()) {
             assertThat(actual.shelves().get(key)).isEqualTo(thumbnails);
@@ -197,10 +190,8 @@ public class RecommenderServiceTest {
 
     private void setUpResponse(List<String> keys) {
         List<String> descriptions = setDescriptionByKey(keys);
-        response.keys().addAll(keys);
         for (int i = 0; i < keys.size(); i++) {
-            response.shelves().put(keys.get(i), thumbnails);
-            response.descriptions().put(keys.get(i), descriptions.get(i));
+            response.addRecommendations(thumbnails, keys.get(i), descriptions.get(i));
         }
     }
 }

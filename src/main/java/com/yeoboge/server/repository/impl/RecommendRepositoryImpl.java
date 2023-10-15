@@ -109,6 +109,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
 
         List<BoardGameThumbnailDto> boardGameThumbnail = queryFactory.select(thumbnailConstructorProjection())
                 .from(boardGame)
+                .distinct()
                 .join(rating)
                 .on(boardGame.id.eq(rating.boardGame.id))
                 .where(rating.user.id.in(friendsId), rating.score.goe(3.5))
@@ -159,6 +160,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     private <T> JPAQuery<T> getGenrePopularBoardGameQuery(Expression<T> select, long genreId) {
         return queryFactory.select(select)
                 .from(boardGame)
+                .distinct()
                 .join(genreOfBoardGame)
                 .on(boardGame.id.eq(genreOfBoardGame.boardGame.id))
                 .join(recentRatings)

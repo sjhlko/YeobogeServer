@@ -74,7 +74,7 @@ public class FriendServiceImpl implements FriendService {
                     .userId(id)
                     .targetToken(fcmToken.get())
                     .build();
-            pushAlarmService.sendPushAlarm(pushAlarmRequest);
+            pushAlarmService.sendPushAlarm(pushAlarmRequest,0);
         }
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 전송되었습니다.")
@@ -99,7 +99,7 @@ public class FriendServiceImpl implements FriendService {
                     .userId(currentUserId)
                     .targetToken(fcmToken.get())
                     .build();
-            pushAlarmService.sendPushAlarm(pushAlarmRequest);
+            pushAlarmService.sendPushAlarm(pushAlarmRequest,0);
         }
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 수락되었습니다.")

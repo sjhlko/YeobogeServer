@@ -86,7 +86,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     .message(msg)
                     .userId(currentUserId)
                     .build();
-            pushAlarmService.sendPushAlarm(request);
+            pushAlarmService.sendPushAlarm(request, 0);
         }
     }
 

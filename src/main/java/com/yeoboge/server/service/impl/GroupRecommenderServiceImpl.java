@@ -5,18 +5,18 @@ import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
+import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.GroupRecommender;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactoryImpl;
 import com.yeoboge.server.helper.utils.ThreadUtils;
-import com.yeoboge.server.repository.FriendRepository;
-import com.yeoboge.server.repository.RatingRepository;
-import com.yeoboge.server.repository.RecommendRepository;
-import com.yeoboge.server.repository.UserRepository;
+import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
+import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,6 +37,8 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final RatingRepository ratingRepository;
     private final FriendRepository friendRepository;
     private final RecommendRepository recommendRepository;
+    private final PushAlarmService pushAlarmService;
+    private final TokenRepository tokenRepository;
 
     private final WebClient webClient;
 
@@ -56,6 +58,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     @Override
     public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
+        sendPushAlarmForGroupRecommendation(recommendableMembers);
 
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)
@@ -135,5 +138,18 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         usersInSameArea.remove(userId);
         userPool.put(gpsDto, usersInSameArea);
         if (userPool.get(gpsDto).isEmpty()) userPool.remove(gpsDto);
+    }
+
+    private void sendPushAlarmForGroupRecommendation(List<Long> users) {
+        for (Long user : users) {
+            Optional<String> fcmToken = tokenRepository.findFcmToken(user);
+            if (fcmToken.isPresent()) {
+                PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
+                        .pushAlarmType(PushAlarmType.FRIEND_ACCEPT)
+                        .targetToken(fcmToken.get())
+                        .build();
+                pushAlarmService.sendPushAlarm(pushAlarmRequest, 10000);
+            }
+        }
     }
 }

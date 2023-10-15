@@ -12,41 +12,46 @@ import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Date;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class PushAlarmServiceImpl implements PushAlarmService {
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/yeoboge-6b9a9/messages:send";
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final TaskScheduler taskScheduler;
+
     @Override
-    public void sendPushAlarm(PushAlarmRequest request){
-        try {
-            String message = makeMessage(request);
-            HttpRequest fcmRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + getAccessToken())
-                    .method("POST", HttpRequest.BodyPublishers.ofString(message))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient().send(
-                    fcmRequest,
-                    HttpResponse.BodyHandlers.ofString());
-
-            System.out.println(response.body());
-        } catch (Exception e){
-            throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
-        }
-
+    public void sendPushAlarm(PushAlarmRequest request, Integer delay) {
+        taskScheduler.schedule(() -> {
+            try {
+                String message = makeMessage(request);
+                HttpRequest fcmRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(API_URL))
+                        .header("accept", "application/json")
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + getAccessToken())
+                        .method("POST", HttpRequest.BodyPublishers.ofString(message))
+                        .build();
+                HttpResponse<String> response = HttpClient.newHttpClient().send(
+                        fcmRequest,
+                        HttpResponse.BodyHandlers.ofString());
+                System.out.println(response.body());
+            } catch (Exception e) {
+                throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
+            }
+        }, new Date(System.currentTimeMillis() + delay));
     }
 
     private String getAccessToken() {
@@ -58,17 +63,17 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
             googleCredentials.refreshIfExpired();
             return googleCredentials.getAccessToken().getTokenValue();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new AppException(PushAlarmErrorCode.CAN_NOT_MAKE_ACCESS_TOKEN);
         }
 
     }
 
-    private String makeMessage(PushAlarmRequest request){
+    private String makeMessage(PushAlarmRequest request) {
         try {
             FcmMessage.Data data = makeDataForChatting(request);
-            if(request.pushAlarmType()==PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
-            if(request.pushAlarmType()==PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
+            if (request.pushAlarmType() == PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
+            if (request.pushAlarmType() == PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
             FcmMessage fcmMessage = FcmMessage.builder()
                     .message(FcmMessage.Message.builder()
                             .token(request.targetToken())
@@ -79,12 +84,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
                     .build();
 
             return objectMapper.writeValueAsString(fcmMessage);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
         }
     }
 
-    private FcmMessage.Data makeDataForChatting(PushAlarmRequest request){
+    private FcmMessage.Data makeDataForChatting(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.CHATTING.getKey())
@@ -96,7 +101,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
-    private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request){
+    private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.FRIEND_REQUEST.getKey())
@@ -107,7 +112,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
-    private FcmMessage.Data makeDataForFriendAccept(PushAlarmRequest request){
+    private FcmMessage.Data makeDataForFriendAccept(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.FRIEND_ACCEPT.getKey())

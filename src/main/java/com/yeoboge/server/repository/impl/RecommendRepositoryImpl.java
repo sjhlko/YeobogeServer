@@ -29,13 +29,12 @@ import static com.yeoboge.server.domain.entity.QRating.rating;
 @RequiredArgsConstructor
 public class RecommendRepositoryImpl implements RecommendRepository {
     private static final int BASE_SIZE = 10;
+    private static final int FAV_GENRE_SIZE = 3;
 
     private final JPAQueryFactory queryFactory;
 
     @Override
     public List<Genre> getMyFavoriteGenre(Long userId) {
-        final int FAV_GENRE_SIZE = 3;
-        QFavoriteGenre qFavoriteGenre = QFavoriteGenre.favoriteGenre;
         List<Genre> favoriteGenres = queryFactory.select(genreOfBoardGame.genre)
                 .from(genreOfBoardGame)
                 .join(rating)
@@ -46,20 +45,8 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .limit(FAV_GENRE_SIZE)
                 .fetch();
 
-        if (favoriteGenres.size() < FAV_GENRE_SIZE) {
-            List<Long> includedGenreIds = favoriteGenres.stream()
-                    .map(Genre::getId)
-                    .toList();
-            favoriteGenres.addAll(queryFactory.select(qFavoriteGenre.genre)
-                    .from(qFavoriteGenre)
-                    .where(
-                            qFavoriteGenre.user.id.eq(userId),
-                            qFavoriteGenre.genre.id.notIn(includedGenreIds)
-                    ).orderBy(getRandomOrder())
-                    .limit(FAV_GENRE_SIZE - favoriteGenres.size())
-                    .fetch()
-            );
-        }
+        if (favoriteGenres.size() < FAV_GENRE_SIZE)
+            addUserSelectedFavoriteGenres(favoriteGenres, userId);
 
         return favoriteGenres;
     }
@@ -100,11 +87,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
 
     @Override
     public List<BoardGameThumbnailDto> getFavoriteBoardGamesOfFriends(Long userId) {
-        QFriend qFriend = QFriend.friend;
-        List<Long> friendsId = queryFactory.select(qFriend.follower.id)
-                .from(qFriend)
-                .where(qFriend.owner.id.eq(userId))
-                .fetch();
+        List<Long> friendsId = getMyFriendIds(userId);
         if (friendsId.isEmpty()) return Collections.emptyList();
 
         List<BoardGameThumbnailDto> boardGameThumbnail = queryFactory.select(thumbnailConstructorProjection())
@@ -112,7 +95,7 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .distinct()
                 .join(rating)
                 .on(boardGame.id.eq(rating.boardGame.id))
-                .where(rating.user.id.in(friendsId), rating.score.goe(3.5))
+                .where(rating.user.id.in(friendsId).and(rating.score.goe(3.5)))
                 .orderBy(rating.score.desc())
                 .limit(BASE_SIZE)
                 .fetch();
@@ -122,20 +105,13 @@ public class RecommendRepositoryImpl implements RecommendRepository {
 
     @Override
     public List<BoardGameThumbnailDto> getMyBookmarkedBoardGames(Long userId) {
-        QBookmarkedBoardGame qBookmark = QBookmarkedBoardGame.bookmarkedBoardGame;
-        List<Long> randomSelectedBookmark = queryFactory.select(qBookmark.boardGame.id)
-                .from(qBookmark)
-                .where(qBookmark.user.id.eq(userId))
-                .orderBy(getRandomOrder())
-                .limit(BASE_SIZE)
-                .fetch();
+        List<Long> randomSelectedBookmark = getMyBookmarkedBoardGameIds(userId);
+        if (randomSelectedBookmark.size() < BASE_SIZE) return Collections.emptyList();
 
-        return randomSelectedBookmark.size() == BASE_SIZE
-                ? queryFactory.select(thumbnailConstructorProjection())
-                        .from(boardGame)
-                        .where(boardGame.id.in(randomSelectedBookmark))
-                        .fetch()
-                : Collections.emptyList();
+        return queryFactory.select(thumbnailConstructorProjection())
+                .from(boardGame)
+                .where(boardGame.id.in(randomSelectedBookmark))
+                .fetch();
     }
 
     @Override
@@ -145,6 +121,60 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .join(recentRatings)
                 .on(boardGame.id.eq(recentRatings.boardGameId))
                 .orderBy(recentRatings.ratings.desc())
+                .limit(BASE_SIZE)
+                .fetch();
+    }
+
+    /**
+     * 사용자와 친구인 사용자들의 ID 리스트를 반환함.
+     *
+     * @param userId 조회할 사용자 ID
+     * @return 해당 사용자와 친구인 사용자들의 ID 리스트
+     */
+    private List<Long> getMyFriendIds(long userId) {
+        QFriend qFriend = QFriend.friend;
+        return queryFactory.select(qFriend.follower.id)
+                .from(qFriend)
+                .where(qFriend.owner.id.eq(userId))
+                .fetch();
+    }
+
+    /**
+     * 사용자가 회원 가입 시 선택한 선호 장르를 현재 선호 장르 목록에 추가함.
+     *
+     * @param favoriteGenres 사용자가 현재 선호하는 장르
+     * @param userId 사용자 ID
+     */
+    private void addUserSelectedFavoriteGenres(List<Genre> favoriteGenres, long userId) {
+        QFavoriteGenre qFavoriteGenre = QFavoriteGenre.favoriteGenre;
+        List<Long> includedGenreIds = favoriteGenres.stream()
+                .map(Genre::getId)
+                .toList();
+
+        List<Genre> userSelectedFavGenre = queryFactory.select(qFavoriteGenre.genre)
+                .from(qFavoriteGenre)
+                .where(qFavoriteGenre.user.id.eq(userId)
+                        .and(qFavoriteGenre.genre.id.notIn(includedGenreIds)))
+                .orderBy(getRandomOrder())
+                .limit(FAV_GENRE_SIZE - favoriteGenres.size())
+                .fetch();
+
+        favoriteGenres.addAll(userSelectedFavGenre);
+    }
+
+    /**
+     * 사용자가 찜한 보드게임목록에서 랜덤으로 추천 목록 수만큼 조회해
+     * 해당 보드게임의 ID 리스트를 반환함.
+     *
+     * @param userId 조회할 사용자 ID
+     * @return 해당 사용자의 찜한 보드게임 중 임의로 선택된 10개의 보드게임 ID 리스트
+     */
+    private List<Long> getMyBookmarkedBoardGameIds(long userId) {
+        QBookmarkedBoardGame qBookmark = QBookmarkedBoardGame.bookmarkedBoardGame;
+        return queryFactory.select(qBookmark.boardGame.id)
+                .from(qBookmark)
+                .where(qBookmark.user.id.eq(userId))
+                .orderBy(getRandomOrder())
                 .limit(BASE_SIZE)
                 .fetch();
     }

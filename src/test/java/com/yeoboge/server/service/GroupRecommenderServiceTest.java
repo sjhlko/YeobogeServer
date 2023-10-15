@@ -7,14 +7,12 @@ import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
-import com.yeoboge.server.repository.FriendRepository;
-import com.yeoboge.server.repository.RatingRepository;
-import com.yeoboge.server.repository.RecommendRepository;
-import com.yeoboge.server.repository.UserRepository;
+import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.impl.GroupRecommenderServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +29,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +52,10 @@ public class GroupRecommenderServiceTest {
     private FriendRepository friendRepository;
     @Mock
     private RecommendRepository recommendRepository;
+    @Mock
+    private TokenRepository tokenRepository;
+    @Mock
+    private PushAlarmService pushAlarmService;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
 
@@ -153,6 +156,7 @@ public class GroupRecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         when(ratingRepository.countByUser(anyLong())).thenReturn(15L);
+        when(tokenRepository.findFcmToken(anyLong())).thenReturn(Optional.of("token"));
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then

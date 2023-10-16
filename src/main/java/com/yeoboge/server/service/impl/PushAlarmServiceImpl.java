@@ -71,7 +71,8 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     private String makeMessage(PushAlarmRequest request) {
         try {
-            FcmMessage.Data data = makeDataForChatting(request);
+            FcmMessage.Data data = null;
+            if(request.pushAlarmType()==PushAlarmType.CHATTING) data = makeDataForChatting(request);
             if (request.pushAlarmType() == PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
             if (request.pushAlarmType() == PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
             if (request.pushAlarmType() == PushAlarmType.RATING) data = makeDataForGroupRecommendation();

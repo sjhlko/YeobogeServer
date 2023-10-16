@@ -74,6 +74,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
             FcmMessage.Data data = makeDataForChatting(request);
             if (request.pushAlarmType() == PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
             if (request.pushAlarmType() == PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
+            if (request.pushAlarmType() == PushAlarmType.RATING) data = makeDataForGroupRecommendation();
             FcmMessage fcmMessage = FcmMessage.builder()
                     .message(FcmMessage.Message.builder()
                             .token(request.targetToken())
@@ -121,5 +122,13 @@ public class PushAlarmServiceImpl implements PushAlarmService {
                 .image(user.getProfileImagePath())
                 .build();
 
+    }
+
+    private FcmMessage.Data makeDataForGroupRecommendation() {
+        return FcmMessage.Data.builder()
+                .pushAlarmType(PushAlarmType.RATING.getKey())
+                .title(PushAlarmType.RATING.getTitle())
+                .body(PushAlarmType.RATING.getMessage())
+                .build();
     }
 }

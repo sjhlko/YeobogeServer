@@ -145,7 +145,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
             Optional<String> fcmToken = tokenRepository.findFcmToken(user);
             if (fcmToken.isPresent()) {
                 PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
-                        .pushAlarmType(PushAlarmType.FRIEND_ACCEPT)
+                        .pushAlarmType(PushAlarmType.RATING)
                         .targetToken(fcmToken.get())
                         .build();
                 pushAlarmService.sendPushAlarm(pushAlarmRequest, 10000);

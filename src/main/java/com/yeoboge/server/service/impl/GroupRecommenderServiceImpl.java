@@ -58,7 +58,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     @Override
     public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
-        sendPushAlarmForGroupRecommendation(recommendableMembers);
+        sendPushAlarmForGroupRecommendation(request.members());
 
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)

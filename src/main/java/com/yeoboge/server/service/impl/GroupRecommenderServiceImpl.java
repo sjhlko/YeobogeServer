@@ -1,10 +1,12 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
 import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
@@ -24,6 +26,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 /**
  * {@link GroupRecommenderService} 구현체
@@ -36,6 +39,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final UserRepository userRepository;
     private final RatingRepository ratingRepository;
     private final FriendRepository friendRepository;
+    private final RecommendationHistoryRepository historyRepository;
     private final RecommendRepository recommendRepository;
     private final PushAlarmService pushAlarmService;
     private final TokenRepository tokenRepository;
@@ -56,7 +60,9 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     @Override
-    public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
+    public GroupRecommendationResponse getGroupRecommendation(
+            long userId, GroupRecommendationRequest request
+    ) {
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
@@ -67,7 +73,26 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .build();
         GroupRecommender recommender = factory.getRecommender(webClient);
 
-        return getRecommendationResponse(recommender);
+        GroupRecommendationResponse response = getRecommendationResponse(recommender);
+        saveRecommendationHistory(userId, response);
+
+        return response;
+    }
+
+    public void saveRecommendationHistory(
+            long userId, GroupRecommendationResponse recommendationResponse
+    ) {
+        List<Long> recommendedBoardGameIds = recommendationResponse
+                .recommendations().stream()
+                .map(BoardGameDetailedThumbnailDto::id)
+                .toList();
+        List<RecommendationHistory> histories = recommendedBoardGameIds.stream()
+                .map(recommendedId -> RecommendationHistory.builder()
+                        .userId(userId)
+                        .boardGameId(recommendedId)
+                        .build())
+                .toList();
+        historyRepository.saveAll(histories);
     }
 
     /**

@@ -21,8 +21,9 @@ public interface GroupRecommenderService {
     /**
      * 그룹 구성원들에게 적절한 추천 보드게임 목록을 생성해 응답 DTO에 담아 반환함.
      *
+     * @param userId 추천을 요청한 사용자 ID
      * @param request 추천을 요청한 그룹 구성원에 대한 정보가 담긴 {@link GroupRecommendationRequest}
      * @return 추천 보드게임 목록의 상세 썸네일이 포함된 {@link GroupRecommendationResponse}
      */
-    GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request);
+    GroupRecommendationResponse getGroupRecommendation(long userId, GroupRecommendationRequest request);
 }

@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 사용자가 찜한 보드게임에서 일부를 선택해 추천 목록을 생성하는 로직을 구현한 클래스
+ * 사용자가 찜한 보드게임에서 일부를 선택해 추천 목록을 생성하는 로직을 구현한 {@link IndividualRecommender} 구현체
  */
 public class BookmarkIndividualRecommender extends AbstractIndividualSQLRecommender {
     private long userId;

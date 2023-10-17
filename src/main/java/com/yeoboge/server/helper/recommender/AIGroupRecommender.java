@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * 보드게임 평가 데이터가 쌓인 그룹 구성원들에 대해
- * AI 모델을 통해 추천 목록을 생성하는 로직을 구현한 클래스
+ * AI 모델을 통해 추천 목록을 생성하는 로직을 구현한 {@link GroupRecommender} 구현체
  */
 public class AIGroupRecommender extends AbstractGroupRecommender {
     private final String END_POINT = "/recommends/group";

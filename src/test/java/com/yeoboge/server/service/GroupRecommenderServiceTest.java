@@ -7,7 +7,6 @@ import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Genre;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.error.GroupErrorCode;
@@ -50,6 +49,8 @@ public class GroupRecommenderServiceTest {
     private RatingRepository ratingRepository;
     @Mock
     private FriendRepository friendRepository;
+    @Mock
+    private RecommendationHistoryRepository historyRepository;
     @Mock
     private RecommendRepository recommendRepository;
     @Mock
@@ -139,6 +140,7 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 성공 : AI 추천")
     public void groupRecommendationSuccessByAI() {
         // given
+        long userId = 1L;
         setUpGroupRecommendationTest();
         List<Long> recommendedByAi = new ArrayList<>(Collections.nCopies(10, 1L));
         Mono<RecommendWebClientResponse> monoResponse = Mono.just(
@@ -160,7 +162,7 @@ public class GroupRecommenderServiceTest {
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then
-        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(request);
+        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(userId, request);
         assertThat(actual.recommendations()).isEqualTo(recommendationResponse.recommendations());
         verify(recommendRepository, never()).getPopularBoardGamesOfGenreForGroup(anyLong());
     }
@@ -169,6 +171,7 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 성공 : 단순 장르 인기순 추천")
     public void groupRecommendationSuccessByDB() {
         // given
+        long userId = 1L;
         setUpGroupRecommendationTest();
         List<Genre> favoriteGenres = List.of(
                 Genre.builder().id(1L).name("Strategy").build(),
@@ -177,12 +180,12 @@ public class GroupRecommenderServiceTest {
         );
 
         // when
-        when(ratingRepository.countByUser(anyLong())).thenReturn(5L);
+        when(ratingRepository.countByUser(anyLong())).thenReturn(0L);
         when(recommendRepository.getMyFavoriteGenre(anyLong())).thenReturn(favoriteGenres);
         when(recommendRepository.getPopularBoardGamesOfGenreForGroup(anyLong())).thenReturn(thumbnails);
 
         // then
-        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(request);
+        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(userId, request);
         assertThat(actual.recommendations()).isEqualTo(recommendationResponse.recommendations());
         verify(recommendRepository, never()).getRecommendedBoardGamesForGroup(anyList());
     }

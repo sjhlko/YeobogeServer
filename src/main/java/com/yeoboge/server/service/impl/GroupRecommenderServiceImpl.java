@@ -26,7 +26,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.stream.Collectors;
 
 /**
  * {@link GroupRecommenderService} 구현체
@@ -79,6 +78,12 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         return response;
     }
 
+    /**
+     * 과거에 받은 그룹 추천 결과를 현재 사용자가 받은 그룹 추천 결과로 수정 저장함.
+     *
+     * @param userId 그룹 추천을 받은 사용자 ID
+     * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
+     */
     public void saveRecommendationHistory(
             long userId, GroupRecommendationResponse recommendationResponse
     ) {
@@ -92,6 +97,8 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                         .boardGameId(recommendedId)
                         .build())
                 .toList();
+
+        historyRepository.deleteAllByUserId(userId);
         historyRepository.saveAll(histories);
     }
 

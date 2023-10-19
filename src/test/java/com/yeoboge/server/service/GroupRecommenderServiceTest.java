@@ -190,6 +190,19 @@ public class GroupRecommenderServiceTest {
         verify(recommendRepository, never()).getRecommendedBoardGamesForGroup(anyList());
     }
 
+    @Test
+    @DisplayName("그룹 추천 실패 : 부적절한 그룹원 ID로 요청")
+    public void groupRecommendationFailByInvalidGroupIds() {
+        // given
+        long userId = 5L;
+        setUpGroupRecommendationTest();
+
+        // then
+        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendation(userId, request))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(GroupErrorCode.USER_NOT_INCLUDED.getMessage());
+    }
+
     private void setUpGroupMatchTest() {
         gpsDto = new UserGpsDto(37.60, 127.09);
     }

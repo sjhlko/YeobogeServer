@@ -62,6 +62,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupRecommendationResponse getGroupRecommendation(
             long userId, GroupRecommendationRequest request
     ) {
+        checkValidGroupRequest(userId, request.members());
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
@@ -100,6 +101,18 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
 
         historyRepository.deleteAllByUserId(userId);
         historyRepository.saveAll(histories);
+    }
+
+    /**
+     * 그룹 추천을 요청한 사용자가 그룹내에 포함되는 지 확인함.
+     *
+     * @param userId 추천을 요청한 사용자 ID
+     * @param memberIds 추천을 받을 그룹원들의 사용자 ID 리스트
+     * @throws AppException 사용자가 그룹에 포함되지 않았다는 메세지를 담고있음.
+     */
+    private void checkValidGroupRequest(long userId, List<Long> memberIds) {
+        if (!memberIds.contains(userId))
+            throw new AppException(GroupErrorCode.USER_NOT_INCLUDED);
     }
 
     /**

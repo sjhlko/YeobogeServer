@@ -66,4 +66,16 @@ public class RecommenderController {
         GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(userId, request);
         return Response.success(response);
     }
+
+    /**
+     * 사용자가 가장 최근에 추천 받은 그룹 추천 결과를 조회하는 API
+     *
+     * @param userId 그룹 추천 기록 조회를 요청한 사용자 ID
+     * @return 사용자의 과거 그룹 추천 결과 목록을 포함한 {@link GroupRecommendationResponse}
+     */
+    @GetMapping("/group/history")
+    Response<GroupRecommendationResponse> getGroupRecommendationHistory(@AuthenticationPrincipal long userId) {
+        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendationHistory(userId);
+        return Response.success(response);
+    }
 }

@@ -26,4 +26,12 @@ public interface GroupRecommenderService {
      * @return 추천 보드게임 목록의 상세 썸네일이 포함된 {@link GroupRecommendationResponse}
      */
     GroupRecommendationResponse getGroupRecommendation(long userId, GroupRecommendationRequest request);
+
+    /**
+     * 사용자가 가장 최근에 받았던 그룹 추천 결과를 조회함.
+     *
+     * @param userId 기록 조회를 요청한 사용자 ID
+     * @return 가장 최근에 추천 받은 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
+     */
+    GroupRecommendationResponse getGroupRecommendationHistory(long userId);
 }

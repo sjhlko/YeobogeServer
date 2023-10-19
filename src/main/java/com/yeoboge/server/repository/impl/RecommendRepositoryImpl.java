@@ -137,6 +137,19 @@ public class RecommendRepositoryImpl implements RecommendRepository {
                 .fetch();
     }
 
+    @Override
+    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId) {
+        QRecommendationHistory qRecommendationHistory = QRecommendationHistory.recommendationHistory;
+        return queryFactory.select(boardGame)
+                .from(boardGame)
+                .join(qRecommendationHistory)
+                .on(boardGame.id.eq(qRecommendationHistory.boardGameId))
+                .where(qRecommendationHistory.userId.eq(userId))
+                .fetch()
+                .stream().map(BoardGameDetailedThumbnailDto::of)
+                .toList();
+    }
+
     /**
      * 사용자와 친구인 사용자들의 ID 리스트를 반환함.
      *

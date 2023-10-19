@@ -15,6 +15,7 @@ import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.GroupRecommender;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactoryImpl;
+import com.yeoboge.server.helper.recommender.HistoryGroupRecommender;
 import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
@@ -75,6 +76,17 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
 
         GroupRecommendationResponse response = getRecommendationResponse(recommender);
         saveRecommendationHistory(userId, response);
+
+        return response;
+    }
+
+    @Override
+    public GroupRecommendationResponse getGroupRecommendationHistory(long userId) {
+        GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
+                .repository(recommendRepository)
+                .userId(userId)
+                .build();
+        GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);
 
         return response;
     }

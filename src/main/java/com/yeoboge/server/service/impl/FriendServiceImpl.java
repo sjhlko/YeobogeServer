@@ -134,6 +134,12 @@ public class FriendServiceImpl implements FriendService {
         }
     }
 
+    /**
+     * 두 회원을 친구로 저장함
+     *
+     * @param owner 친구로 만들 유저 중 한명
+     * @param follower 친구로 만들 유저 중 나머지 한명
+     */
     private void makeFriend(User owner, User follower) {
         Friend first = Friend.builder()
                 .follower(owner)

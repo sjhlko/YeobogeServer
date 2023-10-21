@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface MechanismRepository extends JpaRepository<Mechanism, Long> {
-    Optional<Mechanism> findByName(String name);
-}
+public interface MechanismRepository extends JpaRepository<Mechanism, Long> {}

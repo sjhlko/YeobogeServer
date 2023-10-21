@@ -12,6 +12,7 @@ import com.yeoboge.server.repository.ChatMessageRepository;
 import com.yeoboge.server.repository.ChatRoomRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.ChatMessageService;
+import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * {@link ChatMessageService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {

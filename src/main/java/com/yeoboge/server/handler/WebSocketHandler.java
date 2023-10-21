@@ -21,6 +21,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * 웹 소켓관련 세션 연결, 종료, 메세지 발송 등에 관련한 Handler
+ */
 @Component
 @RequiredArgsConstructor
 public class WebSocketHandler extends TextWebSocketHandler {
@@ -30,8 +33,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final JwtProvider jwtProvider;
     private final TokenRepository tokenRepository;
     private final PushAlarmService pushAlarmService;
+
+    /**
+     * 특정 세션에 메세지 발송, 저장 등을 처리하는 메소드
+     *
+     * 특정 세션애 메세지가 발송 될 때 해당 세션과 같은 방에 연결돼있는 세션에 해당 메세지를 전부 전송한다.
+     * 열린 세션의 갯수를 세어 읽음 정보를 파악한 뒤 해당 메세지를 db에 저장한다.
+     * 열린 세션의 갯수를 통해 상대방의 접속 정보를 파악한 뒤 상대방에게 푸시 알림을 전송한다.
+     *
+     * @param session 메세지를 발송 할 세션 id
+     * @param message 발송될 메세지
+     */
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException, InterruptedException {
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
         //메시지 발송
         String payload = message.getPayload();
         JSONObject obj = jsonToObjectParser(payload);
@@ -90,6 +104,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * 웹소켓 연결 시 처리될 동작을 관리하는 메소드
+     *
+     * 세션이 어느 채팅방에 연결되었는지를 확인한 뒤, 안읽은 메세지에 대한 읽음 처리를 진행한다.
+     * 해당 채팅방에 최초로 연결된 세션의 경우 해당 채팅방 id를 sessionList 에 추가한 뒤 세션 id와 세션의 정보를 추가한다.
+     *
+     * @param session 웹소켓에 연결할 세션
+     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         //소켓 연결
@@ -131,10 +153,17 @@ public class WebSocketHandler extends TextWebSocketHandler {
         obj.put("type", "getId");
         obj.put("sessionId", session.getId());
 
-        //여기를 서비스에서 호출하도록 변경
         session.sendMessage(new TextMessage(obj.toJSONString()));
     }
 
+    /**
+     * 웹소켓 연결 종료 시 처리될 동작을 관리하는 메소드
+     *
+     * 웹소켓 연결을 종료 할 세션의 id를 sessionList에서 삭제한다.
+     *
+     * @param session 웹소켓 연결을 종료 할 세션
+     * @param status 종료 상태에 대한 정보를 담은 {@link CloseStatus}
+     */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         //소켓 종료
@@ -146,6 +175,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
         super.afterConnectionClosed(session, status);
     }
 
+    /**
+     * json 형식의 문자열을 JSONObject로 변환하여 리턴함.
+     *
+     * @param jsonStr Json 객체로 변환 할 문자열
+     * @return 변환 된 {@link JSONObject}
+     */
     private static JSONObject jsonToObjectParser(String jsonStr) {
         JSONParser parser = new JSONParser();
         JSONObject obj = null;

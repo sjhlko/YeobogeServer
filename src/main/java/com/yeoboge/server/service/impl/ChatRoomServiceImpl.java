@@ -7,6 +7,7 @@ import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.repository.ChatRoomRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.ChatRoomService;
+import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * {@link ChatRoomService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService {

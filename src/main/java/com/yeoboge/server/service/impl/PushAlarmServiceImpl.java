@@ -2,6 +2,7 @@ package com.yeoboge.server.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.pushAlarm.FcmMessage;
 import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
@@ -10,6 +11,7 @@ import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.PushAlarmService;
+import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.TaskScheduler;
@@ -22,7 +24,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * {@link PushAlarmService} 구현체
+ */
 @Service
 @RequiredArgsConstructor
 @EnableScheduling
@@ -54,6 +60,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         }, new Date(System.currentTimeMillis() + delay));
     }
 
+    /**
+     *  fcm token을 이용하여 푸시 알림 전송 시 필요한 access token을 발급/재발급함
+     *
+     * @return access token
+     * @throws AppException 토큰 생성 실패에 관한 error를 던짐
+     */
     private String getAccessToken() {
         try {
             String firebaseConfigPath = "/fcm-key.json";
@@ -69,6 +81,13 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
+    /**
+     *  푸시 알림 전송 시 전달 될 message를 만들어 리턴함
+     *
+     * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
+     * @return 푸시 알림 전송 시 전달 될 메세지
+     * @throws AppException 푸시 알림 전송 실패에 관한 에러를 던짐
+     */
     private String makeMessage(PushAlarmRequest request) {
         try {
             FcmMessage.Data data = null;
@@ -91,6 +110,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
         }
     }
 
+    /**
+     *  채팅 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     *
+     * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
+     * @return 푸시 알림 전송 시 전달 될 메세지의 data
+     */
     private FcmMessage.Data makeDataForChatting(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
@@ -103,6 +128,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
+    /**
+     *  친구 요청 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     *
+     * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
+     * @return 푸시 알림 전송 시 전달 될 메세지의 data
+     */
     private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
@@ -114,6 +145,12 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
+    /**
+     *  친구 요청 수락 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     *
+     * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
+     * @return 푸시 알림 전송 시 전달 될 메세지의 data
+     */
     private FcmMessage.Data makeDataForFriendAccept(PushAlarmRequest request) {
         User user = userRepository.getById(request.userId());
         return FcmMessage.Data.builder()
@@ -125,6 +162,11 @@ public class PushAlarmServiceImpl implements PushAlarmService {
 
     }
 
+    /**
+     *  보드게임 추천 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     *
+     * @return 푸시 알림 전송 시 전달 될 메세지의 data
+     */
     private FcmMessage.Data makeDataForGroupRecommendation() {
         return FcmMessage.Data.builder()
                 .pushAlarmType(PushAlarmType.RATING.getKey())

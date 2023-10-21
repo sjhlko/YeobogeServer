@@ -11,10 +11,7 @@ import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.recommend.RecommendWebClientResponse;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.handler.AppException;
-import com.yeoboge.server.repository.FriendRepository;
-import com.yeoboge.server.repository.RatingRepository;
-import com.yeoboge.server.repository.RecommendRepository;
-import com.yeoboge.server.repository.UserRepository;
+import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.impl.GroupRecommenderServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +28,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,7 +50,13 @@ public class GroupRecommenderServiceTest {
     @Mock
     private FriendRepository friendRepository;
     @Mock
+    private RecommendationHistoryRepository historyRepository;
+    @Mock
     private RecommendRepository recommendRepository;
+    @Mock
+    private TokenRepository tokenRepository;
+    @Mock
+    private PushAlarmService pushAlarmService;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
 
@@ -136,6 +140,7 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 성공 : AI 추천")
     public void groupRecommendationSuccessByAI() {
         // given
+        long userId = 1L;
         setUpGroupRecommendationTest();
         List<Long> recommendedByAi = new ArrayList<>(Collections.nCopies(10, 1L));
         Mono<RecommendWebClientResponse> monoResponse = Mono.just(
@@ -153,10 +158,11 @@ public class GroupRecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         when(ratingRepository.countByUser(anyLong())).thenReturn(15L);
+        when(tokenRepository.findFcmToken(anyLong())).thenReturn(Optional.of("token"));
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then
-        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(request);
+        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(userId, request);
         assertThat(actual.recommendations()).isEqualTo(recommendationResponse.recommendations());
         verify(recommendRepository, never()).getPopularBoardGamesOfGenreForGroup(anyLong());
     }
@@ -165,6 +171,7 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 성공 : 단순 장르 인기순 추천")
     public void groupRecommendationSuccessByDB() {
         // given
+        long userId = 1L;
         setUpGroupRecommendationTest();
         List<Genre> favoriteGenres = List.of(
                 Genre.builder().id(1L).name("Strategy").build(),
@@ -173,14 +180,67 @@ public class GroupRecommenderServiceTest {
         );
 
         // when
-        when(ratingRepository.countByUser(anyLong())).thenReturn(5L);
+        when(ratingRepository.countByUser(anyLong())).thenReturn(0L);
         when(recommendRepository.getMyFavoriteGenre(anyLong())).thenReturn(favoriteGenres);
         when(recommendRepository.getPopularBoardGamesOfGenreForGroup(anyLong())).thenReturn(thumbnails);
 
         // then
-        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(request);
+        GroupRecommendationResponse actual = groupRecommenderService.getGroupRecommendation(userId, request);
         assertThat(actual.recommendations()).isEqualTo(recommendationResponse.recommendations());
         verify(recommendRepository, never()).getRecommendedBoardGamesForGroup(anyList());
+    }
+
+    @Test
+    @DisplayName("그룹 추천 실패 : 부적절한 그룹원 ID로 요청")
+    public void groupRecommendationFailByInvalidGroupIds() {
+        // given
+        long userId = 5L;
+        setUpGroupRecommendationTest();
+
+        // then
+        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendation(userId, request))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(GroupErrorCode.USER_NOT_INCLUDED.getMessage());
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 성공")
+    public void getGroupRecommendationHistorySuccess() {
+        // given
+        long userId = 1L;
+        BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
+                1L, "name", "image", 2, 5, "1", List.of("genre")
+        );
+        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
+        recommendationResponse = new GroupRecommendationResponse(thumbnails);
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
+                .thenReturn(thumbnails);
+
+
+        // then
+        GroupRecommendationResponse actual =
+                groupRecommenderService.getGroupRecommendationHistory(userId);
+
+        assertThat(actual.recommendations())
+                .isEqualTo(recommendationResponse.recommendations());
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 실패 : 기록 존재하지 않음")
+    public void getGroupRecommendationHistoryFail() {
+        // given
+        long userId = 1L;
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
+                .thenReturn(Collections.emptyList());
+
+        // then
+        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
 
     private void setUpGroupMatchTest() {

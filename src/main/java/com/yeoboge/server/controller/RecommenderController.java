@@ -55,13 +55,27 @@ public class RecommenderController {
      * 그룹 구성원들의 취향에 따라 보드게임 목록을 추천하는 API
      *
      * @param request 추천을 받을 그룹 구성원에 관한 정보를 담은 {@link GroupRecommendationRequest}
+     * @param userId 추천을 요청한 사용자 ID
      * @return 추천된 보드게임 목록의 상세 썸네일 정보를 포함한 {@link GroupRecommendationResponse}
      */
     @PostMapping("/group")
     Response<GroupRecommendationResponse> getGroupRecommendation(
-            @RequestBody GroupRecommendationRequest request
+            @RequestBody GroupRecommendationRequest request,
+            @AuthenticationPrincipal long userId
     ) {
-        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(request);
+        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(userId, request);
+        return Response.success(response);
+    }
+
+    /**
+     * 사용자가 가장 최근에 추천 받은 그룹 추천 결과를 조회하는 API
+     *
+     * @param userId 그룹 추천 기록 조회를 요청한 사용자 ID
+     * @return 사용자의 과거 그룹 추천 결과 목록을 포함한 {@link GroupRecommendationResponse}
+     */
+    @GetMapping("/group/history")
+    Response<GroupRecommendationResponse> getGroupRecommendationHistory(@AuthenticationPrincipal long userId) {
+        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendationHistory(userId);
         return Response.success(response);
     }
 }

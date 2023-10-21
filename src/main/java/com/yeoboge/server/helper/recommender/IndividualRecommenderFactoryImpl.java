@@ -75,6 +75,11 @@ public class IndividualRecommenderFactoryImpl implements IndividualRecommenderFa
                 .repository(repository)
                 .type(RecommendTypes.TOP_10)
                 .build());
+        recommenderList.add(HistoryIndividualRecommender.builder()
+                .repository(repository)
+                .type(RecommendTypes.RECOMMENDATION_HISTORY)
+                .userId(userId)
+                .build());
 
         return recommenderList;
     }

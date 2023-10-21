@@ -74,4 +74,20 @@ public interface RecommendRepository {
      * @return 장르 무관 인기 보드게임 {@link BoardGameThumbnailDto} 리스트
      */
     List<BoardGameThumbnailDto> getTopTenBoardGames();
+
+    /**
+     * 사용자가 가장 최근 그룹으로 추천 받은 보드게임 목록을 조회함.
+     *
+     * @param userId 사용자 ID
+     * @return 사용자가 최근 추천 받은 그룹 추천 보드게임 {@link BoardGameThumbnailDto} 리스트
+     */
+    List<BoardGameThumbnailDto> getRecommendationHistories(long userId);
+
+    /**
+     * 사용자가 가장 최근 그룹으로 추천 받은 보드게임 목록에 대해 디테일한 상세정보를 포함해 조회함.
+     *
+     * @param userId 사용자 ID
+     * @return 사용자가 최근 추천 받은 그룹 추천 보드게임 {@link BoardGameDetailedThumbnailDto}
+     */
+    List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId);
 }

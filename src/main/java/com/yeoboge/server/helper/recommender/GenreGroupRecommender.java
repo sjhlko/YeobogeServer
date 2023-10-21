@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * 평가 데이터가 쌓이지 않아 AI 추천을 받지 못하는
- * 그룹을 위해 선호하는 장르를 통해 추천 목록을 생성하는 클래스
+ * 그룹을 위해 선호하는 장르를 통해 추천 목록을 생성하는 로직을 구현한 {@link GroupRecommender} 구현체
  */
 public class GenreGroupRecommender extends AbstractGroupRecommender {
     @Builder

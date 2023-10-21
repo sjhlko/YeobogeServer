@@ -15,7 +15,8 @@ public enum RecommendTypes {
     TOP_10("top10"),
     MY_BOOKMARK("bookmark"),
     FAVORITE_GENRE("favoriteGenre"),
-    FRIENDS_FAVORITE("friendsFavorite");
+    FRIENDS_FAVORITE("friendsFavorite"),
+    RECOMMENDATION_HISTORY("recommendationHistory");
 
     private String key;
 }

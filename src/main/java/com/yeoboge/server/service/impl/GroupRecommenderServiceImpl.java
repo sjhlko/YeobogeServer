@@ -1,10 +1,12 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
 import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
@@ -13,6 +15,7 @@ import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.GroupRecommender;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactoryImpl;
+import com.yeoboge.server.helper.recommender.HistoryGroupRecommender;
 import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
@@ -36,6 +39,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final UserRepository userRepository;
     private final RatingRepository ratingRepository;
     private final FriendRepository friendRepository;
+    private final RecommendationHistoryRepository historyRepository;
     private final RecommendRepository recommendRepository;
     private final PushAlarmService pushAlarmService;
     private final TokenRepository tokenRepository;
@@ -56,7 +60,10 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     @Override
-    public GroupRecommendationResponse getGroupRecommendation(GroupRecommendationRequest request) {
+    public GroupRecommendationResponse getGroupRecommendation(
+            long userId, GroupRecommendationRequest request
+    ) {
+        checkValidGroupRequest(userId, request.members());
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
@@ -67,7 +74,57 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .build();
         GroupRecommender recommender = factory.getRecommender(webClient);
 
-        return getRecommendationResponse(recommender);
+        GroupRecommendationResponse response = getRecommendationResponse(recommender);
+        saveRecommendationHistory(userId, response);
+
+        return response;
+    }
+
+    @Override
+    public GroupRecommendationResponse getGroupRecommendationHistory(long userId) {
+        GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
+                .repository(recommendRepository)
+                .userId(userId)
+                .build();
+        GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);
+
+        return response;
+    }
+
+    /**
+     * 과거에 받은 그룹 추천 결과를 현재 사용자가 받은 그룹 추천 결과로 수정 저장함.
+     *
+     * @param userId 그룹 추천을 받은 사용자 ID
+     * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
+     */
+    public void saveRecommendationHistory(
+            long userId, GroupRecommendationResponse recommendationResponse
+    ) {
+        List<Long> recommendedBoardGameIds = recommendationResponse
+                .recommendations().stream()
+                .map(BoardGameDetailedThumbnailDto::id)
+                .toList();
+        List<RecommendationHistory> histories = recommendedBoardGameIds.stream()
+                .map(recommendedId -> RecommendationHistory.builder()
+                        .userId(userId)
+                        .boardGameId(recommendedId)
+                        .build())
+                .toList();
+
+        historyRepository.deleteAllByUserId(userId);
+        historyRepository.saveAll(histories);
+    }
+
+    /**
+     * 그룹 추천을 요청한 사용자가 그룹내에 포함되는 지 확인함.
+     *
+     * @param userId 추천을 요청한 사용자 ID
+     * @param memberIds 추천을 받을 그룹원들의 사용자 ID 리스트
+     * @throws AppException 사용자가 그룹에 포함되지 않았다는 메세지를 담고있음.
+     */
+    private void checkValidGroupRequest(long userId, List<Long> memberIds) {
+        if (!memberIds.contains(userId))
+            throw new AppException(GroupErrorCode.USER_NOT_INCLUDED);
     }
 
     /**

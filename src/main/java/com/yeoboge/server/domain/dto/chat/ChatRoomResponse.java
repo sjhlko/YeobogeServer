@@ -2,13 +2,11 @@ package com.yeoboge.server.domain.dto.chat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
-import com.yeoboge.server.domain.entity.ChatMessage;
-import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
 /**
  * 채팅방의 정보를 담고 있는 DTO
  *
@@ -27,4 +25,14 @@ public record ChatRoomResponse(
         LocalDateTime createdAt,
         Long unReadMessage,
         UserInfoDto userInfo
-) { }
+) {
+        public static ChatRoomResponse of(Long id, String lastMessage, String createdAt, User user){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                return ChatRoomResponse.builder()
+                        .id(id)
+                        .lastMessage(lastMessage)
+                        .createdAt(LocalDateTime.parse(createdAt,formatter))
+                        .userInfo(UserInfoDto.of(user))
+                        .build();
+        }
+}

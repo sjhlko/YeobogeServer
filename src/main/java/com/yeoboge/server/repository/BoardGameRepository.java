@@ -1,7 +1,6 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.entity.BoardGame;
-import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
 import org.springframework.data.jpa.repository.JpaRepository;

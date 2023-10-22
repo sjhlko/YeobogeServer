@@ -1,7 +1,6 @@
 package com.yeoboge.server.service;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

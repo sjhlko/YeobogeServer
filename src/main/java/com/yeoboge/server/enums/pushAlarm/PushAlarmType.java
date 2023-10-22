@@ -1,6 +1,5 @@
 package com.yeoboge.server.enums.pushAlarm;
 
-import com.yeoboge.server.enums.error.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,9 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
 import com.yeoboge.server.domain.entity.IsRead;
-import com.yeoboge.server.handler.AppException;
 import org.springframework.data.domain.Pageable;
 
 /**

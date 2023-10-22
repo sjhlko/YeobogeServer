@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.error.UserErrorCode;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.service.impl.S3FileUploadServiceImpl;

@@ -2,16 +2,15 @@ package com.yeoboge.server.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.pushAlarm.FcmMessage;
 import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.enums.error.PushAlarmErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.PushAlarmService;
-import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.TaskScheduler;
@@ -36,19 +35,24 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/yeoboge-6b9a9/messages:send";
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
     private final TaskScheduler taskScheduler;
 
     @Override
-    public void sendPushAlarm(PushAlarmRequest request, Integer delay) {
+    public void sendPushAlarm(Long currentUserId, Long targetUserId, String message,
+                              PushAlarmType pushAlarmType, Integer delay) {
         taskScheduler.schedule(() -> {
             try {
-                String message = makeMessage(request);
+                PushAlarmRequest request = makePushAlarmRequest(currentUserId, targetUserId, message, pushAlarmType);
+                if (request == null) return;
+
+                String fcmMessage = makeMessage(request);
                 HttpRequest fcmRequest = HttpRequest.newBuilder()
                         .uri(URI.create(API_URL))
                         .header("accept", "application/json")
                         .header("Content-Type", "application/json")
                         .header("Authorization", "Bearer " + getAccessToken())
-                        .method("POST", HttpRequest.BodyPublishers.ofString(message))
+                        .method("POST", HttpRequest.BodyPublishers.ofString(fcmMessage))
                         .build();
                 HttpResponse<String> response = HttpClient.newHttpClient().send(
                         fcmRequest,
@@ -61,7 +65,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     /**
-     *  fcm token을 이용하여 푸시 알림 전송 시 필요한 access token을 발급/재발급함
+     * fcm token을 이용하여 푸시 알림 전송 시 필요한 access token을 발급/재발급함
      *
      * @return access token
      * @throws AppException 토큰 생성 실패에 관한 error를 던짐
@@ -82,7 +86,7 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     /**
-     *  푸시 알림 전송 시 전달 될 message를 만들어 리턴함
+     * 푸시 알림 전송 시 전달 될 message를 만들어 리턴함
      *
      * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
      * @return 푸시 알림 전송 시 전달 될 메세지
@@ -91,9 +95,10 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     private String makeMessage(PushAlarmRequest request) {
         try {
             FcmMessage.Data data = null;
-            if(request.pushAlarmType()==PushAlarmType.CHATTING) data = makeDataForChatting(request);
-            if (request.pushAlarmType() == PushAlarmType.FRIEND_REQUEST) data = makeDataForFriendRequest(request);
-            if (request.pushAlarmType() == PushAlarmType.FRIEND_ACCEPT) data = makeDataForFriendAccept(request);
+            if (request.pushAlarmType() == PushAlarmType.CHATTING) data = makeDataForChatting(request);
+            if (request.pushAlarmType() == PushAlarmType.FRIEND_REQUEST
+                    || request.pushAlarmType() == PushAlarmType.FRIEND_ACCEPT)
+                data = makeDataForFriend(request);
             if (request.pushAlarmType() == PushAlarmType.RATING) data = makeDataForGroupRecommendation();
             FcmMessage fcmMessage = FcmMessage.builder()
                     .message(FcmMessage.Message.builder()
@@ -111,15 +116,36 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     /**
-     *  채팅 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     * 푸시 알림 전송 시 사용될 데이터인 {@link PushAlarmRequest} VO를 만들어 리턴함
+     *
+     * @param currentUserId 현재 로그인 중인 유저의 id
+     * @param targetUserId  푸시 알림을 받을 유저의 id
+     * @param message       푸시 알림의 내용 (채팅이 아닐 경우 null)
+     * @param pushAlarmType 푸시 알람의 타입 {@link PushAlarmType}
+     * @return {@link PushAlarmRequest}
+     */
+    private PushAlarmRequest makePushAlarmRequest(Long currentUserId, Long targetUserId,
+                                                  String message, PushAlarmType pushAlarmType) {
+        Optional<String> fcmToken = tokenRepository.findFcmToken(targetUserId);
+        return fcmToken.map(s -> PushAlarmRequest.builder()
+                .pushAlarmType(pushAlarmType)
+                .targetToken(s)
+                .message(message)
+                .currentUserId(currentUserId)
+                .targetUserId(targetUserId)
+                .build()).orElse(null);
+    }
+
+    /**
+     * 채팅 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
      *
      * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
      * @return 푸시 알림 전송 시 전달 될 메세지의 data
      */
     private FcmMessage.Data makeDataForChatting(PushAlarmRequest request) {
-        User user = userRepository.getById(request.userId());
+        User user = userRepository.getById(request.currentUserId());
         return FcmMessage.Data.builder()
-                .pushAlarmType(PushAlarmType.CHATTING.getKey())
+                .pushAlarmType(request.pushAlarmType().getKey())
                 .title(user.getNickname())
                 .body(request.message())
                 .image(user.getProfileImagePath())
@@ -129,41 +155,24 @@ public class PushAlarmServiceImpl implements PushAlarmService {
     }
 
     /**
-     *  친구 요청 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     * 친구 요청/수락 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
      *
      * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
      * @return 푸시 알림 전송 시 전달 될 메세지의 data
      */
-    private FcmMessage.Data makeDataForFriendRequest(PushAlarmRequest request) {
-        User user = userRepository.getById(request.userId());
+    private FcmMessage.Data makeDataForFriend(PushAlarmRequest request) {
+        User user = userRepository.getById(request.currentUserId());
         return FcmMessage.Data.builder()
-                .pushAlarmType(PushAlarmType.FRIEND_REQUEST.getKey())
-                .title(PushAlarmType.FRIEND_REQUEST.getTitle())
-                .body(user.getNickname() + PushAlarmType.FRIEND_REQUEST.getMessage())
+                .pushAlarmType(request.pushAlarmType().getKey())
+                .title(request.pushAlarmType().getTitle())
+                .body(user.getNickname() + request.pushAlarmType().getMessage())
                 .image(user.getProfileImagePath())
                 .build();
 
     }
 
     /**
-     *  친구 요청 수락 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
-     *
-     * @param request 푸시 알림으로 전달 될 메세지에 대한 내용을 담은 {@link PushAlarmRequest} VO
-     * @return 푸시 알림 전송 시 전달 될 메세지의 data
-     */
-    private FcmMessage.Data makeDataForFriendAccept(PushAlarmRequest request) {
-        User user = userRepository.getById(request.userId());
-        return FcmMessage.Data.builder()
-                .pushAlarmType(PushAlarmType.FRIEND_ACCEPT.getKey())
-                .title(PushAlarmType.FRIEND_ACCEPT.getTitle())
-                .body(user.getNickname() + PushAlarmType.FRIEND_ACCEPT.getMessage())
-                .image(user.getProfileImagePath())
-                .build();
-
-    }
-
-    /**
-     *  보드게임 추천 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
+     * 보드게임 추천 관련 푸시 알림 전송 시 전달 될 message의 data 부분을 만들어 리턴함
      *
      * @return 푸시 알림 전송 시 전달 될 메세지의 data
      */

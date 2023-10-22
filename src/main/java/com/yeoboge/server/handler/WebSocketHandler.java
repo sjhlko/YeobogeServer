@@ -1,13 +1,15 @@
 package com.yeoboge.server.handler;
 
 import com.yeoboge.server.config.security.JwtProvider;
+import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
 import com.yeoboge.server.domain.entity.IsRead;
-import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
-import com.yeoboge.server.repository.TokenRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
 import com.yeoboge.server.service.PushAlarmService;
+import com.yeoboge.server.service.SSEService;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,7 +21,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 웹 소켓관련 세션 연결, 종료, 메세지 발송 등에 관련한 Handler
@@ -31,12 +35,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
-    private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
     private final PushAlarmService pushAlarmService;
+    private final SSEService sseService;
+
 
     /**
      * 특정 세션에 메세지 발송, 저장 등을 처리하는 메소드
-     *
+     * <p>
      * 특정 세션애 메세지가 발송 될 때 해당 세션과 같은 방에 연결돼있는 세션에 해당 메세지를 전부 전송한다.
      * 열린 세션의 갯수를 세어 읽음 정보를 파악한 뒤 해당 메세지를 db에 저장한다.
      * 열린 세션의 갯수를 통해 상대방의 접속 정보를 파악한 뒤 상대방에게 푸시 알림을 전송한다.
@@ -49,12 +55,16 @@ public class WebSocketHandler extends TextWebSocketHandler {
         //메시지 발송
         String payload = message.getPayload();
         JSONObject obj = jsonToObjectParser(payload);
+
         String msg = (String) obj.get("msg");
         String timeStamp = (String) obj.get("timeStamp");
         String url = session.getUri().toString();
         String targetUserId = url.split("/chats/send-message/")[1];
+
         String token = session.getHandshakeHeaders().get("Authorization").get(0).split("Bearer")[1];
         Long currentUserId = jwtProvider.parseUserId(token);
+        User currentUser = userRepository.getById(currentUserId);
+
         String roomId = String.valueOf(chatRoomService.findChatRoomIdByUsers(
                 currentUserId,
                 Long.parseLong(targetUserId)));
@@ -92,21 +102,16 @@ public class WebSocketHandler extends TextWebSocketHandler {
             chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.YES);
         else {
             chatMessageService.saveMessage(msg, timeStamp, Long.valueOf(roomId), currentUserId, IsRead.NO);
-            Optional<String> fcmToken = tokenRepository.findFcmToken(Long.valueOf(targetUserId));
-            if(fcmToken.isEmpty()) return;
-            PushAlarmRequest request = PushAlarmRequest.builder()
-                    .pushAlarmType(PushAlarmType.CHATTING)
-                    .targetToken(fcmToken.get())
-                    .message(msg)
-                    .userId(currentUserId)
-                    .build();
-            pushAlarmService.sendPushAlarm(request, 0);
+            pushAlarmService.sendPushAlarm(currentUserId, Long.valueOf(targetUserId), msg,
+                    PushAlarmType.CHATTING, 0);
+            sseService.send(targetUserId, "chatting", "chatting",
+                    ChatRoomResponse.of(Long.parseLong(roomId), msg, timeStamp, currentUser));
         }
     }
 
     /**
      * 웹소켓 연결 시 처리될 동작을 관리하는 메소드
-     *
+     * <p>
      * 세션이 어느 채팅방에 연결되었는지를 확인한 뒤, 안읽은 메세지에 대한 읽음 처리를 진행한다.
      * 해당 채팅방에 최초로 연결된 세션의 경우 해당 채팅방 id를 sessionList 에 추가한 뒤 세션 id와 세션의 정보를 추가한다.
      *
@@ -125,7 +130,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 currentUserId,
                 Long.parseLong(targetUserId)));
         //방 접속시 읽음 상태를 변경
-        chatMessageService.changeReadStatus(Long.parseLong(roomNumber),currentUserId);
+        chatMessageService.changeReadStatus(Long.parseLong(roomNumber), currentUserId);
         int idx = sessionList.size(); //방의 사이즈를 조사한다.
         if (sessionList.size() > 0) {
             for (int i = 0; i < sessionList.size(); i++) {
@@ -158,11 +163,11 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     /**
      * 웹소켓 연결 종료 시 처리될 동작을 관리하는 메소드
-     *
+     * <p>
      * 웹소켓 연결을 종료 할 세션의 id를 sessionList에서 삭제한다.
      *
      * @param session 웹소켓 연결을 종료 할 세션
-     * @param status 종료 상태에 대한 정보를 담은 {@link CloseStatus}
+     * @param status  종료 상태에 대한 정보를 담은 {@link CloseStatus}
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {

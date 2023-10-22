@@ -64,10 +64,11 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupRecommendationResponse getGroupRecommendation(
             long userId, GroupRecommendationRequest request
     ) {
+        List<Long> memberIds = new ArrayList<>(request.members());
         checkValidGroupRequest(userId, request.members());
-        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
+        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)
                 .repository(recommendRepository)
@@ -76,7 +77,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         GroupRecommender recommender = factory.getRecommender(webClient);
 
         GroupRecommendationResponse response = getRecommendationResponse(recommender);
-        saveRecommendationHistory(userId, response);
+        saveRecommendationHistory(userId, memberIds, response);
 
         return response;
     }
@@ -99,7 +100,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
      * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
      */
     public void saveRecommendationHistory(
-            long userId, GroupRecommendationResponse recommendationResponse
+            long userId, List<Long> memberIds, GroupRecommendationResponse recommendationResponse
     ) {
         List<Long> recommendedBoardGameIds = recommendationResponse
                 .recommendations().stream()
@@ -109,6 +110,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .map(recommendedId -> RecommendationHistory.builder()
                         .userId(userId)
                         .boardGameId(recommendedId)
+                        .groupMember(memberIds.toString())
                         .build())
                 .toList();
 

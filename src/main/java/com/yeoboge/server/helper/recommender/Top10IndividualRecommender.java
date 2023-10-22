@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 장르 통합 인기 보드게임 목록을 추천 결과에 저장하는 구현한 클래스
+ * 장르 통합 인기 보드게임 목록을 추천 결과에 저장하는 구현한 {@link IndividualRecommender} 구현체
  */
 public class Top10IndividualRecommender extends AbstractIndividualSQLRecommender {
     @Builder

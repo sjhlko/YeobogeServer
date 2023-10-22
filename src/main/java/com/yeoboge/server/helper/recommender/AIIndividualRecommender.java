@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * 보드게임 평가 데이터가 쌓인 사용자에 대해 AI 모델을 통해
- * 선호하는 장르 별 추천 목록을 생성하는 로직을 구현한 클래스
+ * 선호하는 장르 별 추천 목록을 생성하는 로직을 구현한 {@link IndividualRecommender} 구현체
  */
 public class AIIndividualRecommender extends AbstractIndividualRecommender {
     private final String END_POINT = "/recommends";

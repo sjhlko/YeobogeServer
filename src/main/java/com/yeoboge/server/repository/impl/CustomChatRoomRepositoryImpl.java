@@ -12,16 +12,12 @@ import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.IsRead;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.repository.CustomChatRoomRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import static com.yeoboge.server.domain.entity.QChatMessage.chatMessage;
 import static com.yeoboge.server.domain.entity.QChatRoom.chatRoom;
@@ -38,7 +34,7 @@ public class CustomChatRoomRepositoryImpl extends QuerydslRepositorySupport impl
     }
 
     @Override
-    public Page<ChatRoomResponse> getMyChatRoomList(Pageable pageable, User currentUser) {
+    public List<ChatRoomResponse> getMyChatRoomList(User currentUser) {
 
         List<ChatRoomResponse> results = new ArrayList<>();
         long count = 0;
@@ -81,13 +77,12 @@ public class CustomChatRoomRepositoryImpl extends QuerydslRepositorySupport impl
                     .where(predicate)
                     .orderBy(chatMessage.createdAt.desc());
             count += query.fetch().size();
-            List<ChatRoomResponse> chatRoomResponses = Objects.requireNonNull(this.getQuerydsl())
-                    .applyPagination(pageable, query).fetch();
+            List<ChatRoomResponse> chatRoomResponses = query.fetch();
             results.addAll(chatRoomResponses);
         }
         List<ChatRoomResponse> sortedResults = results.stream()
                 .sorted(Comparator.comparing(ChatRoomResponse::createdAt).reversed())
                 .toList();
-        return new PageImpl<>(sortedResults, pageable, count);
+        return sortedResults;
     }
 }

@@ -5,6 +5,7 @@ import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
+import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.entity.RecommendationHistory;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
@@ -108,8 +109,8 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .toList();
         List<RecommendationHistory> histories = recommendedBoardGameIds.stream()
                 .map(recommendedId -> RecommendationHistory.builder()
-                        .userId(userId)
-                        .boardGameId(recommendedId)
+                        .user(User.builder().id(userId).build())
+                        .boardGame(BoardGame.builder().id(recommendedId).build())
                         .groupMember(memberIds.toString())
                         .build())
                 .toList();

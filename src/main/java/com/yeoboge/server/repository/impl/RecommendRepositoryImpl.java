@@ -10,7 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.*;
-import com.yeoboge.server.domain.entity.embeddable.QRecommendationHistory;
+import com.yeoboge.server.domain.entity.QRecommendationHistory;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -132,8 +132,8 @@ public class RecommendRepositoryImpl implements RecommendRepository {
         return queryFactory.select(thumbnailConstructorProjection())
                 .from(boardGame)
                 .join(qRecommendationHistory)
-                .on(boardGame.id.eq(qRecommendationHistory.boardGameId))
-                .where(qRecommendationHistory.userId.eq(userId))
+                .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
+                .where(qRecommendationHistory.user.id.eq(userId))
                 .fetch();
     }
 
@@ -143,8 +143,8 @@ public class RecommendRepositoryImpl implements RecommendRepository {
         return queryFactory.select(boardGame)
                 .from(boardGame)
                 .join(qRecommendationHistory)
-                .on(boardGame.id.eq(qRecommendationHistory.boardGameId))
-                .where(qRecommendationHistory.userId.eq(userId))
+                .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
+                .where(qRecommendationHistory.user.id.eq(userId))
                 .fetch()
                 .stream().map(BoardGameDetailedThumbnailDto::of)
                 .toList();

@@ -22,11 +22,13 @@ public class RecommendationHistory {
     @Column(name = "history_id")
     private Long id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "board_game_id")
-    private Long boardGameId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_game_id", nullable = false)
+    private BoardGame boardGame;
 
     private String groupMember;
 

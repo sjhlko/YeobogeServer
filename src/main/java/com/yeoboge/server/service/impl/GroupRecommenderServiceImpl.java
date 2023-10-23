@@ -115,7 +115,6 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                         .build())
                 .toList();
 
-        historyRepository.deleteAllByUserId(userId);
         historyRepository.saveAll(histories);
     }
 

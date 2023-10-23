@@ -54,8 +54,6 @@ public class GroupRecommenderServiceTest {
     @Mock
     private RecommendRepository recommendRepository;
     @Mock
-    private TokenRepository tokenRepository;
-    @Mock
     private PushAlarmService pushAlarmService;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
@@ -158,7 +156,6 @@ public class GroupRecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         when(ratingRepository.countByUser(anyLong())).thenReturn(15L);
-        when(tokenRepository.findFcmToken(anyLong())).thenReturn(Optional.of("token"));
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then

@@ -42,8 +42,8 @@ public class SSEServiceImpl implements SSEService {
                     .name(name)
                     .data(data, MediaType.APPLICATION_JSON)
                     .reconnectTime(0));
-//            emitter.complete();
-//            emitterRepository.deleteById(id);
+            emitter.complete();
+            emitterRepository.deleteById(id);
         } catch (Exception e) {
             emitterRepository.deleteById(id);
             emitter.completeWithError(e);

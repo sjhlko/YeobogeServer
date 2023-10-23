@@ -10,6 +10,4 @@ import java.util.Optional;
  * {@link Theme} 관련 DB 쿼리에 대한 메서드를 제공하는 인터페이스
  */
 @Repository
-public interface ThemeRepository extends JpaRepository<Theme, Long> {
-    Optional<Theme> findByName(String name);
-}
+public interface ThemeRepository extends JpaRepository<Theme, Long> { }

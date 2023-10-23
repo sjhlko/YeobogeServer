@@ -1,6 +1,7 @@
 package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
+import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 채팅 관련 API 엔드포인트에 대해 매핑되는 Rest Controller
@@ -28,15 +31,11 @@ public class ChatController {
      * 회원의 채팅방 목록을 조회하는 API
      *
      * @param id       현재 로그인한 회원 ID
-     * @param pageable 페이징 관련 파라미터를 받기 위한 인터페이스 {@link Pageable}
-     * @return 페이징된 채팅방 리스트와 페이지 정보를 담은 {@link PageResponse}
+     * @return 채팅방 정보를 담은 {@link ChatRoomResponse} 리스트
      */
     @GetMapping()
-    public Response<PageResponse> getChatRooms(
-            @AuthenticationPrincipal Long id,
-            @PageableDefault(size = 20) Pageable pageable
-    ) {
-        PageResponse response = chatRoomService.getChatRooms(id, pageable);
+    public Response<List<ChatRoomResponse>> getChatRooms(@AuthenticationPrincipal Long id) {
+        List<ChatRoomResponse> response = chatRoomService.getChatRooms(id);
         return Response.success(response);
     }
 

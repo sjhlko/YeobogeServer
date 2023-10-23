@@ -5,7 +5,6 @@ import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Friend;
 import com.yeoboge.server.domain.entity.FriendRequest;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.domain.vo.user.RequestFriendRequest;
 import com.yeoboge.server.enums.error.FriendRequestErrorCode;
@@ -13,7 +12,6 @@ import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.FriendRepository;
 import com.yeoboge.server.repository.FriendRequestRepository;
-import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.FriendService;
 import com.yeoboge.server.service.PushAlarmService;
@@ -21,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 /**
  * {@link FriendService} 구현체
@@ -34,7 +30,6 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final PushAlarmService pushAlarmService;
-    private final TokenRepository tokenRepository;
 
     @Override
     public PageResponse getFriends(Long id, Pageable pageable) {
@@ -67,15 +62,7 @@ public class FriendServiceImpl implements FriendService {
                 .receiver(receiver)
                 .build();
         friendRequestRepository.save(friendRequest);
-        Optional<String> fcmToken = tokenRepository.findFcmToken(request.id());
-        if (fcmToken.isPresent()) {
-            PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
-                    .pushAlarmType(PushAlarmType.FRIEND_REQUEST)
-                    .userId(id)
-                    .targetToken(fcmToken.get())
-                    .build();
-            pushAlarmService.sendPushAlarm(pushAlarmRequest,0);
-        }
+        pushAlarmService.sendPushAlarm(id, requester.getId(), null, PushAlarmType.FRIEND_REQUEST, 0);
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 전송되었습니다.")
                 .build();
@@ -92,15 +79,7 @@ public class FriendServiceImpl implements FriendService {
             friendRequestRepository.delete(friendRequestRepository.getByReceiverIdAndRequesterId(id, currentUserId));
         }
         makeFriend(requester, receiver);
-        Optional<String> fcmToken = tokenRepository.findFcmToken(id);
-        if (fcmToken.isPresent()) {
-            PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
-                    .pushAlarmType(PushAlarmType.FRIEND_ACCEPT)
-                    .userId(currentUserId)
-                    .targetToken(fcmToken.get())
-                    .build();
-            pushAlarmService.sendPushAlarm(pushAlarmRequest,0);
-        }
+        pushAlarmService.sendPushAlarm(currentUserId, id, null, PushAlarmType.FRIEND_ACCEPT, 0);
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 수락되었습니다.")
                 .build();
@@ -134,6 +113,12 @@ public class FriendServiceImpl implements FriendService {
         }
     }
 
+    /**
+     * 두 회원을 친구로 저장함
+     *
+     * @param owner    친구로 만들 유저 중 한명
+     * @param follower 친구로 만들 유저 중 나머지 한명
+     */
     private void makeFriend(User owner, User follower) {
         Friend first = Friend.builder()
                 .follower(owner)

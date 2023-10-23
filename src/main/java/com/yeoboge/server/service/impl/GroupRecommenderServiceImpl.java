@@ -7,7 +7,6 @@ import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
-import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
@@ -24,7 +23,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -42,7 +44,6 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final RecommendationHistoryRepository historyRepository;
     private final RecommendRepository recommendRepository;
     private final PushAlarmService pushAlarmService;
-    private final TokenRepository tokenRepository;
 
     private final WebClient webClient;
 
@@ -94,7 +95,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     /**
      * 과거에 받은 그룹 추천 결과를 현재 사용자가 받은 그룹 추천 결과로 수정 저장함.
      *
-     * @param userId 그룹 추천을 받은 사용자 ID
+     * @param userId                 그룹 추천을 받은 사용자 ID
      * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
      */
     public void saveRecommendationHistory(
@@ -118,7 +119,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     /**
      * 그룹 추천을 요청한 사용자가 그룹내에 포함되는 지 확인함.
      *
-     * @param userId 추천을 요청한 사용자 ID
+     * @param userId    추천을 요청한 사용자 ID
      * @param memberIds 추천을 받을 그룹원들의 사용자 ID 리스트
      * @throws AppException 사용자가 그룹에 포함되지 않았다는 메세지를 담고있음.
      */
@@ -199,14 +200,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
 
     private void sendPushAlarmForGroupRecommendation(List<Long> users) {
         for (Long user : users) {
-            Optional<String> fcmToken = tokenRepository.findFcmToken(user);
-            if (fcmToken.isPresent()) {
-                PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
-                        .pushAlarmType(PushAlarmType.RATING)
-                        .targetToken(fcmToken.get())
-                        .build();
-                pushAlarmService.sendPushAlarm(pushAlarmRequest, 10000);
-            }
+            pushAlarmService.sendPushAlarm(user, user,null, PushAlarmType.RATING, 10000);
         }
     }
 }

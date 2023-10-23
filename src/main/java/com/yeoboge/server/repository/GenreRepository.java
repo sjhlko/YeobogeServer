@@ -16,9 +16,4 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
     Optional<Genre> findByName(String name);
     Optional<Genre> findById(Long id);
 
-    default String getNameById(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new AppException(CommonErrorCode.NOT_FOUND))
-                .getName();
-    }
 }

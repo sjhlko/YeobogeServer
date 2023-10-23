@@ -6,7 +6,7 @@ import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
+import com.yeoboge.server.domain.entity.RecommendationHistory;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;

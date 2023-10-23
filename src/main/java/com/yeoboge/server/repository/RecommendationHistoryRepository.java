@@ -1,6 +1,6 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
+import com.yeoboge.server.domain.entity.RecommendationHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;

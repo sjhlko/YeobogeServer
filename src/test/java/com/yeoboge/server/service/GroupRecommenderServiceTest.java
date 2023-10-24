@@ -283,6 +283,46 @@ public class GroupRecommenderServiceTest {
                 .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
 
+    @Test
+    @DisplayName("그룹 추천 기록 상세 조회 성공")
+    public void getGroupRecommendationDetailedHistorySuccess() {
+        // given
+        long userId = 1L;
+        String timestamp = "timestamp";
+        BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
+                1L, "name", "image", 2, 5, "1", List.of("genre")
+        );
+        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
+        recommendationResponse = new GroupRecommendationResponse(thumbnails);
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+                .thenReturn(thumbnails);
+
+
+        // then
+        GroupRecommendationResponse actual =
+                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp);
+
+        assertThat(actual.recommendations()).isEqualTo(thumbnails);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 상세 조회 실패")
+    public void getGroupRecommendationDetailedHistoryFail() {
+        // given
+        long userId = 1L;
+        String timestamp = "timestamp";
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+                .thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
+    }
+
     private void setUpGroupMatchTest() {
         gpsDto = new UserGpsDto(37.60, 127.09);
     }

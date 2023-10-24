@@ -20,19 +20,23 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class S3FileUploadServiceImpl implements S3FileUploadService {
+    private final String DEFAULT_URL_PREFIX = "https://";
+    private final String FOLDER_NAME = "origin/";
+
     private final AmazonS3 s3Client;
     @Value("${S3_BUCKET_NAME}")
     private String bucketName;
     @Value("${S3_REGION}")
     private String region;
-    private String defaultUrl = "https://";
+
     @Override
     public String uploadFile(MultipartFile file) {
-        String fileName = generateFilename(file);
+        String fileName = generateFileName(file);
+        String key = FOLDER_NAME + fileName;
         try {
-            s3Client.putObject(new PutObjectRequest(bucketName, fileName,
-                    file.getInputStream(), getObjectMetadata(file))) ;
-            return defaultUrl + bucketName + ".s3." + region + ".amazonaws.com/" +fileName;
+            s3Client.putObject(new PutObjectRequest(bucketName, key,
+                    file.getInputStream(), getObjectMetadata(file)));
+            return getImageThumbnailUrl(fileName);
         } catch (IOException e) {
             throw new AppException(UserErrorCode.FILE_UPLOAD_ERROR);
         }
@@ -61,5 +65,13 @@ public class S3FileUploadServiceImpl implements S3FileUploadService {
         return UUID.randomUUID() + "-" + file.getOriginalFilename();
     }
 
-
+    /**
+     * S3 버킷에 업로드된 이미지가 리사이징되어 업로드될 주소의 URL을 반환함.
+     *
+     * @param fileName 이미지 파일명
+     * @return 리사이징된 이미지가 업로드된 폴더의 이미지 URL
+     */
+    private String getImageThumbnailUrl(String fileName) {
+        return DEFAULT_URL_PREFIX + bucketName + ".s3." + region + ".amazonaws.com/thumbnail/" + fileName;
+    }
 }

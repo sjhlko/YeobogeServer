@@ -38,17 +38,26 @@ public class S3FileUploadServiceImpl implements S3FileUploadService {
         }
     }
 
-    @Override
-    public ObjectMetadata getObjectMetadata(MultipartFile file) {
+    /**
+     * 특정 파일의 {@link ObjectMetadata} 를 조회함
+     *
+     * @param file {@link ObjectMetadata}를 조회할 파일
+     * @return 해당 파일의 {@link ObjectMetadata}
+     */
+    private ObjectMetadata getObjectMetadata(MultipartFile file) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
         objectMetadata.setContentLength(file.getSize());
         return objectMetadata;
     }
 
-
-    @Override
-    public String generateFilename(MultipartFile file) {
+    /**
+     * S3 버킷에 업로드할 파일의 이름을 생성함
+     *
+     * @param file S3 버킷에 업로드할 파일
+     * @return 생성된 파일의 이름
+     */
+    private String generateFileName(MultipartFile file) {
         return UUID.randomUUID() + "-" + file.getOriginalFilename();
     }
 

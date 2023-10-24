@@ -1,9 +1,11 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 그룹 추천 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
@@ -33,5 +35,5 @@ public interface GroupRecommenderService {
      * @param userId 기록 조회를 요청한 사용자 ID
      * @return 가장 최근에 추천 받은 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
      */
-    GroupRecommendationResponse getGroupRecommendationHistory(long userId);
+    PageResponse getGroupRecommendationHistory(long userId, Pageable pageable);
 }

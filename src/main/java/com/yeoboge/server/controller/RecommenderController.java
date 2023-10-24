@@ -1,11 +1,13 @@
 package com.yeoboge.server.controller;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.recommend.*;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -74,8 +76,10 @@ public class RecommenderController {
      * @return 사용자의 과거 그룹 추천 결과 목록을 포함한 {@link GroupRecommendationResponse}
      */
     @GetMapping("/group/history")
-    Response<GroupRecommendationResponse> getGroupRecommendationHistory(@AuthenticationPrincipal long userId) {
-        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendationHistory(userId);
+    Response<PageResponse> getGroupRecommendationHistory(
+            @AuthenticationPrincipal long userId, Pageable pageable
+    ) {
+        PageResponse response = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
         return Response.success(response);
     }
 }

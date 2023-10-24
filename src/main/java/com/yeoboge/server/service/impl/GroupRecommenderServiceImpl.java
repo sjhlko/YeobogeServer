@@ -1,5 +1,6 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
@@ -15,12 +16,13 @@ import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.recommender.GroupRecommender;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactory;
 import com.yeoboge.server.helper.recommender.GroupRecommenderFactoryImpl;
-import com.yeoboge.server.helper.recommender.HistoryGroupRecommender;
 import com.yeoboge.server.helper.utils.ThreadUtils;
 import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -84,14 +86,12 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     @Override
-    public GroupRecommendationResponse getGroupRecommendationHistory(long userId) {
-        GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
-                .repository(recommendRepository)
-                .userId(userId)
-                .build();
-        GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);
+    public PageResponse getGroupRecommendationHistory(long userId, Pageable pageable) {
+        Page historyPage = historyRepository.getRecommendationHistoryPage(userId, pageable);
+        if (!historyPage.hasContent())
+            throw new AppException(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND);
 
-        return response;
+        return new PageResponse(historyPage);
     }
 
     /**

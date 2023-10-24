@@ -34,7 +34,6 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,7 +63,6 @@ public class GroupRecommenderServiceTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
 
-    private UserGpsDto gpsDto;
     private GroupRecommendationRequest request;
     private GroupRecommendationResponse recommendationResponse;
     private List<BoardGameDetailedThumbnailDto> thumbnails;
@@ -79,7 +77,7 @@ public class GroupRecommenderServiceTest {
         GroupMembersResponse response = GroupMembersResponse.builder()
                 .group(new ArrayList<>(Collections.nCopies(3, userDto)))
                 .build();
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         int numRequest = 3;
         ExecutorService executorService = Executors.newFixedThreadPool(numRequest);
@@ -111,7 +109,7 @@ public class GroupRecommenderServiceTest {
     public void groupMatchFailByLessNumMember() {
         // given
         long userId = 1L;
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         // when
         when(friendRepository.findFriendIdsInIdList(anyLong(), anyList())).thenReturn(Collections.EMPTY_LIST);
@@ -127,7 +125,7 @@ public class GroupRecommenderServiceTest {
     public void groupMatchFailByOverNumMember() {
         // given
         long userId = 1L;
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         // when
         long memberId = 2L;
@@ -323,8 +321,8 @@ public class GroupRecommenderServiceTest {
                 .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
 
-    private void setUpGroupMatchTest() {
-        gpsDto = new UserGpsDto(37.60, 127.09);
+    private UserGpsDto createUserGpsDto() {
+        return new UserGpsDto(37.60, 127.09);
     }
 
     private void setUpGroupRecommendationTest() {

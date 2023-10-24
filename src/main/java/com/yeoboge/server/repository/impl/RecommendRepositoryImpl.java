@@ -5,6 +5,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
@@ -138,13 +139,17 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId) {
+    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, String timestamp) {
         QRecommendationHistory qRecommendationHistory = QRecommendationHistory.recommendationHistory;
+        StringExpression dateFormat = Expressions.stringTemplate(
+                "date_format({0}, '%Y-%m-%d %H:%i')", qRecommendationHistory.createdAt
+        );
+
         return queryFactory.select(boardGame)
                 .from(boardGame)
                 .join(qRecommendationHistory)
                 .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
-                .where(qRecommendationHistory.user.id.eq(userId))
+                .where(qRecommendationHistory.user.id.eq(userId).and(dateFormat.eq(timestamp)))
                 .fetch()
                 .stream().map(BoardGameDetailedThumbnailDto::of)
                 .toList();

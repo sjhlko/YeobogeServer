@@ -89,5 +89,5 @@ public interface RecommendRepository {
      * @param userId 사용자 ID
      * @return 사용자가 최근 추천 받은 그룹 추천 보드게임 {@link BoardGameDetailedThumbnailDto}
      */
-    List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId);
+    List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, String timestamp);
 }

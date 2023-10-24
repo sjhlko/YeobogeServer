@@ -83,4 +83,20 @@ public class RecommenderController {
         PageResponse response = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
         return Response.success(response);
     }
+
+    /**
+     * 사용자의 그룹 추천 기록 중 특정 시각의 추천 기록을 조회하는 API
+     *
+     * @param userId 조회를 요청한 사용자 ID
+     * @param timestamp 추천을 받았던 시각의 {@code String} format
+     * @return 해당 시각의 그룹 추천 목록에 대한 {@link GroupRecommendationResponse}
+     */
+    @GetMapping("/group/history/details")
+    Response<GroupRecommendationResponse> getDetailedGroupRecommendationHistory(
+            @AuthenticationPrincipal long userId, String timestamp
+    ) {
+        GroupRecommendationResponse response =
+                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp);
+        return Response.success(response);
+    }
 }

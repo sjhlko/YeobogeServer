@@ -34,7 +34,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
 
     @Override
-    @Async
     public void saveMessage(String message, String timeStamp, Long chatRoomId, Long userId, IsRead isRead) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if (chatRoom.isEmpty()) throw new AppException(ChattingErrorCode.CHAT_ROOM_NOT_FOUND);
@@ -64,7 +63,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    @Async
     public void changeReadStatus(Long chatRoomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.getById(chatRoomId);
         User currentUser = userRepository.getById(userId);

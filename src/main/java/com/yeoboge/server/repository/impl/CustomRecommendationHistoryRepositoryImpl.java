@@ -1,8 +1,5 @@
 package com.yeoboge.server.repository.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
@@ -11,8 +8,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.recommend.RecommendationHistoryTempDto;
 import com.yeoboge.server.domain.dto.recommend.RecommendationHistoryThumbnailDto;
-import com.yeoboge.server.enums.error.CommonErrorCode;
-import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.CustomRecommendationHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,7 +54,7 @@ public class CustomRecommendationHistoryRepositoryImpl
 
     private RecommendationHistoryThumbnailDto getHistoryThumbnail(RecommendationHistoryTempDto tempDto) {
         final int MAX_GROUP_MEMBER = 3;
-        List<Long> groupMemberIds = parseGroupMemberIdList(tempDto.groupMember());
+        List<Long> groupMemberIds = tempDto.parseGroupMemberIdList();
         List<Long> groupMemberForThumbnail = groupMemberIds.subList(0, MAX_GROUP_MEMBER);
         List<String> profileImages = queryFactory.select(user.profileImagePath)
                 .from(user)
@@ -71,15 +66,6 @@ public class CustomRecommendationHistoryRepositoryImpl
                 tempDto.createdAt(),
                 groupMemberIds.size() > MAX_GROUP_MEMBER
         );
-    }
-
-    private List<Long> parseGroupMemberIdList(String groupMembers) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(groupMembers, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-        }
     }
 
     private <T> JPAQuery<T> getBaseQuery(Expression<T> select, long userId) {

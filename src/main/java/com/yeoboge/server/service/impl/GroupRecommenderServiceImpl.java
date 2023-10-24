@@ -65,7 +65,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupRecommendationResponse getGroupRecommendation(
             long userId, GroupRecommendationRequest request
     ) {
-        List<Long> memberIds = new ArrayList<>(request.members());
+        List<Long> memberIds = request.getGroupMemberId(userId);
         checkValidGroupRequest(userId, request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 

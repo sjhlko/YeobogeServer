@@ -1,8 +1,10 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationHistoryThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Genre;
@@ -20,6 +22,10 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -201,27 +207,63 @@ public class GroupRecommenderServiceTest {
     }
 
     @Test
-    @DisplayName("그룹 추천 기록 조회 성공")
-    public void getGroupRecommendationHistorySuccess() {
+    @DisplayName("그룹 추천 기록 조회 성공 : 첫 번째 페이지")
+    public void getGroupRecommendationHistorySuccessFirstPage() {
         // given
         long userId = 1L;
-        BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
-                1L, "name", "image", 2, 5, "1", List.of("genre")
-        );
-        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
-        recommendationResponse = new GroupRecommendationResponse(thumbnails);
+        Pageable pageable = PageRequest.of(0, 1);
+        Page page = createHistoryPage(pageable, 5);
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
-                .thenReturn(thumbnails);
-
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
 
         // then
-        GroupRecommendationResponse actual =
-                groupRecommenderService.getGroupRecommendationHistory(userId);
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
 
-        assertThat(actual.recommendations())
-                .isEqualTo(recommendationResponse.recommendations());
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isNull();
+        assertThat(actual.getNextPage()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 성공 : 중간 페이지")
+    public void getGroupRecommendationHistorySuccessMiddlePage() {
+        // given
+        long userId = 1L;
+        Pageable pageable = PageRequest.of(1, 1);
+        Page page = createHistoryPage(pageable, 5);
+
+        // when
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
+
+        // then
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isEqualTo(0);
+        assertThat(actual.getNextPage()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 성공 : 마지막 페이지")
+    public void getGroupRecommendationHistoryLastPage() {
+        // given
+        long userId = 1L;
+        Pageable pageable = PageRequest.of(4, 1);
+        Page page = createHistoryPage(pageable, 5);
+
+        // when
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
+
+        // then
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isEqualTo(3);
+        assertThat(actual.getNextPage()).isNull();
     }
 
     @Test
@@ -229,13 +271,14 @@ public class GroupRecommenderServiceTest {
     public void getGroupRecommendationHistoryFail() {
         // given
         long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 1);
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
-                .thenReturn(Collections.emptyList());
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(Page.empty());
 
         // then
-        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId))
+        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId, pageable))
                 .isInstanceOf(AppException.class)
                 .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
@@ -253,5 +296,15 @@ public class GroupRecommenderServiceTest {
         );
         thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
         recommendationResponse = new GroupRecommendationResponse(thumbnails);
+    }
+
+    private Page<RecommendationHistoryThumbnailDto> createHistoryPage(Pageable pageable, int total) {
+        RecommendationHistoryThumbnailDto dto = new RecommendationHistoryThumbnailDto(
+                List.of("user_image1", "user_image2"),
+                "timestamp",
+                false
+        );
+        List<RecommendationHistoryThumbnailDto> content = new ArrayList<>(Collections.nCopies(total, dto));
+        return new PageImpl<>(content, pageable, content.size());
     }
 }

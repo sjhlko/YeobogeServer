@@ -70,10 +70,11 @@ public class RecommenderController {
     }
 
     /**
-     * 사용자가 가장 최근에 추천 받은 그룹 추천 결과를 조회하는 API
+     * 사용자가 과거에 추천 받은 그룹 추천 결과 날짜별로 페이징해 조회하는 API
      *
      * @param userId 그룹 추천 기록 조회를 요청한 사용자 ID
-     * @return 사용자의 과거 그룹 추천 결과 목록을 포함한 {@link GroupRecommendationResponse}
+     * @param pageable 페이징 정보가 담긴 {@link Pageable}
+     * @return 사용자의 과거 그룹 추천 결과 목록이 페이징된 {@link PageResponse}
      */
     @GetMapping("/group/history")
     Response<PageResponse> getGroupRecommendationHistory(

@@ -30,10 +30,11 @@ public interface GroupRecommenderService {
     GroupRecommendationResponse getGroupRecommendation(long userId, GroupRecommendationRequest request);
 
     /**
-     * 사용자가 가장 최근에 받았던 그룹 추천 결과를 조회함.
+     * 사용자가 과거에 받았던 그룹 추천 기록을 날짜 별로 페이징해 조회함.
      *
      * @param userId 기록 조회를 요청한 사용자 ID
-     * @return 가장 최근에 추천 받은 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
+     * @param pageable 그룹 추천 목록의 페이징 정보를 담은 {@link Pageable}
+     * @return 날짜별 그룹 추천 기록 리스트를 포함한 {@link PageResponse}
      */
     PageResponse getGroupRecommendationHistory(long userId, Pageable pageable);
 }

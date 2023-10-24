@@ -62,7 +62,7 @@ public class FriendServiceImpl implements FriendService {
                 .receiver(receiver)
                 .build();
         friendRequestRepository.save(friendRequest);
-        pushAlarmService.sendPushAlarm(id, requester.getId(), null, PushAlarmType.FRIEND_REQUEST, 0);
+        pushAlarmService.sendPushAlarm(id, receiver.getId(), null, PushAlarmType.FRIEND_REQUEST, 0);
         return MessageResponse.builder()
                 .message("친구 요청이 성공적으로 전송되었습니다.")
                 .build();

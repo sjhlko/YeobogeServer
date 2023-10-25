@@ -71,18 +71,21 @@ public class CustomRecommendationHistoryRepositoryImpl
      * @return 특정 timestamp의 그룹 추천 기록에 대한 정보가 담긴 {@link RecommendationHistoryThumbnailDto}
      */
     private RecommendationHistoryThumbnailDto getHistoryThumbnail(RecommendationHistoryTempDto tempDto) {
-        final int MAX_GROUP_MEMBER = 3;
         List<Long> groupMemberIds = tempDto.parseGroupMemberIdList();
-        List<Long> groupMemberForThumbnail = groupMemberIds.subList(0, MAX_GROUP_MEMBER);
+
+        final int MAX_GROUP_MEMBER = 3;
+        boolean isMemberMoreThanMax = groupMemberIds.size() > MAX_GROUP_MEMBER;
+        if (isMemberMoreThanMax) groupMemberIds = groupMemberIds.subList(0, MAX_GROUP_MEMBER);
+
         List<String> profileImages = queryFactory.select(user.profileImagePath)
                 .from(user)
-                .where(user.id.in(groupMemberForThumbnail))
+                .where(user.id.in(groupMemberIds))
                 .fetch();
 
         return new RecommendationHistoryThumbnailDto(
                 profileImages,
                 tempDto.createdAt(),
-                groupMemberIds.size() > MAX_GROUP_MEMBER
+                isMemberMoreThanMax
         );
     }
 

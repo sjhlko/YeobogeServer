@@ -87,7 +87,8 @@ public interface RecommendRepository {
      * 사용자가 가장 최근 그룹으로 추천 받은 보드게임 목록에 대해 디테일한 상세정보를 포함해 조회함.
      *
      * @param userId 사용자 ID
+     * @param id 상세 추천 결과를 조회할 추천 기록의 ID
      * @return 사용자가 최근 추천 받은 그룹 추천 보드게임 {@link BoardGameDetailedThumbnailDto}
      */
-    List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, String timestamp);
+    List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, long id);
 }

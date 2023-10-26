@@ -11,14 +11,13 @@ import java.util.List;
 
 @Builder
 public class HistoryGroupRecommender implements GroupRecommender {
-    private long userId;
-    private String timestamp;
+    private long id, userId;
     private RecommendRepository repository;
 
     @Override
     public void addRecommendationsToResponse(GroupRecommendationResponse response) {
         List<BoardGameDetailedThumbnailDto> history =
-                repository.getRecommendationHistoriesWithDetail(userId, timestamp);
+                repository.getRecommendationHistoriesWithDetail(userId, id);
         checkIsHistoryExists(history);
         response.addRecommendations(history);
     }

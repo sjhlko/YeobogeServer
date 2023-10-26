@@ -5,7 +5,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGame;
 import static com.yeoboge.server.domain.entity.immutable.QRecentRatings.recentRatings;
@@ -139,17 +139,19 @@ public class RecommendRepositoryImpl implements RecommendRepository {
     }
 
     @Override
-    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, String timestamp) {
+    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, long id) {
         QRecommendationHistory qRecommendationHistory = QRecommendationHistory.recommendationHistory;
-        StringExpression dateFormat = Expressions.stringTemplate(
-                "date_format({0}, '%Y-%m-%d %H:%i')", qRecommendationHistory.createdAt
-        );
+        List<Long> historyIds = IntStream.range(0, 10)
+                .mapToLong(i -> id - i)
+                .boxed().toList();
 
         return queryFactory.select(boardGame)
                 .from(boardGame)
                 .join(qRecommendationHistory)
                 .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
-                .where(qRecommendationHistory.user.id.eq(userId).and(dateFormat.eq(timestamp)))
+                .where(qRecommendationHistory.user.id.eq(userId)
+                        .and(qRecommendationHistory.id.in(historyIds))
+                ).orderBy(qRecommendationHistory.id.asc())
                 .fetch()
                 .stream().map(BoardGameDetailedThumbnailDto::of)
                 .toList();

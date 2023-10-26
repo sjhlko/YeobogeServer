@@ -1,9 +1,6 @@
 package com.yeoboge.server.service;
 
-import com.yeoboge.server.domain.dto.auth.RegisterRequest;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.vo.auth.RegisterResponse;
-import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * 임시 비밀번호 메일 전송 관련 메서드를 제공하는 인터페이스

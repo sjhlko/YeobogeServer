@@ -35,12 +35,4 @@ public class BoardGame {
     List<ThemeOfBoardGame> theme  = new ArrayList<>();
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<MechanismOfBoardGame> mechanism  = new ArrayList<>();
-
-    public void updateName(String name){
-        this.name = name;
-    }
-
-    public void updateIsLocalized(IsLocalized isLocalized){
-        this.isLocalized = isLocalized;
-    }
 }

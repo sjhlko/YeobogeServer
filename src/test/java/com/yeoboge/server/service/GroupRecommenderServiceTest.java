@@ -1,8 +1,10 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
+import com.yeoboge.server.domain.dto.recommend.RecommendationHistoryThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
 import com.yeoboge.server.domain.entity.Genre;
@@ -20,6 +22,10 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,7 +34,6 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,13 +59,10 @@ public class GroupRecommenderServiceTest {
     @Mock
     private RecommendRepository recommendRepository;
     @Mock
-    private TokenRepository tokenRepository;
-    @Mock
     private PushAlarmService pushAlarmService;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private WebClient webClient;
 
-    private UserGpsDto gpsDto;
     private GroupRecommendationRequest request;
     private GroupRecommendationResponse recommendationResponse;
     private List<BoardGameDetailedThumbnailDto> thumbnails;
@@ -75,7 +77,7 @@ public class GroupRecommenderServiceTest {
         GroupMembersResponse response = GroupMembersResponse.builder()
                 .group(new ArrayList<>(Collections.nCopies(3, userDto)))
                 .build();
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         int numRequest = 3;
         ExecutorService executorService = Executors.newFixedThreadPool(numRequest);
@@ -107,7 +109,7 @@ public class GroupRecommenderServiceTest {
     public void groupMatchFailByLessNumMember() {
         // given
         long userId = 1L;
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         // when
         when(friendRepository.findFriendIdsInIdList(anyLong(), anyList())).thenReturn(Collections.EMPTY_LIST);
@@ -123,7 +125,7 @@ public class GroupRecommenderServiceTest {
     public void groupMatchFailByOverNumMember() {
         // given
         long userId = 1L;
-        setUpGroupMatchTest();
+        UserGpsDto gpsDto = createUserGpsDto();
 
         // when
         long memberId = 2L;
@@ -158,7 +160,6 @@ public class GroupRecommenderServiceTest {
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
         when(ratingRepository.countByUser(anyLong())).thenReturn(15L);
-        when(tokenRepository.findFcmToken(anyLong())).thenReturn(Optional.of("token"));
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then
@@ -204,27 +205,63 @@ public class GroupRecommenderServiceTest {
     }
 
     @Test
-    @DisplayName("그룹 추천 기록 조회 성공")
-    public void getGroupRecommendationHistorySuccess() {
+    @DisplayName("그룹 추천 기록 조회 성공 : 첫 번째 페이지")
+    public void getGroupRecommendationHistorySuccessFirstPage() {
         // given
         long userId = 1L;
-        BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
-                1L, "name", "image", 2, 5, "1", List.of("genre")
-        );
-        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
-        recommendationResponse = new GroupRecommendationResponse(thumbnails);
+        Pageable pageable = PageRequest.of(0, 1);
+        Page page = createHistoryPage(pageable, 5);
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
-                .thenReturn(thumbnails);
-
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
 
         // then
-        GroupRecommendationResponse actual =
-                groupRecommenderService.getGroupRecommendationHistory(userId);
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
 
-        assertThat(actual.recommendations())
-                .isEqualTo(recommendationResponse.recommendations());
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isNull();
+        assertThat(actual.getNextPage()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 성공 : 중간 페이지")
+    public void getGroupRecommendationHistorySuccessMiddlePage() {
+        // given
+        long userId = 1L;
+        Pageable pageable = PageRequest.of(1, 1);
+        Page page = createHistoryPage(pageable, 5);
+
+        // when
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
+
+        // then
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isEqualTo(0);
+        assertThat(actual.getNextPage()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 조회 성공 : 마지막 페이지")
+    public void getGroupRecommendationHistoryLastPage() {
+        // given
+        long userId = 1L;
+        Pageable pageable = PageRequest.of(4, 1);
+        Page page = createHistoryPage(pageable, 5);
+
+        // when
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(page);
+
+        // then
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+
+        assertThat(actual.getContent()).isEqualTo(page.getContent());
+        assertThat(actual.getPrevPage()).isEqualTo(3);
+        assertThat(actual.getNextPage()).isNull();
     }
 
     @Test
@@ -232,19 +269,60 @@ public class GroupRecommenderServiceTest {
     public void getGroupRecommendationHistoryFail() {
         // given
         long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 1);
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(userId))
-                .thenReturn(Collections.emptyList());
+        when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
+                .thenReturn(Page.empty());
 
         // then
-        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId))
+        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId, pageable))
                 .isInstanceOf(AppException.class)
                 .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
 
-    private void setUpGroupMatchTest() {
-        gpsDto = new UserGpsDto(37.60, 127.09);
+    @Test
+    @DisplayName("그룹 추천 기록 상세 조회 성공")
+    public void getGroupRecommendationDetailedHistorySuccess() {
+        // given
+        long userId = 1L;
+        String timestamp = "timestamp";
+        BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
+                1L, "name", "image", 2, 5, "1", List.of("genre")
+        );
+        thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
+        recommendationResponse = new GroupRecommendationResponse(thumbnails);
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+                .thenReturn(thumbnails);
+
+
+        // then
+        GroupRecommendationResponse actual =
+                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp);
+
+        assertThat(actual.recommendations()).isEqualTo(thumbnails);
+    }
+
+    @Test
+    @DisplayName("그룹 추천 기록 상세 조회 실패")
+    public void getGroupRecommendationDetailedHistoryFail() {
+        // given
+        long userId = 1L;
+        String timestamp = "timestamp";
+
+        // when
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+                .thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
+    }
+
+    private UserGpsDto createUserGpsDto() {
+        return new UserGpsDto(37.60, 127.09);
     }
 
     private void setUpGroupRecommendationTest() {
@@ -256,5 +334,15 @@ public class GroupRecommenderServiceTest {
         );
         thumbnails = new ArrayList<>(Collections.nCopies(10, dto));
         recommendationResponse = new GroupRecommendationResponse(thumbnails);
+    }
+
+    private Page<RecommendationHistoryThumbnailDto> createHistoryPage(Pageable pageable, int total) {
+        RecommendationHistoryThumbnailDto dto = new RecommendationHistoryThumbnailDto(
+                List.of("user_image1", "user_image2"),
+                "timestamp",
+                false
+        );
+        List<RecommendationHistoryThumbnailDto> content = new ArrayList<>(Collections.nCopies(total, dto));
+        return new PageImpl<>(content, pageable, content.size());
     }
 }

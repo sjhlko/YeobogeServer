@@ -3,6 +3,9 @@ package com.yeoboge.server.enums.pushAlarm;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * 푸시 알림 타입별 코드와 제목, 내용을 담은 enum 클래스
+ */
 @Getter
 @AllArgsConstructor
 public enum PushAlarmType {

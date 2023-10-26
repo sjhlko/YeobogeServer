@@ -11,6 +11,14 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface BoardGameRepository extends JpaRepository<BoardGame, Long>, CustomBoardGameRepository {
+
+    /**
+     * 특정 id의 보드게임의 정보에 대한 {@link BoardGame} 엔티티를 반환함.
+     *
+     * @param id 보드게임의 id
+     * @return {@link BoardGame}
+     * @throws AppException 해당 보드게임이 존재하지 않을 때 {@link BoardGameErrorCode} 의 존재하지 않음 에러를 던짐
+     */
     default BoardGame getById(Long id) {
         return findById(id).orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
     }

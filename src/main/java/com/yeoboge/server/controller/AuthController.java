@@ -143,6 +143,13 @@ public class AuthController {
         return Response.success(messageResponse);
     }
 
+    /**
+     * fcm 토큰을 redis에 저장하는 API
+     *
+     * @param id     현재 로그인한 회원의 인덱스
+     * @return 토큰 저장 성공 메세지를 포함한 HTTP 200 응답
+     * @see MessageResponse
+     */
     @SecurityRequirement(name = "Bearer Authentication")
     @PatchMapping("/fcm-token")
     public Response<MessageResponse> updateFcmToken(@RequestBody FcmToken request,

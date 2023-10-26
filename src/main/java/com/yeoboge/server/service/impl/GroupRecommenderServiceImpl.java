@@ -1,13 +1,14 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
+import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
-import com.yeoboge.server.domain.vo.pushAlarm.PushAlarmRequest;
+import com.yeoboge.server.domain.entity.RecommendationHistory;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
@@ -21,10 +22,15 @@ import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -42,7 +48,6 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     private final RecommendationHistoryRepository historyRepository;
     private final RecommendRepository recommendRepository;
     private final PushAlarmService pushAlarmService;
-    private final TokenRepository tokenRepository;
 
     private final WebClient webClient;
 
@@ -63,10 +68,11 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupRecommendationResponse getGroupRecommendation(
             long userId, GroupRecommendationRequest request
     ) {
+        List<Long> memberIds = request.getGroupMemberId(userId);
         checkValidGroupRequest(userId, request.members());
-        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
+        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)
                 .repository(recommendRepository)
@@ -75,16 +81,26 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         GroupRecommender recommender = factory.getRecommender(webClient);
 
         GroupRecommendationResponse response = getRecommendationResponse(recommender);
-        saveRecommendationHistory(userId, response);
+        saveRecommendationHistory(userId, memberIds, response);
 
         return response;
     }
 
     @Override
-    public GroupRecommendationResponse getGroupRecommendationHistory(long userId) {
+    public PageResponse getGroupRecommendationHistory(long userId, Pageable pageable) {
+        Page historyPage = historyRepository.getRecommendationHistoryPage(userId, pageable);
+        if (!historyPage.hasContent())
+            throw new AppException(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND);
+
+        return new PageResponse(historyPage);
+    }
+
+    @Override
+    public GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, String timestamp) {
         GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
-                .repository(recommendRepository)
                 .userId(userId)
+                .timestamp(timestamp)
+                .repository(recommendRepository)
                 .build();
         GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);
 
@@ -94,11 +110,11 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     /**
      * 과거에 받은 그룹 추천 결과를 현재 사용자가 받은 그룹 추천 결과로 수정 저장함.
      *
-     * @param userId 그룹 추천을 받은 사용자 ID
+     * @param userId                 그룹 추천을 받은 사용자 ID
      * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
      */
     public void saveRecommendationHistory(
-            long userId, GroupRecommendationResponse recommendationResponse
+            long userId, List<Long> memberIds, GroupRecommendationResponse recommendationResponse
     ) {
         List<Long> recommendedBoardGameIds = recommendationResponse
                 .recommendations().stream()
@@ -106,19 +122,19 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .toList();
         List<RecommendationHistory> histories = recommendedBoardGameIds.stream()
                 .map(recommendedId -> RecommendationHistory.builder()
-                        .userId(userId)
-                        .boardGameId(recommendedId)
+                        .user(User.builder().id(userId).build())
+                        .boardGame(BoardGame.builder().id(recommendedId).build())
+                        .groupMember(memberIds.toString())
                         .build())
                 .toList();
 
-        historyRepository.deleteAllByUserId(userId);
         historyRepository.saveAll(histories);
     }
 
     /**
      * 그룹 추천을 요청한 사용자가 그룹내에 포함되는 지 확인함.
      *
-     * @param userId 추천을 요청한 사용자 ID
+     * @param userId    추천을 요청한 사용자 ID
      * @param memberIds 추천을 받을 그룹원들의 사용자 ID 리스트
      * @throws AppException 사용자가 그룹에 포함되지 않았다는 메세지를 담고있음.
      */
@@ -199,14 +215,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
 
     private void sendPushAlarmForGroupRecommendation(List<Long> users) {
         for (Long user : users) {
-            Optional<String> fcmToken = tokenRepository.findFcmToken(user);
-            if (fcmToken.isPresent()) {
-                PushAlarmRequest pushAlarmRequest = PushAlarmRequest.builder()
-                        .pushAlarmType(PushAlarmType.RATING)
-                        .targetToken(fcmToken.get())
-                        .build();
-                pushAlarmService.sendPushAlarm(pushAlarmRequest, 10000);
-            }
+            pushAlarmService.sendPushAlarm(user, user,null, PushAlarmType.RATING, 10000);
         }
     }
 }

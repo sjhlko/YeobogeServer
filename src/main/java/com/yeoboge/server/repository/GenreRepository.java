@@ -1,8 +1,6 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.entity.Genre;
-import com.yeoboge.server.enums.error.CommonErrorCode;
-import com.yeoboge.server.handler.AppException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,12 +11,5 @@ import java.util.Optional;
  */
 @Repository
 public interface GenreRepository extends JpaRepository<Genre, Long> {
-    Optional<Genre> findByName(String name);
     Optional<Genre> findById(Long id);
-
-    default String getNameById(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new AppException(CommonErrorCode.NOT_FOUND))
-                .getName();
-    }
 }

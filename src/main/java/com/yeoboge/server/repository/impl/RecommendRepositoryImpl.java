@@ -5,12 +5,13 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
 import com.yeoboge.server.domain.entity.*;
-import com.yeoboge.server.domain.entity.embeddable.QRecommendationHistory;
+import com.yeoboge.server.domain.entity.QRecommendationHistory;
 import com.yeoboge.server.repository.RecommendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -132,19 +133,23 @@ public class RecommendRepositoryImpl implements RecommendRepository {
         return queryFactory.select(thumbnailConstructorProjection())
                 .from(boardGame)
                 .join(qRecommendationHistory)
-                .on(boardGame.id.eq(qRecommendationHistory.boardGameId))
-                .where(qRecommendationHistory.userId.eq(userId))
+                .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
+                .where(qRecommendationHistory.user.id.eq(userId))
                 .fetch();
     }
 
     @Override
-    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId) {
+    public List<BoardGameDetailedThumbnailDto> getRecommendationHistoriesWithDetail(long userId, String timestamp) {
         QRecommendationHistory qRecommendationHistory = QRecommendationHistory.recommendationHistory;
+        StringExpression dateFormat = Expressions.stringTemplate(
+                "date_format({0}, '%Y-%m-%d %H:%i')", qRecommendationHistory.createdAt
+        );
+
         return queryFactory.select(boardGame)
                 .from(boardGame)
                 .join(qRecommendationHistory)
-                .on(boardGame.id.eq(qRecommendationHistory.boardGameId))
-                .where(qRecommendationHistory.userId.eq(userId))
+                .on(boardGame.id.eq(qRecommendationHistory.boardGame.id))
+                .where(qRecommendationHistory.user.id.eq(userId).and(dateFormat.eq(timestamp)))
                 .fetch()
                 .stream().map(BoardGameDetailedThumbnailDto::of)
                 .toList();

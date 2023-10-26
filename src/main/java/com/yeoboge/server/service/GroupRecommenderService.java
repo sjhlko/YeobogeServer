@@ -1,9 +1,11 @@
 package com.yeoboge.server.service;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 그룹 추천 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
@@ -28,10 +30,20 @@ public interface GroupRecommenderService {
     GroupRecommendationResponse getGroupRecommendation(long userId, GroupRecommendationRequest request);
 
     /**
-     * 사용자가 가장 최근에 받았던 그룹 추천 결과를 조회함.
+     * 사용자가 과거에 받았던 그룹 추천 기록을 날짜 별로 페이징해 조회함.
      *
      * @param userId 기록 조회를 요청한 사용자 ID
-     * @return 가장 최근에 추천 받은 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
+     * @param pageable 그룹 추천 목록의 페이징 정보를 담은 {@link Pageable}
+     * @return 날짜별 그룹 추천 기록 리스트를 포함한 {@link PageResponse}
      */
-    GroupRecommendationResponse getGroupRecommendationHistory(long userId);
+    PageResponse getGroupRecommendationHistory(long userId, Pageable pageable);
+
+    /**
+     * 사용자의 과거 그룹 추천 목록 중 특정 시각의 기록을 조회함.
+     *
+     * @param userId 기록 조회를 요청한 사용자 ID
+     * @param timestamp 그룹 추천을 받았던 시간을 나타내는 String format
+     * @return 해당 시간에 추천 받았던 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
+     */
+    GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, String timestamp);
 }

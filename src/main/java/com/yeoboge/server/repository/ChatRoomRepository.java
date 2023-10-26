@@ -1,7 +1,5 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.entity.BookmarkedBoardGame;
-import com.yeoboge.server.domain.entity.ChatMessage;
 import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.enums.error.ChattingErrorCode;

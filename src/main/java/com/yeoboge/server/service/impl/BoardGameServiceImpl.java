@@ -9,20 +9,18 @@ import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.BoardGameErrorCode;
 import com.yeoboge.server.handler.AppException;
-import com.yeoboge.server.repository.*;
+import com.yeoboge.server.repository.BoardGameRepository;
+import com.yeoboge.server.repository.BookmarkRepository;
+import com.yeoboge.server.repository.RatingRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.BoardGameService;
-import com.yeoboge.server.helper.utils.CsvParsing;
-import com.yeoboge.server.helper.utils.GetKorName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * {@link BoardGameService} 구현체
@@ -34,174 +32,6 @@ public class BoardGameServiceImpl implements BoardGameService {
     private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
     private final RatingRepository ratingRepository;
-
-    private final ThemeRepository themeRepository;
-    private final GenreRepository genreRepository;
-    private final MechanismRepository mechanismRepository;
-    private final MechanismOfBoardGameRepository mechanismOfBoardGameRepository;
-    private final ThemeOfBoardGameRepository themeOfBoardGameRepository;
-    private final GenreOfBoardGameRepository genreOfBoardGameRepository;
-
-    @Override
-    public void saveBoardGame() throws IOException {
-        CsvParsing boardGameCsv = new CsvParsing("file path");
-        String[] line = null;
-        int lineCount = 0;
-        int boardGameCount = 0;
-        while ((line = boardGameCsv.nextRead()) != null) {
-            //장르(카테고리)
-            ArrayList<Integer> categorys = new ArrayList<>();
-            if (lineCount == 0) {
-                lineCount++;
-                continue;
-            }
-            System.out.println(line[0]);
-            BoardGame boardGame = BoardGame.builder()
-                    .id(Long.parseLong(line[0]))
-                    .name(line[1])
-                    .description(line[2])
-                    .playerMin(Integer.parseInt(line[8]))
-                    .playerMax(Integer.parseInt(line[9]))
-                    .weight(line[4])
-                    .imagePath(line[30])
-                    .playTime(Integer.parseInt(line[18]))
-                    .isLocalized(IsLocalized.NO)
-                    .build();
-            RestTemplate restTemplate = new RestTemplate();
-            String apiUrl = "https://api.geekdo.com/xmlapi/boardgame/"+ line[0];
-            boolean isValid = false;
-            boolean isSaved = false;
-            for (int i = 0; i < 8; i++) {
-                if (line[40+i].equals("1")){
-                    categorys.add(i);
-                    isValid=true;
-                    if(!isSaved) {
-                        boardGame = boardGameRepository.save(boardGame);
-                        isSaved = true;
-                    }
-                    Optional<Genre> genre = genreRepository.findById(Long.parseLong(String.valueOf(i+1)));
-                    GenreOfBoardGame genreOfBoardGame = GenreOfBoardGame.builder()
-                            .genre(genre.get())
-                            .boardGame(boardGame)
-                            .build();
-                    genreOfBoardGameRepository.save(genreOfBoardGame);
-                }
-            }
-
-            // csv 에 카테고리 없을때
-            if (!isValid) {
-                String xmlData = restTemplate.getForObject(apiUrl, String.class);
-                ArrayList<String> category = GetKorName.getCategory(xmlData);
-                String korName = GetKorName.getKorName(xmlData);
-
-                //카테고리 있는지 확인
-                for (String s : category) {
-                    Optional<Genre> genre = genreRepository.findByName(s);
-                    if (genre.isEmpty()) continue;
-
-                    //카테고리 있을때
-                    GenreOfBoardGame genreOfBoardGame = GenreOfBoardGame.builder()
-                            .boardGame(boardGame)
-                            .genre(genre.get())
-                            .build();
-                    boardGame = boardGameRepository.save(boardGame);
-                    genreOfBoardGameRepository.save(genreOfBoardGame);
-                }
-
-                //한글화 됐을때
-                if (!korName.equals("")) {
-                    boardGameCount++;
-                    boardGame.updateIsLocalized(IsLocalized.YES);
-                    boardGame.updateName(korName);
-                    boardGameRepository.save(boardGame);
-                }
-                continue;
-            }
-
-            //csv 에 카테고리 있을때
-            String xmlData = restTemplate.getForObject(apiUrl, String.class);
-            String korName = GetKorName.getKorName(xmlData);
-
-            //한글화 됐을때
-            if (!korName.equals("")) {
-                boardGameCount++;
-                boardGame.updateName(korName);
-                boardGame.updateIsLocalized(IsLocalized.YES);
-                boardGameRepository.save(boardGame);
-            }
-        }
-    }
-
-    @Override
-    public void saveTheme() throws IOException {
-        CsvParsing boardGameCsv = new CsvParsing("file path");
-        String[] line = null;
-        int lineCount = 0;
-        while ((line = boardGameCsv.nextRead()) != null) {
-            if (lineCount == 0) {
-                for (String s : line) {
-                    if (s.equals("BGGId")) continue;
-                    Theme theme = Theme.builder()
-                            .name(s)
-                            .build();
-                    themeRepository.save(theme);
-                }
-                return;
-            }
-        }
-    }
-
-
-    @Override
-    public void saveThemeOfBoardGame() throws IOException {
-        CsvParsing boardGameCsv = new CsvParsing("file path");
-        String[] line = null;
-        int lineCount = 0;
-        while ((line = boardGameCsv.nextRead()) != null) {
-            if (lineCount == 0) {
-                lineCount++;
-                continue;
-            }
-            System.out.println("theme:" + line[0]);
-            for (int i = 1; i < line.length; i++) {
-                if (line[i].equals("0")) continue;
-                Optional<Theme> theme = themeRepository.findById(Long.parseLong(String.valueOf(i)));
-                Optional<BoardGame> boardGame = boardGameRepository.findById(Long.parseLong(line[0]));
-                if(boardGame.isEmpty()) continue;
-                ThemeOfBoardGame themeOfBoardGame = ThemeOfBoardGame.builder()
-                        .boardGame(boardGame.get())
-                        .theme(theme.get())
-                        .build();
-                themeOfBoardGameRepository.save(themeOfBoardGame);
-            }
-        }
-    }
-
-    @Override
-    public void saveMechanismOfBoardGame() throws IOException {
-        CsvParsing boardGameCsv = new CsvParsing("file path");
-        String[] line = null;
-        int lineCount = 0;
-        while ((line = boardGameCsv.nextRead()) != null) {
-            if (lineCount == 0) {
-                lineCount++;
-                continue;
-            }
-            System.out.println("mechanism:" + line[0]);
-            for (int i = 1; i < line.length; i++) {
-                if (line[i].equals("0")) continue;
-                Optional<Mechanism> mechanism = mechanismRepository.findById(Long.parseLong(String.valueOf(i)));
-                Optional<BoardGame> boardGame = boardGameRepository.findById(Long.parseLong(line[0]));
-                if(boardGame.isEmpty()) continue;
-                MechanismOfBoardGame mechanismOfBoardGame = MechanismOfBoardGame.builder()
-                        .boardGame(boardGame.get())
-                        .mechanism(mechanism.get())
-                        .build();
-                mechanismOfBoardGameRepository.save(mechanismOfBoardGame);
-            }
-        }
-    }
-
 
     @Override
     public BoardGameDetailResponse getBoardGameDetail(Long id) {

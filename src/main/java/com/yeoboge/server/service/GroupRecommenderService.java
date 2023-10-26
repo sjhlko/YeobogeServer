@@ -42,8 +42,8 @@ public interface GroupRecommenderService {
      * 사용자의 과거 그룹 추천 목록 중 특정 시각의 기록을 조회함.
      *
      * @param userId 기록 조회를 요청한 사용자 ID
-     * @param timestamp 그룹 추천을 받았던 시간을 나타내는 String format
+     * @param id 상세 추천 결과를 조회할 추천 기록의 ID
      * @return 해당 시간에 추천 받았던 보드게임 목록을 포함한 {@link GroupRecommendationResponse}
      */
-    GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, String timestamp);
+    GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, long id);
 }

@@ -11,10 +11,12 @@ import java.util.List;
 /**
  * 그룹 추천 기록을 DB 조회 시 필요한 컬럼을 매핑할 DTO
  *
+ * @param id 추천 기록 ID
  * @param groupMember 함께 추천 받은 그룹원 리스트가 직렬화된 {@code String}
  * @param createdAt 추천 받은 시각에 대한 {@code String} format
  */
 public record RecommendationHistoryTempDto(
+        long id,
         String groupMember,
         String createdAt
 ) {

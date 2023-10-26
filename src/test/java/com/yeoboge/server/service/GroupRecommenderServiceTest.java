@@ -285,8 +285,7 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 기록 상세 조회 성공")
     public void getGroupRecommendationDetailedHistorySuccess() {
         // given
-        long userId = 1L;
-        String timestamp = "timestamp";
+        long userId = 1L, historyId = 10L;
         BoardGameDetailedThumbnailDto dto = new BoardGameDetailedThumbnailDto(
                 1L, "name", "image", 2, 5, "1", List.of("genre")
         );
@@ -294,13 +293,13 @@ public class GroupRecommenderServiceTest {
         recommendationResponse = new GroupRecommendationResponse(thumbnails);
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyLong()))
                 .thenReturn(thumbnails);
 
 
         // then
         GroupRecommendationResponse actual =
-                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp);
+                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, historyId);
 
         assertThat(actual.recommendations()).isEqualTo(thumbnails);
     }
@@ -309,14 +308,13 @@ public class GroupRecommenderServiceTest {
     @DisplayName("그룹 추천 기록 상세 조회 실패")
     public void getGroupRecommendationDetailedHistoryFail() {
         // given
-        long userId = 1L;
-        String timestamp = "timestamp";
+        long userId = 1L, historyId = 10L;
 
         // when
-        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyString()))
+        when(recommendRepository.getRecommendationHistoriesWithDetail(anyLong(), anyLong()))
                 .thenReturn(Collections.emptyList());
 
-        assertThatThrownBy(() -> groupRecommenderService.getDetailedGroupRecommendationHistory(userId, timestamp))
+        assertThatThrownBy(() -> groupRecommenderService.getDetailedGroupRecommendationHistory(userId, historyId))
                 .isInstanceOf(AppException.class)
                 .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
     }
@@ -338,6 +336,7 @@ public class GroupRecommenderServiceTest {
 
     private Page<RecommendationHistoryThumbnailDto> createHistoryPage(Pageable pageable, int total) {
         RecommendationHistoryThumbnailDto dto = new RecommendationHistoryThumbnailDto(
+                1L,
                 List.of("user_image1", "user_image2"),
                 "timestamp",
                 false

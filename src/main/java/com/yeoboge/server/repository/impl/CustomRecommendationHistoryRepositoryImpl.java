@@ -53,6 +53,7 @@ public class CustomRecommendationHistoryRepositoryImpl
         List<RecommendationHistoryTempDto> tempContent = getBaseQuery(
                 Projections.constructor(
                         RecommendationHistoryTempDto.class,
+                        recommendationHistory.id,
                         recommendationHistory.groupMember,
                         DATE_FORMAT
                 ),
@@ -83,6 +84,7 @@ public class CustomRecommendationHistoryRepositoryImpl
                 .fetch();
 
         return new RecommendationHistoryThumbnailDto(
+                tempDto.id(),
                 profileImages,
                 tempDto.createdAt(),
                 isMemberMoreThanMax
@@ -100,6 +102,8 @@ public class CustomRecommendationHistoryRepositoryImpl
     private <T> JPAQuery<T> getBaseQuery(Expression<T> select, long userId) {
         return queryFactory.select(select)
                 .from(recommendationHistory).distinct()
-                .where(recommendationHistory.user.id.eq(userId));
+                .where(recommendationHistory.user.id.eq(userId)
+                        .and(recommendationHistory.id.mod(10L).eq(0L))
+                );
     }
 }

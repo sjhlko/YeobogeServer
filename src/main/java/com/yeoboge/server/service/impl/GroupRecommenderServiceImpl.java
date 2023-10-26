@@ -96,10 +96,10 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     @Override
-    public GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, String timestamp) {
+    public GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, long id) {
         GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
+                .id(id)
                 .userId(userId)
-                .timestamp(timestamp)
                 .repository(recommendRepository)
                 .build();
         GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);

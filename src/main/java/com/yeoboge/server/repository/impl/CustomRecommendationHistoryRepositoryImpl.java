@@ -73,7 +73,7 @@ public class CustomRecommendationHistoryRepositoryImpl
     private RecommendationHistoryThumbnailDto getHistoryThumbnail(RecommendationHistoryTempDto tempDto) {
         List<Long> groupMemberIds = tempDto.parseGroupMemberIdList();
 
-        final int MAX_GROUP_MEMBER = 3;
+        final int MAX_GROUP_MEMBER = 4;
         boolean isMemberMoreThanMax = groupMemberIds.size() > MAX_GROUP_MEMBER;
         if (isMemberMoreThanMax) groupMemberIds = groupMemberIds.subList(0, MAX_GROUP_MEMBER);
 

@@ -80,6 +80,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    implementation "org.springframework.security:spring-security-messaging"
 
     // fcm 관련 의존성
     implementation 'com.google.firebase:firebase-admin:9.1.1'

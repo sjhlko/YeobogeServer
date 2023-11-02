@@ -1,6 +1,7 @@
 package com.yeoboge.server.repository;
 
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.FriendReviewDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,4 +36,14 @@ public interface CustomRatingRepository {
      * @return 페이징된 해당 별점의 보드게임 {@link BoardGameThumbnailDto} 목록
      */
     Page<BoardGameThumbnailDto> getRatingsByUserId(final Long userId, final Double score, final Pageable pageable);
+
+    /**
+     * 특정 보드게임에 대한 사용자의 친구들이 남긴 평가를 조회함.
+     *
+     * @param userId 사용자 ID
+     * @param boardGameId 보드게임 ID
+     * @param isForLike 이 보드게임을 좋아하는 친구를 찾을 것 인지 좋아하지 않는 친구를 찾을 것인지에 대한 {@code boolean}
+     * @return
+     */
+    FriendReviewDto getFriendReviewOfBoardGame(final long userId, final long boardGameId, boolean isForLike);
 }

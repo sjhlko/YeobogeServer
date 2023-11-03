@@ -1,6 +1,5 @@
 package com.yeoboge.server.domain.dto.boardGame;
 
-import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.IsLocalized;
 import lombok.Builder;
 
@@ -19,6 +18,7 @@ import java.util.List;
  * @param playTime 보드게임 플레이 시간
  * @param mechanism 보드게임의 전략
  * @param isLocalized 보드게임의 번역 여부
+ * @param avgRating 보드게임 평균 별점
  * @param genre 보드게임의 장르의 리스트
  * @param theme 보드게임의 테마의 리스트
  */
@@ -32,31 +32,37 @@ public record BoardGameDetailDto(
         Integer playerMax,
         String imagePath,
         Integer playTime,
+        double avgRating,
         IsLocalized isLocalized,
         List<String> mechanism,
         List<String> genre,
         List<String> theme
 ) {
     /**
-     * {@link BoardGame} 엔티티와 테마, 장르 리스트를 통해 {@link BoardGameDetailDto} DTO 를 생성해 반환함.
+     * {@link QDSLBoardGameDetailDto}와 테마, 장르 리스트를 통해 {@link BoardGameDetailDto} DTO 를 생성해 반환함.
      *
-     * @param boardGame 정보를 반환할 보드게임의 {@link BoardGame} 엔티티
+     * @param boardGame 정보를 반환할 보드게임의 {@link QDSLBoardGameDetailDto}
      * @param themes 정보를 반환할 보드게임의 테마의 리스트
      * @param genres 정보를 반환할 보드게임의 장르의 리스트
      * @return {@link BoardGameDetailDto} DTO
      */
-    public static BoardGameDetailDto of(BoardGame boardGame, List<String> themes,
-                                             List<String> genres, List<String> mechanisms){
+    public static BoardGameDetailDto of(
+            QDSLBoardGameDetailDto boardGame,
+            List<String> themes,
+            List<String> genres,
+            List<String> mechanisms
+    ){
         return BoardGameDetailDto.builder()
-                .id(boardGame.getId())
-                .name(boardGame.getName())
-                .description(boardGame.getDescription())
-                .weight(boardGame.getWeight().getComplexity())
-                .playerMin(boardGame.getPlayerMin())
-                .playerMax(boardGame.getPlayerMax())
-                .imagePath(boardGame.getImagePath())
-                .playTime(boardGame.getPlayTime())
-                .isLocalized(boardGame.getIsLocalized())
+                .id(boardGame.id())
+                .name(boardGame.name())
+                .description(boardGame.description())
+                .weight(boardGame.weight().getComplexity())
+                .playerMin(boardGame.playerMin())
+                .playerMax(boardGame.playerMax())
+                .imagePath(boardGame.imagePath())
+                .playTime(boardGame.playTime())
+                .isLocalized(boardGame.isLocalized())
+                .avgRating(boardGame.avgRating())
                 .mechanism(mechanisms)
                 .genre(genres)
                 .theme(themes)

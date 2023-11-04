@@ -41,7 +41,7 @@ public class SecurityConfig {
             "/oauths/register",
             "/oauths/login",
             /* STOMP 관련 url */
-//            "/chats/send-message/**"
+            "/chats/connect/**"
     };
 
     private final HttpEndpointChecker endpointChecker;

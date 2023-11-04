@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -18,6 +19,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketPreHandler webSocketPreHandler;
     private final WebSocketErrorHandler webSocketErrorHandler;
+    private final HandShakeInterceptor handShakeInterceptor;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -35,7 +37,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("chats/send-message/{userId}").setAllowedOriginPatterns("*");
+        registry.addEndpoint("chats/connect/{userId}")
+//                .addInterceptors(handShakeInterceptor)
+                .setAllowedOriginPatterns("*");
         registry.setErrorHandler(webSocketErrorHandler);
     }
 

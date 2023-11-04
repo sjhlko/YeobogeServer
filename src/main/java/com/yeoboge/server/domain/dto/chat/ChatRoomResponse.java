@@ -16,7 +16,6 @@ import java.time.format.DateTimeFormatter;
  * @param unReadMessage 현재 로그인한 회원이 해당 채팅방에 보내진 메세지 중 읽지 않은 메세지의 수
  * @param userInfo 해당 채팅방에 대한 상대 유저에 대한 정보
  */
-
 @Builder
 public record ChatRoomResponse(
         Long id,

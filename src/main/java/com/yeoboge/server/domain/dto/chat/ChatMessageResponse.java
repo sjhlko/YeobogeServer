@@ -1,14 +1,13 @@
 package com.yeoboge.server.domain.dto.chat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
-import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.ChatMessage;
 import com.yeoboge.server.domain.entity.User;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+
 /**
  * 채팅 메세지의 정보를 담고 있는 DTO
  *
@@ -17,7 +16,6 @@ import java.util.Objects;
  * @param createdAt 메세지를 보낸 시각
  * @param isMyMessage 현재 로그인한 회원이 보낸 메세지인지에 대한 boolean 변수
  */
-
 @Builder
 public record ChatMessageResponse(
         Long id,

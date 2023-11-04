@@ -1,7 +1,9 @@
 package com.yeoboge.server.repository;
 
-import com.yeoboge.server.domain.entity.*;
-import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.domain.entity.ChatMessage;
+import com.yeoboge.server.domain.entity.ChatRoom;
+import com.yeoboge.server.domain.entity.IsRead;
+import com.yeoboge.server.domain.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

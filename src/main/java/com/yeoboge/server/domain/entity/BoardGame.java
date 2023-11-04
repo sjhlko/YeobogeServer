@@ -1,5 +1,6 @@
 package com.yeoboge.server.domain.entity;
 
+import com.yeoboge.server.domain.entity.converter.BoardGameWeightConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,9 @@ public class BoardGame {
     private String name;
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String weight;
+    @Column(name = "weight_index")
+    @Convert(converter = BoardGameWeightConverter.class)
+    private Weight weight;
     private Integer playerMin;
     private Integer playerMax;
     @Column(columnDefinition = "TEXT")
@@ -35,12 +38,4 @@ public class BoardGame {
     List<ThemeOfBoardGame> theme  = new ArrayList<>();
     @OneToMany(mappedBy = "boardGame", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<MechanismOfBoardGame> mechanism  = new ArrayList<>();
-
-    public void updateName(String name){
-        this.name = name;
-    }
-
-    public void updateIsLocalized(IsLocalized isLocalized){
-        this.isLocalized = isLocalized;
-    }
 }

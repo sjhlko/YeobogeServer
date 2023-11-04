@@ -1,12 +1,14 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
 import com.yeoboge.server.domain.dto.recommend.GroupMembersResponse;
 import com.yeoboge.server.domain.dto.recommend.GroupRecommendationResponse;
 import com.yeoboge.server.domain.dto.recommend.UserGpsDto;
 import com.yeoboge.server.domain.dto.user.UserInfoDto;
+import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.User;
-import com.yeoboge.server.domain.entity.embeddable.RecommendationHistory;
+import com.yeoboge.server.domain.entity.RecommendationHistory;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
@@ -20,6 +22,8 @@ import com.yeoboge.server.repository.*;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.PushAlarmService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -64,10 +68,11 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     public GroupRecommendationResponse getGroupRecommendation(
             long userId, GroupRecommendationRequest request
     ) {
+        List<Long> memberIds = request.getGroupMemberId(userId);
         checkValidGroupRequest(userId, request.members());
-        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         sendPushAlarmForGroupRecommendation(request.members());
 
+        List<Long> recommendableMembers = findRecommendableMembers(request.members());
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
                 .recommendableMembers(recommendableMembers)
                 .repository(recommendRepository)
@@ -76,16 +81,26 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         GroupRecommender recommender = factory.getRecommender(webClient);
 
         GroupRecommendationResponse response = getRecommendationResponse(recommender);
-        saveRecommendationHistory(userId, response);
+        saveRecommendationHistory(userId, memberIds, response);
 
         return response;
     }
 
     @Override
-    public GroupRecommendationResponse getGroupRecommendationHistory(long userId) {
+    public PageResponse getGroupRecommendationHistory(long userId, Pageable pageable) {
+        Page historyPage = historyRepository.getRecommendationHistoryPage(userId, pageable);
+        if (!historyPage.hasContent())
+            throw new AppException(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND);
+
+        return new PageResponse(historyPage);
+    }
+
+    @Override
+    public GroupRecommendationResponse getDetailedGroupRecommendationHistory(long userId, long id) {
         GroupRecommender historyRecommender = HistoryGroupRecommender.builder()
-                .repository(recommendRepository)
+                .id(id)
                 .userId(userId)
+                .repository(recommendRepository)
                 .build();
         GroupRecommendationResponse response = getRecommendationResponse(historyRecommender);
 
@@ -99,7 +114,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
      * @param recommendationResponse 해당 사용자 그룹에 대한 추천 결과 {@link GroupRecommendationResponse}
      */
     public void saveRecommendationHistory(
-            long userId, GroupRecommendationResponse recommendationResponse
+            long userId, List<Long> memberIds, GroupRecommendationResponse recommendationResponse
     ) {
         List<Long> recommendedBoardGameIds = recommendationResponse
                 .recommendations().stream()
@@ -107,12 +122,12 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
                 .toList();
         List<RecommendationHistory> histories = recommendedBoardGameIds.stream()
                 .map(recommendedId -> RecommendationHistory.builder()
-                        .userId(userId)
-                        .boardGameId(recommendedId)
+                        .user(User.builder().id(userId).build())
+                        .boardGame(BoardGame.builder().id(recommendedId).build())
+                        .groupMember(memberIds.toString())
                         .build())
                 .toList();
 
-        historyRepository.deleteAllByUserId(userId);
         historyRepository.saveAll(histories);
     }
 

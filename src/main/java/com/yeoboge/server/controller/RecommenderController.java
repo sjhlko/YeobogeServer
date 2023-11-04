@@ -1,11 +1,13 @@
 package com.yeoboge.server.controller;
 
+import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.recommend.*;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.GroupRecommenderService;
 import com.yeoboge.server.service.RecommenderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -68,14 +70,33 @@ public class RecommenderController {
     }
 
     /**
-     * 사용자가 가장 최근에 추천 받은 그룹 추천 결과를 조회하는 API
+     * 사용자가 과거에 추천 받은 그룹 추천 결과 날짜별로 페이징해 조회하는 API
      *
      * @param userId 그룹 추천 기록 조회를 요청한 사용자 ID
-     * @return 사용자의 과거 그룹 추천 결과 목록을 포함한 {@link GroupRecommendationResponse}
+     * @param pageable 페이징 정보가 담긴 {@link Pageable}
+     * @return 사용자의 과거 그룹 추천 결과 목록이 페이징된 {@link PageResponse}
      */
     @GetMapping("/group/history")
-    Response<GroupRecommendationResponse> getGroupRecommendationHistory(@AuthenticationPrincipal long userId) {
-        GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendationHistory(userId);
+    Response<PageResponse> getGroupRecommendationHistory(
+            @AuthenticationPrincipal long userId, Pageable pageable
+    ) {
+        PageResponse response = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+        return Response.success(response);
+    }
+
+    /**
+     * 사용자의 그룹 추천 기록 중 특정 시각의 추천 기록을 조회하는 API
+     *
+     * @param userId 조회를 요청한 사용자 ID
+     * @param id 상세 추천 결과를 조회할 추천 기록의 ID
+     * @return 해당 시각의 그룹 추천 목록에 대한 {@link GroupRecommendationResponse}
+     */
+    @GetMapping("/group/history/details")
+    Response<GroupRecommendationResponse> getDetailedGroupRecommendationHistory(
+            @AuthenticationPrincipal long userId, long id
+    ) {
+        GroupRecommendationResponse response =
+                groupRecommenderService.getDetailedGroupRecommendationHistory(userId, id);
         return Response.success(response);
     }
 }

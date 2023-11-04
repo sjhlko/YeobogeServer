@@ -8,41 +8,18 @@ import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import org.springframework.data.domain.Pageable;
 
-import java.io.IOException;
-
 /**
  * 보드게임 관련 비즈니스 로직에 대한 메서드를 제공하는 인터페이스
  */
 public interface BoardGameService {
-
     /**
-     * 보드게임을 저장하는 메서드
-     */
-    void saveBoardGame() throws IOException;
-
-    /**
-     * 테마를 저장하는 메서드
-     */
-    void saveTheme() throws IOException;
-
-    /**
-     * 보드게임별 테마를 저장하는 메서드
-     */
-    void saveThemeOfBoardGame() throws IOException;
-
-    /**
-     * 보드게임별 전략을 저장하는 메서드
-     */
-    void saveMechanismOfBoardGame() throws IOException;
-
-
-    /**
-     * 특정 보드게임에 대한 정보를 반환하는 메서드
+     * 특정 보드게임에 대한 상세 정보를 반환하는 메서드
      *
-     * @param id 정보를 반환할 보드게임의 id
+     * @param userId 조회를 요청한 사용자 ID
+     * @param boardGameId 정보를 반환할 보드게임의 ID
      * @return {@link BoardGameDetailResponse}
      */
-    BoardGameDetailResponse getBoardGameDetail(Long id);
+    BoardGameDetailResponse getBoardGameDetail(long userId, long boardGameId);
 
     /**
      * 특정 보드게임을 찜 목록에 추가함.

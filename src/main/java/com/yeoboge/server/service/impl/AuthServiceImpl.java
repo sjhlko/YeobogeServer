@@ -83,9 +83,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MessageResponse logout(String header, Long id) {
         String accessToken = header.substring(TOKEN_SPLIT_INDEX);
+        deleteUserAuthTokens(accessToken, id);
 
-        tokenRepository.delete(accessToken);
-        tokenRepository.deleteFcmToken(id);
         return MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();
@@ -118,9 +117,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MessageResponse unregister(Long id, String authorizationHeader) {
+        String accessToken = authorizationHeader.substring(TOKEN_SPLIT_INDEX);
         User user = userRepository.getById(id);
         userRepository.delete(user);
-        tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
+        deleteUserAuthTokens(accessToken, user.getId());
+
         return MessageResponse.builder()
                 .message("회원 탈퇴 성공")
                 .build();
@@ -134,7 +135,8 @@ public class AuthServiceImpl implements AuthService {
         tokens.checkTokenValidation(refreshToken);
 
         tokenRepository.delete(accessToken);
-        Long userId = jwtProvider.parseUserId(refreshToken);
+        long userId = jwtProvider.parseUserId(refreshToken);
+        checkValidRefreshToken(refreshToken, userId);
 
         return generateToken(userId);
     }
@@ -184,7 +186,33 @@ public class AuthServiceImpl implements AuthService {
     private Tokens generateToken(long userId) {
         Tokens tokens = jwtProvider.generateTokens(userId);
         tokenRepository.save(tokens);
+        tokenRepository.saveValidTokens(tokens, userId);
 
         return tokens;
+    }
+
+    /**
+     * 사용자 ID로 등록된 Access Token, Refresh Token 등을
+     * Redis 스토리지에서 삭제함.
+     *
+     * @param accessToken 사용자의 현재 Access Token
+     * @param userId 사용자 ID
+     */
+    private void deleteUserAuthTokens(String accessToken, long userId) {
+        tokenRepository.delete(accessToken);
+        tokenRepository.deleteValidTokens(userId);
+        tokenRepository.deleteFcmToken(userId);
+    }
+
+    /**
+     * 사용자의 현재 Refresh Token과 실제 사용 가능한 Refresh Token이 일치하는 지 확인함.
+     *
+     * @param refreshToken 사용자의 현재 Refresh Token
+     * @param userId 사용자 ID
+     */
+    private void checkValidRefreshToken(String refreshToken, long userId) {
+        String validRefreshToken = tokenRepository.getValidTokens(userId).refreshToken();
+        if (!validRefreshToken.equals(refreshToken))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
     }
 }

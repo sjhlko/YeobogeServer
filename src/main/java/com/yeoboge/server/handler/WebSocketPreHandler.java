@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -29,6 +30,7 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     private static final int TOKEN_SPLIT_INDEX = 7;
     private static final String SUB_DESTINATION_SPLIT = "/sub/send-message/";
     private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
     private static Map<String, Long> openedSession = new HashMap<>();
     private static Map<String, Long> connectedRoom = new HashMap<>();
@@ -59,12 +61,14 @@ public class WebSocketPreHandler implements ChannelInterceptor {
             headerAccessor.addNativeHeader("roomId", connectedRoom.get(headerAccessor.getSessionId()).toString());
         }
         if (Objects.equals(headerAccessor.getCommand(), StompCommand.SUBSCRIBE)) {
-            Long roomId = chatRoomService.findChatRoomIdByUsers(openedSession.get(headerAccessor.getSessionId())
+            Long userId = openedSession.get(headerAccessor.getSessionId());
+            Long roomId = chatRoomService.findChatRoomIdByUsers(userId
                     , Long.parseLong(headerAccessor.getDestination().split(SUB_DESTINATION_SPLIT)[1]));
             headerAccessor.setDestination(modifyDestination(roomId));
             connectedRoom.put(headerAccessor.getSessionId(), roomId);
             connectedRoomSize.putIfAbsent(roomId, new HashSet<>());
             connectedRoomSize.get(roomId).add(headerAccessor.getSessionId());
+            chatMessageService.changeReadStatus(roomId, userId);
             //return MessageBuilder.createMessage(new byte[0], headerAccessor.getMessageHeaders());
         }
         return message;

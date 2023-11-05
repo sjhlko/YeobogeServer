@@ -1,6 +1,6 @@
 package com.yeoboge.server.controller;
 
-import com.yeoboge.server.domain.vo.chat.StompMessageVo;
+import com.yeoboge.server.domain.vo.chat.StompMessageRequest;
 import com.yeoboge.server.service.StompService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -20,7 +20,7 @@ public class StompController {
 
     @CrossOrigin
     @MessageMapping("/send-message/{targetUserId}")
-    public void test(Map<String,Object> request, @DestinationVariable Long targetUserId, SimpMessageHeaderAccessor accessor) {
+    public void test(StompMessageRequest request, @DestinationVariable Long targetUserId, SimpMessageHeaderAccessor accessor) {
         stompService.sendMessage(accessor, targetUserId, request);
     }
 }

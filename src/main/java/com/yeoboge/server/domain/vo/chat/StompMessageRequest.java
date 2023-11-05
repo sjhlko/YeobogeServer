@@ -1,12 +1,11 @@
 package com.yeoboge.server.domain.vo.chat;
 
 import lombok.Builder;
-import lombok.Setter;
 
 @Builder
-public record StompMessageVo(
+public record StompMessageRequest(
         String msg,
         String timeStamp,
-        Long sender
+        String accessToken
 ){ }
 

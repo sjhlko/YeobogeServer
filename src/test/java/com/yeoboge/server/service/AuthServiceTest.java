@@ -454,17 +454,17 @@ public class AuthServiceTest {
                 .id(0L)
                 .build();
         String header = "Bearer valid_access_token";
+        String accessToken = header.substring(7);
 
         // when
         when(userRepository.getById(user.getId())).thenReturn(user);
-        doNothing().when(userRepository).delete(user);
-        doNothing().when(tokenRepository).delete(header.substring(7));
+
+        authService.unregister(user.getId(), header);
 
         // then
-        assertThat(authService.unregister(user.getId(),header)).isEqualTo(MessageResponse.builder()
-                .message("회원 탈퇴 성공")
-                .build());
-
+        verify(tokenRepository).delete(accessToken);
+        verify(tokenRepository).deleteFcmToken(user.getId());
+        verify(tokenRepository).deleteValidTokens(user.getId());
     }
 
     @Test

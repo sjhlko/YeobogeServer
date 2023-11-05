@@ -117,15 +117,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse unregister(Long id, String authorizationHeader) {
+    public void unregister(Long id, String authorizationHeader) {
         String accessToken = authorizationHeader.substring(TOKEN_SPLIT_INDEX);
         User user = userRepository.getById(id);
         userRepository.delete(user);
         deleteUserAuthTokens(accessToken, user.getId());
-
-        return MessageResponse.builder()
-                .message("회원 탈퇴 성공")
-                .build();
     }
 
     @Override

@@ -86,15 +86,12 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public MessageResponse denyFiendRequest(Long currentUserId, Long id) {
+    public void denyFiendRequest(Long currentUserId, Long id) {
         User requester = userRepository.getById(id);
         User receiver = userRepository.getById(currentUserId);
         FriendRequest friendRequest = friendRequestRepository.getByReceiverIdAndRequesterId(currentUserId, id);
         checkFriend(receiver.getId(), requester.getId());
         friendRequestRepository.delete(friendRequest);
-        return MessageResponse.builder()
-                .message("친구 요청이 성공적으로 거절되었습니다.")
-                .build();
     }
 
 

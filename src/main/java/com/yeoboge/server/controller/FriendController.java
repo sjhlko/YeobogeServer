@@ -9,6 +9,7 @@ import com.yeoboge.server.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,12 +70,12 @@ public class FriendController {
      * @return 친구 요청 성공 메세지를 담은 {@link MessageResponse}
      */
     @PostMapping("/requests")
-    public Response<MessageResponse> requestFriend(
+    public ResponseEntity<Response<MessageResponse>> requestFriend(
             @AuthenticationPrincipal Long id,
             @RequestBody RequestFriendRequest request
     ) {
         MessageResponse response = friendService.requestFriend(id, request);
-        return Response.success(response);
+        return Response.created(response);
     }
 
     /**
@@ -85,12 +86,12 @@ public class FriendController {
      * @return 친구 요청 수락 성공 메세지를 담은 {@link MessageResponse}
      */
     @PostMapping("/requests/{id}")
-    public Response<MessageResponse> requestFriendRequest(
+    public ResponseEntity<Response<MessageResponse>> requestFriendRequest(
             @AuthenticationPrincipal Long currentUserId,
             @PathVariable Long id
     ) {
         MessageResponse response = friendService.acceptFriendRequest(currentUserId, id);
-        return Response.success(response);
+        return Response.created(response);
     }
 
     /**
@@ -98,14 +99,14 @@ public class FriendController {
      *
      * @param currentUserId 현재 로그인한 회원 ID
      * @param id 친구 요청을 거절하고픈 유저의 id
-     * @return 친구 요청 거절 성공 메세지를 담은 {@link MessageResponse}
+     * @return HTTP 204 응답
      */
     @DeleteMapping("/requests/{id}")
-    public Response<MessageResponse> denyFriendRequest(
+    public ResponseEntity denyFriendRequest(
             @AuthenticationPrincipal Long currentUserId,
             @PathVariable Long id
     ) {
-        MessageResponse response = friendService.denyFiendRequest(currentUserId, id);
-        return Response.success(response);
+        friendService.denyFiendRequest(currentUserId, id);
+        return Response.deleted();
     }
 }

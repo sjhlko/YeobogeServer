@@ -130,6 +130,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 currentUserId,
                 Long.parseLong(targetUserId)));
         //방 접속시 읽음 상태를 변경
+        System.out.println("연결함 "+ currentUserId);
         chatMessageService.changeReadStatus(Long.parseLong(roomNumber), currentUserId);
         int idx = sessionList.size(); //방의 사이즈를 조사한다.
         if (sessionList.size() > 0) {
@@ -177,6 +178,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 sessionList.get(i).remove(session.getId());
             }
         }
+        System.out.println("연결 종료");
         super.afterConnectionClosed(session, status);
     }
 

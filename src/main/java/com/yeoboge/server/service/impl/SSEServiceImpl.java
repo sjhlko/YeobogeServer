@@ -13,15 +13,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SSEServiceImpl implements SSEService {
     private final EmitterRepository emitterRepository;
+    private static final long TIMEOUT = Long.MAX_VALUE;
 
     @Override
     public SseEmitter subscribe(Long id, String lastEventId) {
         String emitterId = makeEmitterId(id);
-        SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(Long.MAX_VALUE));
+        SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(TIMEOUT));
         emitter.onCompletion(() -> emitterRepository.deleteAllEmittersByIdStartsWith(id.toString()));
         emitter.onTimeout(() -> emitterRepository.deleteAllEmittersByIdStartsWith(id.toString()));
         emitter.onError((e) -> emitterRepository.deleteAllEmittersByIdStartsWith(id.toString()));
         sendToClient(emitter, "0","initMessage","initMessage");
+        System.out.println("보냄");
         return emitter;
 
     }
@@ -40,11 +42,12 @@ public class SSEServiceImpl implements SSEService {
             emitter.send(SseEmitter.event()
                     .id(id)
                     .name(name)
-                    .data(data, MediaType.APPLICATION_JSON)
-                    .reconnectTime(0));
+                    .data(data));
+//                    .reconnectTime(0));
 //            emitter.complete();
 //            emitterRepository.deleteById(id);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             emitterRepository.deleteById(id);
             emitter.completeWithError(e);
         }

@@ -13,12 +13,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SSEController {
     private final SSEService sseService;
 
-    @CrossOrigin
+//    @CrossOrigin
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(
-            @AuthenticationPrincipal Long id,
-            @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
+            @AuthenticationPrincipal Long id
+//            @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
     ) {
-        return sseService.subscribe(id, lastEventId);
+        return sseService.subscribe(id, "0");
     }
 }

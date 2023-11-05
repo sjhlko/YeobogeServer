@@ -45,7 +45,9 @@ public class SSEServiceImpl implements SSEService {
                     .data(data));
 //                    .reconnectTime(0));
 //            emitter.complete();
+//            System.out.println("send");
 //            emitterRepository.deleteById(id);
+//            System.out.println("deleted");
         }
         catch (Exception e) {
             emitterRepository.deleteById(id);

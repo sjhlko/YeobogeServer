@@ -8,6 +8,7 @@ import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -77,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
 
         Long userId = userRepository.findIdByEmail(username);
 
-        return generateToken(userId);
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, userId);
     }
 
     @Override
@@ -138,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
         long userId = jwtProvider.parseUserId(refreshToken);
         checkValidRefreshToken(refreshToken, userId);
 
-        return generateToken(userId);
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, userId);
     }
 
     @Override
@@ -172,23 +173,6 @@ public class AuthServiceImpl implements AuthService {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(username, password);
         authManager.authenticate(authToken);
-    }
-
-    /**
-     * {@link User} ID로 해당 사용자의 토큰들을 발급하고
-     * Redis 스토리지에 저장함.
-     *
-     * @param userId {@link User} ID
-     * @return 발급된 토큰들을 담은 {@link Tokens}
-     * @see JwtProvider
-     * @see TokenRepository
-     */
-    private Tokens generateToken(long userId) {
-        Tokens tokens = jwtProvider.generateTokens(userId);
-        tokenRepository.save(tokens);
-        tokenRepository.saveValidTokens(tokens, userId);
-
-        return tokens;
     }
 
     /**

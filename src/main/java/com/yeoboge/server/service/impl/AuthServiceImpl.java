@@ -8,6 +8,7 @@ import com.yeoboge.server.domain.vo.auth.*;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -77,15 +78,14 @@ public class AuthServiceImpl implements AuthService {
 
         Long userId = userRepository.findIdByEmail(username);
 
-        return generateToken(userId);
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, userId);
     }
 
     @Override
     public MessageResponse logout(String header, Long id) {
         String accessToken = header.substring(TOKEN_SPLIT_INDEX);
+        deleteUserAuthTokens(accessToken, id);
 
-        tokenRepository.delete(accessToken);
-        tokenRepository.deleteFcmToken(id);
         return MessageResponse.builder()
                 .message("로그아웃 성공")
                 .build();
@@ -117,13 +117,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse unregister(Long id, String authorizationHeader) {
+    public void unregister(Long id, String authorizationHeader) {
+        String accessToken = authorizationHeader.substring(TOKEN_SPLIT_INDEX);
         User user = userRepository.getById(id);
         userRepository.delete(user);
-        tokenRepository.delete(authorizationHeader.substring(TOKEN_SPLIT_INDEX));
-        return MessageResponse.builder()
-                .message("회원 탈퇴 성공")
-                .build();
+        deleteUserAuthTokens(accessToken, user.getId());
     }
 
     @Override
@@ -134,9 +132,10 @@ public class AuthServiceImpl implements AuthService {
         tokens.checkTokenValidation(refreshToken);
 
         tokenRepository.delete(accessToken);
-        Long userId = jwtProvider.parseUserId(refreshToken);
+        long userId = jwtProvider.parseUserId(refreshToken);
+        checkValidRefreshToken(refreshToken, userId);
 
-        return generateToken(userId);
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, userId);
     }
 
     @Override
@@ -173,18 +172,27 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * {@link User} ID로 해당 사용자의 토큰들을 발급하고
-     * Redis 스토리지에 저장함.
+     * 사용자 ID로 등록된 Access Token, Refresh Token 등을
+     * Redis 스토리지에서 삭제함.
      *
-     * @param userId {@link User} ID
-     * @return 발급된 토큰들을 담은 {@link Tokens}
-     * @see JwtProvider
-     * @see TokenRepository
+     * @param accessToken 사용자의 현재 Access Token
+     * @param userId 사용자 ID
      */
-    private Tokens generateToken(long userId) {
-        Tokens tokens = jwtProvider.generateTokens(userId);
-        tokenRepository.save(tokens);
+    private void deleteUserAuthTokens(String accessToken, long userId) {
+        tokenRepository.delete(accessToken);
+        tokenRepository.deleteValidTokens(userId);
+        tokenRepository.deleteFcmToken(userId);
+    }
 
-        return tokens;
+    /**
+     * 사용자의 현재 Refresh Token과 실제 사용 가능한 Refresh Token이 일치하는 지 확인함.
+     *
+     * @param refreshToken 사용자의 현재 Refresh Token
+     * @param userId 사용자 ID
+     */
+    private void checkValidRefreshToken(String refreshToken, long userId) {
+        String validRefreshToken = tokenRepository.getValidTokens(userId).refreshToken();
+        if (!validRefreshToken.equals(refreshToken))
+            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
     }
 }

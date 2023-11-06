@@ -77,9 +77,8 @@ public interface AuthService {
      *
      * @param id 로그인한 회원의 인덱스
      * @param authorizationHeader 사용자의 Access Token
-     * @return {@link MessageResponse}
      */
-    MessageResponse unregister(Long id, String authorizationHeader);
+    void unregister(Long id, String authorizationHeader);
 
     /**
      * 사용자의 Access Token, Refresh Token을 재밟급함.

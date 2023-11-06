@@ -3,10 +3,14 @@ package com.yeoboge.server.repository.impl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.QDSLBoardGameDetailDto;
+import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.repository.CustomBoardGameRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,8 @@ import java.util.List;
 
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
 import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGame;
+import static com.yeoboge.server.domain.entity.QThemeOfBoardGame.themeOfBoardGame;
+import static com.yeoboge.server.domain.entity.QMechanismOfBoardGame.mechanismOfBoardGame;
 
 /**
  * {@link CustomBoardGameRepository} 구현체
@@ -27,6 +33,59 @@ import static com.yeoboge.server.domain.entity.QGenreOfBoardGame.genreOfBoardGam
 @RequiredArgsConstructor
 public class CustomBoardGameRepositoryImpl implements CustomBoardGameRepository {
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public BoardGameDetailDto getBoardGameDetail(long boardGameId) {
+        QGenre qGenre = QGenre.genre;
+        QTheme qTheme = QTheme.theme;
+        QMechanism qMechanism = QMechanism.mechanism;
+        QRating qRating = QRating.rating;
+        QDSLBoardGameDetailDto detailDto = queryFactory.select(
+                Projections.constructor(
+                        QDSLBoardGameDetailDto.class,
+                        boardGame.id,
+                        boardGame.name,
+                        boardGame.description,
+                        boardGame.weight,
+                        boardGame.playerMin,
+                        boardGame.playerMax,
+                        boardGame.imagePath,
+                        boardGame.playTime,
+                        boardGame.isLocalized,
+                        qRating.score.avg().coalesce(0.0).as("avgRating")
+                ))
+                .from(boardGame)
+                .leftJoin(qRating)
+                .on(boardGame.id.eq(qRating.boardGame.id))
+                .where(boardGame.id.eq(boardGameId))
+                .fetchOne();
+        List<String> genres = queryFactory.select(qGenre.name)
+                .from(boardGame)
+                .join(genreOfBoardGame)
+                .on(boardGame.id.eq(genreOfBoardGame.boardGame.id))
+                .join(qGenre)
+                .on(qGenre.id.eq(genreOfBoardGame.genre.id))
+                .where(boardGame.id.eq(boardGameId))
+                .fetch();
+        List<String> themes = queryFactory.select(qTheme.name)
+                .from(boardGame)
+                .join(themeOfBoardGame)
+                .on(boardGame.id.eq(themeOfBoardGame.boardGame.id))
+                .join(qTheme)
+                .on(qTheme.id.eq(themeOfBoardGame.theme.id))
+                .where(boardGame.id.eq(boardGameId))
+                .fetch();
+        List<String> mechanisms = queryFactory.select(qMechanism.name)
+                .from(boardGame)
+                .join(mechanismOfBoardGame)
+                .on(boardGame.id.eq(mechanismOfBoardGame.boardGame.id))
+                .join(qMechanism)
+                .on(qMechanism.id.eq(mechanismOfBoardGame.mechanism.id))
+                .where(boardGame.id.eq(boardGameId))
+                .fetch();
+
+        return BoardGameDetailDto.of(detailDto, themes, genres, mechanisms);
+    }
 
     @Override
     public Page<BoardGameDetailedThumbnailDto> findBoardGameBySearchOption(

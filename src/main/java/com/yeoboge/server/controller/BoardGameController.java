@@ -25,14 +25,17 @@ public class BoardGameController {
     private final BoardGameService boardGameService;
 
     /**
-     * 보드게임 단건 조회 API
+     * 보드게임 상세 조회 API
      *
-     * @param id 조회하고자 하는 보드게임의 id
+     * @param userId 조회를 요청한 사용자 ID
+     * @param boardGameId 조회하고자 하는 보드게임의 ID
      * @return 보드게임의 정보에 대한 {@link BoardGameDetailResponse} VO를 리턴함
      */
-    @GetMapping("/{id}")
-    public Response<BoardGameDetailResponse> getBoardGameDetail(@PathVariable Long id) {
-        BoardGameDetailResponse response = boardGameService.getBoardGameDetail(id);
+    @GetMapping("/{boardGameId}")
+    public Response<BoardGameDetailResponse> getBoardGameDetail(
+            @PathVariable long boardGameId, @AuthenticationPrincipal long userId
+    ) {
+        BoardGameDetailResponse response = boardGameService.getBoardGameDetail(userId, boardGameId);
         return Response.success(response);
     }
 

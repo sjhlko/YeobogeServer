@@ -213,11 +213,13 @@ public class AuthServiceTest {
         String prevRefreshToken = "previous_refresh_token";
         String newAccessToken = "new_access_token";
         String newRefreshToken = "new_refresh_token";
+        Tokens valid = makeTokens(prevAccessToken, prevRefreshToken);
         Tokens expected = makeTokens(newAccessToken, newRefreshToken);
         Long userId = 1L;
 
         // when
         when(tokenRepository.getByToken(prevAccessToken)).thenReturn(prevRefreshToken);
+        when(tokenRepository.getValidTokens(userId)).thenReturn(valid);
         when(jwtProvider.parseUserId(prevRefreshToken)).thenReturn(userId);
         when(jwtProvider.generateTokens(userId)).thenReturn(expected);
 
@@ -282,6 +284,26 @@ public class AuthServiceTest {
                 .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
     }
 
+    @Test
+    @DisplayName("액세스 토큰 재발급 실패: 유효하지 않은 토큰으로 요청")
+    public void refreshTokensFailByInvalidToken() {
+        // given
+        String invalidAccessToken = "invalid_access_token";
+        String invalidRefreshToken = "invalid_access_token";
+        String validAccessToken = "valid_access_token";
+        String validRefreshToken = "valid_refresh_token";
+        Tokens invalid = makeTokens(invalidAccessToken, invalidRefreshToken);
+        Tokens valid = makeTokens(validAccessToken, validRefreshToken);
+
+        // when
+        when(tokenRepository.getByToken(anyString())).thenReturn(invalidRefreshToken);
+        when(tokenRepository.getValidTokens(anyLong())).thenReturn(valid);
+
+        // then
+        assertThatThrownBy(() -> authService.refreshTokens(invalid))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
+    }
 
     @Test
     @DisplayName("임시 비밀번호 메일 발송_성공")
@@ -432,17 +454,17 @@ public class AuthServiceTest {
                 .id(0L)
                 .build();
         String header = "Bearer valid_access_token";
+        String accessToken = header.substring(7);
 
         // when
         when(userRepository.getById(user.getId())).thenReturn(user);
-        doNothing().when(userRepository).delete(user);
-        doNothing().when(tokenRepository).delete(header.substring(7));
+
+        authService.unregister(user.getId(), header);
 
         // then
-        assertThat(authService.unregister(user.getId(),header)).isEqualTo(MessageResponse.builder()
-                .message("회원 탈퇴 성공")
-                .build());
-
+        verify(tokenRepository).delete(accessToken);
+        verify(tokenRepository).deleteFcmToken(user.getId());
+        verify(tokenRepository).deleteValidTokens(user.getId());
     }
 
     @Test

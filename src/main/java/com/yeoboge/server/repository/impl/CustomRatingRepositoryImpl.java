@@ -1,10 +1,14 @@
 package com.yeoboge.server.repository.impl;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.FriendReviewDto;
+import com.yeoboge.server.domain.entity.QFriend;
+import com.yeoboge.server.domain.entity.QUser;
 import com.yeoboge.server.domain.entity.Rating;
 import com.yeoboge.server.enums.BoardGameOrderColumn;
 import com.yeoboge.server.repository.CustomRatingRepository;
@@ -58,6 +62,33 @@ public class CustomRatingRepositoryImpl implements CustomRatingRepository {
         JPAQuery<Long> countQuery = getCountQuery(userId);
 
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+    }
+
+    @Override
+    public FriendReviewDto getFriendReviewOfBoardGame(long userId, long boardGameId, boolean isForLike) {
+        QUser qUser = QUser.user;
+        QFriend qFriend = QFriend.friend;
+        List<Long> friendIds = queryFactory.select(qFriend.follower.id)
+                .from(qFriend)
+                .where(qFriend.owner.id.eq(userId))
+                .fetch();
+        FriendReviewDto friendReview = queryFactory.select(
+                Projections.constructor(
+                        FriendReviewDto.class,
+                        qUser.id,
+                        qUser.nickname,
+                        qUser.profileImagePath,
+                        rating.score
+                )).from(rating)
+                .join(qUser)
+                .on(rating.user.id.eq(qUser.id))
+                .where(rating.user.id.in(friendIds)
+                        .and(rating.boardGame.id.eq(boardGameId))
+                        .and(getScoreWhereCondition(isForLike)))
+                .orderBy(isForLike ? rating.score.desc() : rating.score.asc())
+                .limit(1)
+                .fetchOne();
+        return friendReview;
     }
 
     /**
@@ -135,5 +166,16 @@ public class CustomRatingRepositoryImpl implements CustomRatingRepository {
      */
     private OrderSpecifier getOrderSpecifier(Sort sort) {
         return PagingUtils.getBoardGameOrderSpecifier(sort, rating, Rating.class);
+    }
+
+    /**
+     * 평점 조회 시 기준 값 이상인지 미만인지에 대한 where 조건을 반환함.
+     *
+     * @param isGoe 평점 조회 시 기준값 이상의 조건인지 미만의 조건인지에 대한 {@code boolean}
+     * @return 조건에 대한 where 컨디션에 해당하는 {@link Predicate}
+     */
+    private Predicate getScoreWhereCondition(boolean isGoe) {
+        final double BASE = 3.5;
+        return isGoe ? rating.score.goe(BASE) : rating.score.lt(BASE);
     }
 }

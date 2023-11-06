@@ -8,6 +8,7 @@ import com.yeoboge.server.domain.vo.auth.SocialLoginRequest;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
 import com.yeoboge.server.repository.GenreRepository;
 import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.repository.UserRepository;
@@ -34,7 +35,7 @@ public class OAuthServiceImpl implements OAuthService {
         User user = request.toEntity(favoriteGenres);
         user = userRepository.save(user);
 
-        return generateToken(user.getId());
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, user.getId());
     }
 
     @Override
@@ -45,20 +46,6 @@ public class OAuthServiceImpl implements OAuthService {
         if (user.getPassword() != null)
             throw new AppException(AuthenticationErrorCode.BAD_CREDENTIAL);
 
-        return generateToken(user.getId());
-    }
-
-    /**
-     * JWT 토큰을 발급하고 해당 토큰을 Redis 스토리지에 저장함.
-     *
-     * @param userId {@link User} ID
-     * @return Access Token, Refresh Token을 담고 있는 {@link Tokens}
-     * @see JwtProvider
-     */
-    private Tokens generateToken(Long userId) {
-        Tokens tokens = jwtProvider.generateTokens(userId);
-        tokenRepository.save(tokens);
-
-        return tokens;
+        return JwtTokenUtils.generateTokens(tokenRepository, jwtProvider, user.getId());
     }
 }

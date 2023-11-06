@@ -84,6 +84,9 @@ dependencies {
     // fcm 관련 의존성
     implementation 'com.google.firebase:firebase-admin:9.1.1'
 
+    //STOMP 관련 의존성
+    implementation "org.springframework.security:spring-security-messaging"
+
 }
 
 def querydslDir = "$buildDir/generated/querydsl"

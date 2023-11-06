@@ -13,12 +13,13 @@ import org.springframework.data.domain.Pageable;
  */
 public interface BoardGameService {
     /**
-     * 특정 보드게임에 대한 정보를 반환하는 메서드
+     * 특정 보드게임에 대한 상세 정보를 반환하는 메서드
      *
-     * @param id 정보를 반환할 보드게임의 id
+     * @param userId 조회를 요청한 사용자 ID
+     * @param boardGameId 정보를 반환할 보드게임의 ID
      * @return {@link BoardGameDetailResponse}
      */
-    BoardGameDetailResponse getBoardGameDetail(Long id);
+    BoardGameDetailResponse getBoardGameDetail(long userId, long boardGameId);
 
     /**
      * 특정 보드게임을 찜 목록에 추가함.

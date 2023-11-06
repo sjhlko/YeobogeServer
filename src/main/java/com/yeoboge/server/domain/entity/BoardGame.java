@@ -1,5 +1,6 @@
 package com.yeoboge.server.domain.entity;
 
+import com.yeoboge.server.domain.entity.converter.BoardGameWeightConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,9 @@ public class BoardGame {
     private String name;
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String weight;
+    @Column(name = "weight_index")
+    @Convert(converter = BoardGameWeightConverter.class)
+    private Weight weight;
     private Integer playerMin;
     private Integer playerMax;
     @Column(columnDefinition = "TEXT")

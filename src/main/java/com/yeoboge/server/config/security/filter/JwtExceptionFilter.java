@@ -1,6 +1,8 @@
 package com.yeoboge.server.config.security.filter;
 
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.enums.error.ErrorCode;
+import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.helper.utils.JsonResponseUtils;
 import com.yeoboge.server.helper.utils.LogFormatUtils;
 import io.jsonwebtoken.JwtException;
@@ -52,8 +54,19 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try {
             chain.doFilter(request, response);
         } catch (JwtException exception) {
-            JsonResponseUtils.writeHttpErrorResponse(response, AuthenticationErrorCode.TOKEN_INVALID);
-            log.info(LogFormatUtils.getHttpLog(request, response));
+            writeLog(request, response, AuthenticationErrorCode.TOKEN_INVALID);
+        } catch (AppException exception) {
+            if (exception.getErrorCode() == AuthenticationErrorCode.TOKEN_INVALID)
+                writeLog(request, response, AuthenticationErrorCode.TOKEN_INVALID);
         }
+    }
+
+    private void writeLog(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ErrorCode cord
+    ) throws IOException {
+        JsonResponseUtils.writeHttpErrorResponse(response, AuthenticationErrorCode.TOKEN_INVALID);
+        log.info(LogFormatUtils.getHttpLog(request, response));
     }
 }

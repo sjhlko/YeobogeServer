@@ -1,14 +1,10 @@
 package com.yeoboge.server.service.impl;
 
 import com.yeoboge.server.domain.dto.PageResponse;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailResponse;
-import com.yeoboge.server.domain.dto.boardGame.RatingRequest;
-import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
+import com.yeoboge.server.domain.dto.boardGame.*;
 import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.domain.vo.response.MessageResponse;
-import com.yeoboge.server.enums.error.BoardGameErrorCode;
-import com.yeoboge.server.handler.AppException;
 import com.yeoboge.server.repository.BoardGameRepository;
 import com.yeoboge.server.repository.BookmarkRepository;
 import com.yeoboge.server.repository.RatingRepository;
@@ -18,9 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@link BoardGameService} 구현체
@@ -34,22 +27,18 @@ public class BoardGameServiceImpl implements BoardGameService {
     private final RatingRepository ratingRepository;
 
     @Override
-    public BoardGameDetailResponse getBoardGameDetail(Long id) {
-        List<String> genre = new ArrayList<>();
-        List<String> theme = new ArrayList<>();
-        List<String> mechanism = new ArrayList<>();
-        BoardGame boardGame = boardGameRepository.findById(id)
-                .orElseThrow(() -> new AppException(BoardGameErrorCode.BOARD_GAME_NOT_FOUND));
-        for (ThemeOfBoardGame themeOfBoardGame : boardGame.getTheme()) {
-            theme.add(themeOfBoardGame.getTheme().getName());
-        }
-        for (GenreOfBoardGame genreOfBoardGame : boardGame.getGenre()) {
-            genre.add(genreOfBoardGame.getGenre().getName());
-        }
-        for (MechanismOfBoardGame mechanismOfBoardGame : boardGame.getMechanism()) {
-            mechanism.add(mechanismOfBoardGame.getMechanism().getName());
-        }
-        return BoardGameDetailResponse.of(boardGame,theme,genre,mechanism);
+    public BoardGameDetailResponse getBoardGameDetail(long userId, long boardGameId) {
+        BoardGameDetailDto detail = boardGameRepository.getBoardGameDetail(boardGameId);
+        BookmarkRatingOfUserDto userDto = getUserBookmarkAndRating(userId, boardGameId);
+        FriendReviewDto like = ratingRepository.getFriendReviewOfBoardGame(userId, boardGameId, true);
+        FriendReviewDto dislike = ratingRepository.getFriendReviewOfBoardGame(userId, boardGameId, false);
+
+        return BoardGameDetailResponse.builder()
+                .boardGame(detail)
+                .my(userDto)
+                .like(like)
+                .dislike(dislike)
+                .build();
     }
 
     @Override
@@ -95,6 +84,23 @@ public class BoardGameServiceImpl implements BoardGameService {
                 .findBoardGameBySearchOption(pageable, request);
         PageResponse responses = new PageResponse(searchResults);
         return responses;
+    }
+
+    /**
+     * 특정 보드게임에 대한 사용자의 평점 및 북마크 여부를 조회함.
+     *
+     * @param userId 사용자 ID
+     * @param boardGameId 보드게임 ID
+     * @return 사용자 평점 및 북마크 여부가 포함된 {@link BookmarkRatingOfUserDto}
+     */
+    private BookmarkRatingOfUserDto getUserBookmarkAndRating(long userId, long boardGameId) {
+        Double userRating = ratingRepository.findByParentId(userId, boardGameId).orElse(new Rating()).getScore();
+        boolean isBookmarked = bookmarkRepository.findByParentId(userId, boardGameId).isPresent();
+
+        return BookmarkRatingOfUserDto.builder()
+                .rating(userRating)
+                .isBookmarked(isBookmarked)
+                .build();
     }
 
     /**

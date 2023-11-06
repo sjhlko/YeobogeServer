@@ -59,7 +59,6 @@ public interface FriendService {
      *
      * @param currentUserId 현재 로그인한 회원 ID
      * @param id 친구 요청을 거절하고픈 유저의 id
-     * @return 친구 요청 거절 성공 메세지를 담은 {@link MessageResponse}
      */
-    MessageResponse denyFiendRequest(Long currentUserId, Long id);
+    void denyFiendRequest(Long currentUserId, Long id);
 }

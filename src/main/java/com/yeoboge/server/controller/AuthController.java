@@ -62,12 +62,12 @@ public class AuthController {
      * 로그인 API
      *
      * @param request 로그인할 계정의 {@link LoginRequest} VO
-     * @return 발급된 Access Token, Refresh Token을 포함한 HTTP 200 응답
+     * @return 발급된 Access Token, Refresh Token을 포함한 HTTP 201 응답
      */
     @PostMapping("/login")
-    public Response<Tokens> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Response<Tokens>> login(@RequestBody LoginRequest request) {
         Tokens response = authService.login(request);
-        return Response.success(response);
+        return Response.created(response);
     }
 
     /**
@@ -89,13 +89,13 @@ public class AuthController {
      * 사용자의 만료된 Access Token으로 Access Token, Refresh Token 재발급 API
      *
      * @param tokens 재발급 검증에 사용할 Access Token, Refresh Token을 포함한 {@link Tokens}
-     * @return 재발급된 Access Token, Refresh Token을 포함한 HTTP 200 응답
+     * @return 재발급된 Access Token, Refresh Token을 포함한 HTTP 201 응답
      */
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/refresh")
-    public Response<Tokens> refreshTokens(@RequestBody Tokens tokens) {
+    public ResponseEntity<Response<Tokens>> refreshTokens(@RequestBody Tokens tokens) {
         Tokens response = authService.refreshTokens(tokens);
-        return Response.success(response);
+        return Response.created(response);
     }
 
     /**
@@ -132,15 +132,16 @@ public class AuthController {
      *
      * @param id     현재 로그인한 회원의 인덱스
      * @param header 탈퇴할 사용자의 Access Token 값을 가진 HTTP Header
-     * @return 회원 탈퇴 성공됨 메세지를 포함한 HTTP 200 응답
-     * @see MessageResponse
+     * @return HTTP 204 응답
      */
     @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/unregister")
-    public Response<MessageResponse> unregister(@AuthenticationPrincipal Long id,
-                                                @RequestHeader("Authorization") String header) {
-        MessageResponse messageResponse = authService.unregister(id, header);
-        return Response.success(messageResponse);
+    public ResponseEntity unregister(
+            @AuthenticationPrincipal Long id,
+            @RequestHeader("Authorization") String header
+    ) {
+        authService.unregister(id, header);
+        return Response.deleted();
     }
 
     /**

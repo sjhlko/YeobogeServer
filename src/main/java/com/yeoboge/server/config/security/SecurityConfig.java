@@ -39,7 +39,9 @@ public class SecurityConfig {
             "/auths/temp-password",
             /* OAuth 관련 url */
             "/oauths/register",
-            "/oauths/login"
+            "/oauths/login",
+            /* STOMP 관련 url */
+            "/chats/connect/**",
     };
 
     private final HttpEndpointChecker endpointChecker;

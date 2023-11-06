@@ -2,6 +2,11 @@ package com.yeoboge.server.config.security.filter;
 
 import com.yeoboge.server.config.security.HttpEndpointChecker;
 import com.yeoboge.server.config.security.JwtProvider;
+import com.yeoboge.server.domain.vo.auth.Tokens;
+import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
+import com.yeoboge.server.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +42,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private static final int TOKEN_SPLIT_INDEX = 7;
 
     private final HttpEndpointChecker endpointChecker;
+    private final TokenRepository tokenRepository;
     private final JwtProvider jwtProvider;
 
     /**
@@ -67,20 +73,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         final String token = header.substring(TOKEN_SPLIT_INDEX);
         long userId = jwtProvider.parseUserId(token);
+        JwtTokenUtils.checkTokenValidation(
+                tokenRepository,
+                token,
+                userId,
+                new AppException(AuthenticationErrorCode.TOKEN_INVALID)
+        );
 
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(request, response);
             return;
         }
 
-        if (jwtProvider.isValid(token, userId)) {
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userId, null, null);
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            context.setAuthentication(authenticationToken);
-            SecurityContextHolder.setContext(context);
-        }
+        if (jwtProvider.isValid(token, userId)) authenticate(request, userId);
 
         chain.doFilter(request, response);
     }
@@ -106,5 +111,20 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      */
     private boolean isNonAuthenticatedUri(String uri) {
         return Set.of(SKIP_AUTHENTICATION_URI).contains(uri);
+    }
+
+    /**
+     * 현재 로그인한 사용자를 Spring Security 관련 클래스를 통해 인증함.
+     *
+     * @param request {@link HttpServletRequest}
+     * @param userId Access Token으로부터 파싱한 사용자 ID
+     */
+    private void authenticate(HttpServletRequest request, long userId) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(userId, null, null);
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        context.setAuthentication(authenticationToken);
+        SecurityContextHolder.setContext(context);
     }
 }

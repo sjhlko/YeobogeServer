@@ -40,8 +40,8 @@ public class SSEServiceImpl implements SSEService {
             emitter.send(SseEmitter.event()
                     .id(id)
                     .name(name)
-                    .data(data, MediaType.APPLICATION_JSON)
-                    .reconnectTime(0));
+                    .data(data));
+//                    .reconnectTime(0));
 //            emitter.complete();
 //            emitterRepository.deleteById(id);
         } catch (Exception e) {

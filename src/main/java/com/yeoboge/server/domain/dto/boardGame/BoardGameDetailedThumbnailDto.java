@@ -43,7 +43,7 @@ public record BoardGameDetailedThumbnailDto(
                 .playerMax(boardGame.getPlayerMax())
                 .playerMin(boardGame.getPlayerMin())
                 .genre(getGenreOf(boardGame))
-                .weight(boardGame.getWeight())
+                .weight(boardGame.getWeight().getComplexity())
                 .build();
     }
 

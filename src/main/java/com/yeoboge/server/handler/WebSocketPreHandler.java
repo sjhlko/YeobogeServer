@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
+import com.yeoboge.server.repository.TokenRepository;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     private static final String SUB_DESTINATION_SPLIT = "/sub/send-message/";
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
+    private final TokenRepository tokenRepository;
     private final JwtProvider jwtProvider;
     private static Map<String, Long> openedSession = new ConcurrentHashMap<>();
     private static Map<String, Long> connectedRoom = new ConcurrentHashMap<>();
@@ -91,9 +94,12 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     }
 
     private Long validateToken(String token) {
+        MessageDeliveryException exception = new MessageDeliveryException(
+                AuthenticationErrorCode.TOKEN_INVALID.getMessage()
+        );
         long userId = jwtProvider.parseUserId(token);
-        if (!jwtProvider.isValid(token, userId))
-            throw new MessageDeliveryException(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
+        if (!jwtProvider.isValid(token, userId)) throw exception;
+        JwtTokenUtils.checkTokenValidation(tokenRepository, token, userId, exception);
         return userId;
     }
 

@@ -5,6 +5,7 @@ import com.yeoboge.server.config.security.JwtProvider;
 import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.handler.AppException;
+import com.yeoboge.server.helper.utils.JwtTokenUtils;
 import com.yeoboge.server.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -72,7 +73,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         final String token = header.substring(TOKEN_SPLIT_INDEX);
         long userId = jwtProvider.parseUserId(token);
-        checkValidToken(token, userId);
+        JwtTokenUtils.checkTokenValidation(
+                tokenRepository,
+                token,
+                userId,
+                new AppException(AuthenticationErrorCode.TOKEN_INVALID)
+        );
 
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(request, response);
@@ -105,18 +111,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      */
     private boolean isNonAuthenticatedUri(String uri) {
         return Set.of(SKIP_AUTHENTICATION_URI).contains(uri);
-    }
-
-    /**
-     * 현재 사용자의 Access Token이 유효한 Access Token인지 확인함.
-     *
-     * @param token 현재 사용자의 Access Token
-     * @param userId 사용자 ID
-     */
-    private void checkValidToken(String token, long userId) {
-        Tokens validTokens = tokenRepository.getValidTokens(userId);
-        if (!validTokens.accessToken().equals(token))
-            throw new AppException(AuthenticationErrorCode.TOKEN_INVALID);
     }
 
     /**

@@ -5,7 +5,7 @@ import com.yeoboge.server.domain.vo.auth.Tokens;
 import com.yeoboge.server.repository.TokenRepository;
 
 /**
- * JWT Token 발급 관련 유틸 클래스
+ * JWT Token 관련 유틸 클래스
  */
 public class JwtTokenUtils {
     /**
@@ -22,5 +22,22 @@ public class JwtTokenUtils {
         repository.saveValidTokens(tokens, userId);
 
         return tokens;
+    }
+
+    /**
+     * 현재 사용자의 Access Token이 유효한 Access Token인지 확인함.
+     *
+     * @param repository {@link TokenRepository}
+     * @param currentToken 현재 사용자의 Access Token
+     * @param userId 사용자 ID
+     * @param exception 유효하지 않은 오류일 시 throw 할 {@code Exception}
+     */
+    public static void checkTokenValidation(
+            TokenRepository repository,
+            String currentToken,
+            long userId,
+            RuntimeException exception) {
+        Tokens validTokens = repository.getValidTokens(userId);
+        if (!validTokens.accessToken().equals(currentToken)) throw exception;
     }
 }

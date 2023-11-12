@@ -2,6 +2,7 @@ package com.yeoboge.server.controller;
 
 import com.yeoboge.server.domain.dto.PageResponse;
 import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
+import com.yeoboge.server.domain.vo.chat.ChatRoomIdResponse;
 import com.yeoboge.server.domain.vo.response.Response;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.ChatRoomService;
@@ -28,9 +29,25 @@ public class ChatController {
     private final ChatMessageService chatMessageService;
 
     /**
+     * 두 회원의 채팅 방 아이디를 조회하는 API
+     *
+     * @param id 현재 로그인한 회원 ID
+     * @param targetUserId 현재로그인한 회원과 채팅을 나눌 회원의 ID
+     * @return 채팅방 id 정보를 담은 {@link ChatRoomIdResponse}
+     */
+    @GetMapping("/request-room/{targetUserId}")
+    public Response<ChatRoomIdResponse> getChatRooms(
+            @AuthenticationPrincipal Long id,
+            @PathVariable Long targetUserId
+    ) {
+        ChatRoomIdResponse response = chatRoomService.getChatRoomId(id, targetUserId);
+        return Response.success(response);
+    }
+
+    /**
      * 회원의 채팅방 목록을 조회하는 API
      *
-     * @param id       현재 로그인한 회원 ID
+     * @param id 현재 로그인한 회원 ID
      * @return 채팅방 정보를 담은 {@link ChatRoomResponse} 리스트
      */
     @GetMapping()

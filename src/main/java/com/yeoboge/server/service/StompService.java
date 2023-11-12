@@ -5,6 +5,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 
 public interface StompService {
 
-    void sendMessage(SimpMessageHeaderAccessor accessor, Long targetUserId, StompMessageRequest request);
+    void sendMessage(SimpMessageHeaderAccessor accessor, Long id, StompMessageRequest request);
 }
 

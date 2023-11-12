@@ -1,6 +1,7 @@
 package com.yeoboge.server.service;
 
 import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
+import com.yeoboge.server.domain.vo.chat.ChatRoomIdResponse;
 
 import java.util.List;
 
@@ -25,4 +26,6 @@ public interface ChatRoomService {
      * @return 특정 회원의 채팅방 목록 리스트
      */
     List<ChatRoomResponse> getChatRooms (Long id);
+
+    ChatRoomIdResponse getChatRoomId(Long id, Long targetUserId);
 }

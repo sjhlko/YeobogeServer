@@ -15,8 +15,8 @@ public class StompController {
     private final StompService stompService;
 
     @CrossOrigin
-    @MessageMapping("/send-message/{targetUserId}")
-    public void test(StompMessageRequest request, @DestinationVariable Long targetUserId, SimpMessageHeaderAccessor accessor) {
-        stompService.sendMessage(accessor, targetUserId, request);
+    @MessageMapping("/send-message/{id}")
+    public void test(StompMessageRequest request, @DestinationVariable Long id, SimpMessageHeaderAccessor accessor) {
+        stompService.sendMessage(accessor, id, request);
     }
 }

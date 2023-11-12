@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketPreHandler implements ChannelInterceptor {
     private static final int TOKEN_SPLIT_INDEX = 7;
     private static final String SUB_DESTINATION_SPLIT = "/sub/send-message/";
+    private static final String PUB_DESTINATION_SPLIT = "/pub/send-message/";
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
@@ -56,17 +57,16 @@ public class WebSocketPreHandler implements ChannelInterceptor {
             String token = msg.get("accessToken").toString();
             long userId = validateToken(token.substring(1, token.length() - 1));
             headerAccessor.addNativeHeader("id", String.valueOf(userId));
-            if (connectedRoomSize.get(connectedRoom.get(headerAccessor.getSessionId())).size() < 2)
+            Long roomId = Long.parseLong(headerAccessor.getDestination().split(PUB_DESTINATION_SPLIT)[1]);
+            if (connectedRoomSize.get(roomId).size() < 2)
                 headerAccessor.addNativeHeader("opponentConnected", "false");
             else headerAccessor.addNativeHeader("opponentConnected", "true");
-            headerAccessor.addNativeHeader("roomId", connectedRoom.get(headerAccessor.getSessionId()).toString());
+            //headerAccessor.addNativeHeader("roomId", connectedRoom.get(headerAccessor.getSessionId()).toString());
         }
         if (Objects.equals(headerAccessor.getCommand(), StompCommand.SUBSCRIBE)) {
             Long userId = openedSession.get(headerAccessor.getSessionId());
-            Long roomId = chatRoomService.findChatRoomIdByUsers(userId
-                    , Long.parseLong(headerAccessor.getDestination().split(SUB_DESTINATION_SPLIT)[1]));
-            headerAccessor.setDestination(modifyDestination(roomId));
-            connectedRoom.put(headerAccessor.getSessionId(), roomId);
+            Long roomId = Long.parseLong(headerAccessor.getDestination().split(SUB_DESTINATION_SPLIT)[1]);
+//            connectedRoom.put(headerAccessor.getSessionId(), roomId);
             connectedRoomSize.putIfAbsent(roomId, new HashSet<>());
             connectedRoomSize.get(roomId).add(headerAccessor.getSessionId());
             chatMessageService.changeReadStatus(roomId, userId);
@@ -87,7 +87,7 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     public void onDisconnect(SessionDisconnectEvent event) {
         openedSession.remove(event.getSessionId());
         connectedRoomSize.get(connectedRoom.get(event.getSessionId())).remove(event.getSessionId());
-        connectedRoom.remove(event.getSessionId());
+//        connectedRoom.remove(event.getSessionId());
     }
 
     private Long validateToken(String token) {

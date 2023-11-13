@@ -69,7 +69,7 @@ public class WebSocketPreHandler implements ChannelInterceptor {
         if (Objects.equals(headerAccessor.getCommand(), StompCommand.SUBSCRIBE)) {
             Long userId = openedSession.get(headerAccessor.getSessionId());
             Long roomId = Long.parseLong(headerAccessor.getDestination().split(SUB_DESTINATION_SPLIT)[1]);
-//            connectedRoom.put(headerAccessor.getSessionId(), roomId);
+            connectedRoom.put(headerAccessor.getSessionId(), roomId);
             connectedRoomSize.putIfAbsent(roomId, new HashSet<>());
             connectedRoomSize.get(roomId).add(headerAccessor.getSessionId());
             chatMessageService.changeReadStatus(roomId, userId);
@@ -90,7 +90,7 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     public void onDisconnect(SessionDisconnectEvent event) {
         openedSession.remove(event.getSessionId());
         connectedRoomSize.get(connectedRoom.get(event.getSessionId())).remove(event.getSessionId());
-//        connectedRoom.remove(event.getSessionId());
+        connectedRoom.remove(event.getSessionId());
     }
 
     private Long validateToken(String token) {

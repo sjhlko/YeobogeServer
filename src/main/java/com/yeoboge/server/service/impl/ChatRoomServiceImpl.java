@@ -3,6 +3,7 @@ package com.yeoboge.server.service.impl;
 import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
 import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.User;
+import com.yeoboge.server.domain.vo.chat.ChatRoomIdResponse;
 import com.yeoboge.server.repository.ChatRoomRepository;
 import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.ChatRoomService;
@@ -39,9 +40,17 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public List<ChatRoomResponse> getChatRooms (Long id) {
+    public List<ChatRoomResponse> getChatRooms(Long id) {
         User user = userRepository.getById(id);
         List<ChatRoomResponse> results = chatRoomRepository.getMyChatRoomList(user);
         return results;
+    }
+
+    @Override
+    public ChatRoomIdResponse getChatRoomId(Long id, Long targetUserId) {
+        Long roomId = findChatRoomIdByUsers(id, targetUserId);
+        return ChatRoomIdResponse.builder()
+                .id(roomId)
+                .build();
     }
 }

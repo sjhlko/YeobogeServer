@@ -40,14 +40,14 @@ public class StompServiceImpl implements StompService {
                 Objects.equals(chatRoom.getTargetUser().getId(), userId) ?
                         chatRoom.getCurrentUser().getId() : chatRoom.getTargetUser().getId();
         StompMessageResponse response = StompMessageResponse.builder()
-                .sender(id)
+                .sender(userId)
                 .msg(request.msg())
                 .timeStamp(request.timeStamp())
                 .build();
         IsRead isRead = accessor.getNativeHeader("opponentConnected").get(0).equals("true")
                 ? IsRead.YES : IsRead.NO;
         if (isRead.equals(IsRead.NO))
-            pushAlarmService.sendPushAlarm(id, targetUserId, request.msg(), PushAlarmType.CHATTING, 0);
+            pushAlarmService.sendPushAlarm(userId, targetUserId, request.msg(), PushAlarmType.CHATTING, 0);
         chatMessageService.saveMessage(request.msg(), request.timeStamp(), id, userId, isRead);
         messagingTemplate.convertAndSend("/sub/send-message/" + id, response);
     }

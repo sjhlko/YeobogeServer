@@ -150,7 +150,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         List<Long> recommendableMembers = new ArrayList<>();
 
         for (long memberId : members) {
-            long numRating = ratingRepository.countByUser(memberId);
+            long numRating = ratingRepository.countByUserUntilYesterday(memberId);
             if (numRating >= 10) recommendableMembers.add(memberId);
         }
 

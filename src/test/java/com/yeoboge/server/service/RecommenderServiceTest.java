@@ -150,7 +150,7 @@ public class RecommenderServiceTest {
         List<BoardGameThumbnailDto> listByNumRating = hasData ? thumbnails : Collections.emptyList();
 
         when(recommendRepository.getMyFavoriteGenre(userId)).thenReturn(favoriteGenres);
-        when(ratingRepository.countByUser(userId)).thenReturn(numRating);
+        when(ratingRepository.countByUserUntilYesterday(userId)).thenReturn(numRating);
         when(recommendRepository.getTopTenBoardGames()).thenReturn(thumbnails);
         when(recommendRepository.getFavoriteBoardGamesOfFriends(userId)).thenReturn(listByNumRating);
         when(recommendRepository.getMyBookmarkedBoardGames(userId)).thenReturn(listByNumRating);

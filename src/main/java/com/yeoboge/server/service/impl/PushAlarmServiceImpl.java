@@ -207,7 +207,8 @@ public class PushAlarmServiceImpl implements PushAlarmService {
                 .title(user.getNickname())
                 .body(request.message())
                 .image(user.getProfileImagePath())
-                .id(request.chatRoomId().toString())
+                .id(user.getId().toString())
+                .roomId(request.chatRoomId().toString())
                 .build();
 
     }

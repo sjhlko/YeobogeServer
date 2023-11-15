@@ -51,5 +51,6 @@ public class FcmMessage {
          * 채팅 푸시 알림 클릭 시 리다이렉트 될 채팅방의 id
          */
         private String id;
+        private String roomId;
     }
 }

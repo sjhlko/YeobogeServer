@@ -31,7 +31,6 @@ public class WebSocketPreHandler implements ChannelInterceptor {
     private static final int TOKEN_SPLIT_INDEX = 7;
     private static final String SUB_DESTINATION_SPLIT = "/sub/send-message/";
     private static final String PUB_DESTINATION_SPLIT = "/pub/send-message/";
-    private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final JwtProvider jwtProvider;
     private static Map<String, Long> openedSession = new ConcurrentHashMap<>();

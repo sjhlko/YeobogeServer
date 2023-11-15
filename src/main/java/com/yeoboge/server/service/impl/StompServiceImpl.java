@@ -47,7 +47,8 @@ public class StompServiceImpl implements StompService {
         IsRead isRead = accessor.getNativeHeader("opponentConnected").get(0).equals("true")
                 ? IsRead.YES : IsRead.NO;
         if (isRead.equals(IsRead.NO))
-            pushAlarmService.sendPushAlarm(userId, targetUserId, request.msg(), PushAlarmType.CHATTING, 0);
+            pushAlarmService.sendPushAlarmForChatting(
+                    userId, targetUserId, chatRoom.getId(), request.msg(), PushAlarmType.CHATTING, 0);
         chatMessageService.saveMessage(request.msg(), request.timeStamp(), id, userId, isRead);
         messagingTemplate.convertAndSend("/sub/send-message/" + id, response);
     }

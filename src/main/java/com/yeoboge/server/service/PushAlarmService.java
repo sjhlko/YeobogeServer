@@ -23,4 +23,12 @@ public interface PushAlarmService {
             PushAlarmType pushAlarmType,
             Integer delay
     );
+    void sendPushAlarmForChatting(
+            Long currentUserId,
+            Long targetUserId,
+            Long chatRoomId,
+            String message,
+            PushAlarmType pushAlarmType,
+            Integer delay
+    );
 }

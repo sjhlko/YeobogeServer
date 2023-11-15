@@ -159,7 +159,7 @@ public class GroupRecommenderServiceTest {
                 .onStatus(any(), any())
                 .bodyToMono(RecommendWebClientResponse.class)
         ).thenReturn(monoResponse);
-        when(ratingRepository.countByUser(anyLong())).thenReturn(15L);
+        when(ratingRepository.countByUserUntilYesterday(anyLong())).thenReturn(15L);
         when(recommendRepository.getRecommendedBoardGamesForGroup(recommendedByAi)).thenReturn(thumbnails);
 
         // then
@@ -181,7 +181,7 @@ public class GroupRecommenderServiceTest {
         );
 
         // when
-        when(ratingRepository.countByUser(anyLong())).thenReturn(0L);
+        when(ratingRepository.countByUserUntilYesterday(anyLong())).thenReturn(0L);
         when(recommendRepository.getMyFavoriteGenre(anyLong())).thenReturn(favoriteGenres);
         when(recommendRepository.getPopularBoardGamesOfGenreForGroup(anyLong())).thenReturn(thumbnails);
 

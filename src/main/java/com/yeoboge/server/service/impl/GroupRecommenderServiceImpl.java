@@ -89,9 +89,6 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     @Override
     public PageResponse getGroupRecommendationHistory(long userId, Pageable pageable) {
         Page historyPage = historyRepository.getRecommendationHistoryPage(userId, pageable);
-        if (!historyPage.hasContent())
-            throw new AppException(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND);
-
         return new PageResponse(historyPage);
     }
 

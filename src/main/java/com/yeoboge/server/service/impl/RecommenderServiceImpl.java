@@ -30,7 +30,7 @@ public class RecommenderServiceImpl implements RecommenderService {
     @Override
     public IndividualRecommendationResponse getSingleRecommendation(Long userId) {
         List<Genre> favoriteGenres = recommendRepository.getMyFavoriteGenre(userId);
-        long numRating = ratingRepository.countByUser(userId);
+        long numRating = ratingRepository.countByUserUntilYesterday(userId);
 
         IndividualRecommenderFactory recommenderFactory = IndividualRecommenderFactoryImpl.builder()
                 .repository(recommendRepository)

@@ -20,6 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.yeoboge.server.domain.entity.QBoardGame.boardGame;
@@ -89,6 +91,16 @@ public class CustomRatingRepositoryImpl implements CustomRatingRepository {
                 .limit(1)
                 .fetchOne();
         return friendReview;
+    }
+
+    @Override
+    public long countByUserUntilYesterday(long userId) {
+        LocalDateTime today = LocalDateTime.now().with(LocalTime.MIN);
+        return queryFactory.select(rating.id.count())
+                .from(rating)
+                .where(rating.user.id.eq(userId)
+                        .and(rating.createdAt.before(today)))
+                .fetchOne();
     }
 
     /**

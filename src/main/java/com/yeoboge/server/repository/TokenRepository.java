@@ -32,12 +32,39 @@ public interface TokenRepository {
      */
     Optional<String> findByToken(final String accessToken);
 
+    /**
+     * 사용자가 로그인 후 발급 받은 Access Token, Refresh Token만 유효하도록
+     * 별도의 Redis Hash 형태로 저장함.
+     *
+     * @param tokens {@link Tokens}
+     * @param id 사용자 ID
+     */
+    void saveValidTokens(final Tokens tokens, final long id);
+
+    /**
+     * 사용자의 유효한 Access Token, Refresh Token Hash를 삭제함.
+     *
+     * @param id 사용자 ID
+     */
+    void deleteValidTokens(final long id);
+
+    /**
+     * 사용자의 현재 유효한 Access Token, Refresh Token을 조회함.
+     *
+     * @param id 사용자 ID
+     * @return 유효한 {@link Tokens}
+     */
+    Optional<Tokens> findValidTokens(final long id);
+
     void saveFcmToken(final Long id, final String token);
     void deleteFcmToken(final Long id);
     Optional<String> findFcmToken(final Long id);
-
     default String getByToken(final String accessToken) {
         return findByToken(accessToken)
+                .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));
+    }
+    default Tokens getValidTokens(final long id) {
+        return findValidTokens(id)
                 .orElseThrow(() -> new AppException(AuthenticationErrorCode.TOKEN_INVALID));
     }
 }

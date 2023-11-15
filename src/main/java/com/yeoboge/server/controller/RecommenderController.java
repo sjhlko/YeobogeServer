@@ -29,7 +29,7 @@ public class RecommenderController {
      * @return 맞춤 추천 목록을 포함해 카테고리 별 보드게임 썸네일 목록이 매핑된 {@link IndividualRecommendationResponse}
      */
     @GetMapping("")
-    ResponseEntity<Response<IndividualRecommendationResponse>> getRecommendationForMe(
+    public ResponseEntity<Response<IndividualRecommendationResponse>> getRecommendationForMe(
             @AuthenticationPrincipal Long userId
     ) {
         final int cacheMaxAge = 4 * 60;
@@ -46,7 +46,7 @@ public class RecommenderController {
      * @return 해당 그룹 구성원들의 기본 정보 리스트가 포함된 {@link GroupMembersResponse}
      */
     @PostMapping("/group-match")
-    Response<GroupMembersResponse> getGroupMembers(
+    public Response<GroupMembersResponse> getGroupMembers(
             @AuthenticationPrincipal long userId, @RequestBody UserGpsDto gpsDto
     ) {
         GroupMembersResponse response = groupRecommenderService.getGroupMembers(userId, gpsDto);
@@ -61,12 +61,12 @@ public class RecommenderController {
      * @return 추천된 보드게임 목록의 상세 썸네일 정보를 포함한 {@link GroupRecommendationResponse}
      */
     @PostMapping("/group")
-    Response<GroupRecommendationResponse> getGroupRecommendation(
+    public ResponseEntity<Response<GroupRecommendationResponse>> getGroupRecommendation(
             @RequestBody GroupRecommendationRequest request,
             @AuthenticationPrincipal long userId
     ) {
         GroupRecommendationResponse response = groupRecommenderService.getGroupRecommendation(userId, request);
-        return Response.success(response);
+        return Response.created(response);
     }
 
     /**
@@ -77,7 +77,7 @@ public class RecommenderController {
      * @return 사용자의 과거 그룹 추천 결과 목록이 페이징된 {@link PageResponse}
      */
     @GetMapping("/group/history")
-    Response<PageResponse> getGroupRecommendationHistory(
+    public Response<PageResponse> getGroupRecommendationHistory(
             @AuthenticationPrincipal long userId, Pageable pageable
     ) {
         PageResponse response = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
@@ -92,7 +92,7 @@ public class RecommenderController {
      * @return 해당 시각의 그룹 추천 목록에 대한 {@link GroupRecommendationResponse}
      */
     @GetMapping("/group/history/details")
-    Response<GroupRecommendationResponse> getDetailedGroupRecommendationHistory(
+    public Response<GroupRecommendationResponse> getDetailedGroupRecommendationHistory(
             @AuthenticationPrincipal long userId, long id
     ) {
         GroupRecommendationResponse response =

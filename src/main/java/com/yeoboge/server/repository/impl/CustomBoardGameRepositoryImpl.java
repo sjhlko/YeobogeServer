@@ -3,15 +3,14 @@ package com.yeoboge.server.repository.impl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailDto;
 import com.yeoboge.server.domain.dto.boardGame.BoardGameDetailedThumbnailDto;
-import com.yeoboge.server.domain.entity.BoardGame;
-import com.yeoboge.server.domain.entity.QGenre;
-import com.yeoboge.server.domain.entity.QMechanism;
-import com.yeoboge.server.domain.entity.QTheme;
+import com.yeoboge.server.domain.dto.boardGame.QDSLBoardGameDetailDto;
+import com.yeoboge.server.domain.entity.*;
 import com.yeoboge.server.domain.vo.boardgame.SearchBoardGameRequest;
 import com.yeoboge.server.repository.CustomBoardGameRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +39,24 @@ public class CustomBoardGameRepositoryImpl implements CustomBoardGameRepository 
         QGenre qGenre = QGenre.genre;
         QTheme qTheme = QTheme.theme;
         QMechanism qMechanism = QMechanism.mechanism;
-        BoardGame entity = queryFactory.select(boardGame)
+        QRating qRating = QRating.rating;
+        QDSLBoardGameDetailDto detailDto = queryFactory.select(
+                Projections.constructor(
+                        QDSLBoardGameDetailDto.class,
+                        boardGame.id,
+                        boardGame.name,
+                        boardGame.description,
+                        boardGame.weight,
+                        boardGame.playerMin,
+                        boardGame.playerMax,
+                        boardGame.imagePath,
+                        boardGame.playTime,
+                        boardGame.isLocalized,
+                        qRating.score.avg().coalesce(0.0).as("avgRating")
+                ))
                 .from(boardGame)
+                .leftJoin(qRating)
+                .on(boardGame.id.eq(qRating.boardGame.id))
                 .where(boardGame.id.eq(boardGameId))
                 .fetchOne();
         List<String> genres = queryFactory.select(qGenre.name)
@@ -69,7 +84,7 @@ public class CustomBoardGameRepositoryImpl implements CustomBoardGameRepository 
                 .where(boardGame.id.eq(boardGameId))
                 .fetch();
 
-        return BoardGameDetailDto.of(entity, themes, genres, mechanisms);
+        return BoardGameDetailDto.of(detailDto, themes, genres, mechanisms);
     }
 
     @Override

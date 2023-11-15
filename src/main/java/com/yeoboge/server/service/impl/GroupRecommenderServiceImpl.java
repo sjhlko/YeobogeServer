@@ -89,9 +89,6 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     @Override
     public PageResponse getGroupRecommendationHistory(long userId, Pageable pageable) {
         Page historyPage = historyRepository.getRecommendationHistoryPage(userId, pageable);
-        if (!historyPage.hasContent())
-            throw new AppException(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND);
-
         return new PageResponse(historyPage);
     }
 
@@ -153,7 +150,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         List<Long> recommendableMembers = new ArrayList<>();
 
         for (long memberId : members) {
-            long numRating = ratingRepository.countByUser(memberId);
+            long numRating = ratingRepository.countByUserUntilYesterday(memberId);
             if (numRating >= 10) recommendableMembers.add(memberId);
         }
 

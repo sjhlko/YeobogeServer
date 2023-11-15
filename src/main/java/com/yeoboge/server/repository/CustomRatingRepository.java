@@ -46,4 +46,12 @@ public interface CustomRatingRepository {
      * @return
      */
     FriendReviewDto getFriendReviewOfBoardGame(final long userId, final long boardGameId, boolean isForLike);
+
+    /**
+     * 현재 날짜로부터 어제까지 사용자가 평가한 보드게임의 전체 개수를 조회함.
+     *
+     * @param userId 조회한 사용자 ID
+     * @return 해당 사용자가 평가한 전체 보드게임 수
+     */
+    long countByUserUntilYesterday(final long userId);
 }

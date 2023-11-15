@@ -40,11 +40,11 @@ public class OAuthController {
      * 소셜 계정 이메일로 로그인하는 API
      *
      * @param request 회원의 구글 이메일을 담고 있는 {@link SocialLoginRequest}
-     * @return 발급된 Access Token, Refresh Token을 포함한 HTTP 200 응답
+     * @return 발급된 Access Token, Refresh Token을 포함한 HTTP 201 응답
      */
     @PostMapping("/login")
-    public Response<Tokens> socialLogin(@RequestBody SocialLoginRequest request) {
+    public ResponseEntity<Response<Tokens>> socialLogin(@RequestBody SocialLoginRequest request) {
         Tokens response = oAuthService.socialLogin(request);
-        return Response.success(response);
+        return Response.created(response);
     }
 }

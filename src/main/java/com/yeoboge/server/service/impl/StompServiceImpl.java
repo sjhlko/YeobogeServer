@@ -1,14 +1,18 @@
 package com.yeoboge.server.service.impl;
 
+import com.yeoboge.server.domain.dto.chat.ChatRoomResponse;
 import com.yeoboge.server.domain.entity.ChatRoom;
 import com.yeoboge.server.domain.entity.IsRead;
+import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.vo.chat.StompMessageRequest;
 import com.yeoboge.server.domain.vo.chat.StompMessageResponse;
 import com.yeoboge.server.enums.error.AuthenticationErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.repository.ChatRoomRepository;
+import com.yeoboge.server.repository.UserRepository;
 import com.yeoboge.server.service.ChatMessageService;
 import com.yeoboge.server.service.PushAlarmService;
+import com.yeoboge.server.service.SSEService;
 import com.yeoboge.server.service.StompService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageDeliveryException;
@@ -28,6 +32,8 @@ public class StompServiceImpl implements StompService {
     private final ChatMessageService chatMessageService;
     private final PushAlarmService pushAlarmService;
     private final ChatRoomRepository chatRoomRepository;
+    private final UserRepository userRepository;
+    private final SSEService sseService;
 //    private static Map<String, Long> openedSession = new HashMap<>();
 
     @Override
@@ -35,6 +41,7 @@ public class StompServiceImpl implements StompService {
         List<String> idList = accessor.getNativeHeader("id");
         if (idList == null) throw new MessageDeliveryException(AuthenticationErrorCode.TOKEN_INVALID.getMessage());
         Long userId = Long.parseLong(idList.get(0));
+        User currentUser = userRepository.getById(userId);
         ChatRoom chatRoom = chatRoomRepository.getById(id);
         Long targetUserId =
                 Objects.equals(chatRoom.getTargetUser().getId(), userId) ?
@@ -46,11 +53,14 @@ public class StompServiceImpl implements StompService {
                 .build();
         IsRead isRead = accessor.getNativeHeader("opponentConnected").get(0).equals("true")
                 ? IsRead.YES : IsRead.NO;
-        if (isRead.equals(IsRead.NO))
-            pushAlarmService.sendPushAlarmForChatting(
-                    userId, targetUserId, chatRoom.getId(), request.msg(), PushAlarmType.CHATTING, 0);
         chatMessageService.saveMessage(request.msg(), request.timeStamp(), id, userId, isRead);
         messagingTemplate.convertAndSend("/sub/send-message/" + id, response);
+        if (isRead.equals(IsRead.NO)) {
+            pushAlarmService.sendPushAlarmForChatting(
+                    userId, targetUserId, chatRoom.getId(), request.msg(), PushAlarmType.CHATTING, 0);
+            sseService.send(targetUserId.toString(), "chatting", "chatting",
+                    ChatRoomResponse.of(chatRoom.getId(), request.msg(), request.timeStamp(), currentUser));
+        }
     }
 
 }

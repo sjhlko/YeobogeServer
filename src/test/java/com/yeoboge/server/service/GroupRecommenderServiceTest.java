@@ -275,10 +275,10 @@ public class GroupRecommenderServiceTest {
         when(historyRepository.getRecommendationHistoryPage(anyLong(), any()))
                 .thenReturn(Page.empty());
 
+        PageResponse actual = groupRecommenderService.getGroupRecommendationHistory(userId, pageable);
+
         // then
-        assertThatThrownBy(() -> groupRecommenderService.getGroupRecommendationHistory(userId, pageable))
-                .isInstanceOf(AppException.class)
-                .hasMessageContaining(GroupErrorCode.RECOMMENDATION_HISTORY_NOT_FOUND.getMessage());
+        assertThat(actual.getContent()).isEqualTo(Collections.EMPTY_LIST);
     }
 
     @Test

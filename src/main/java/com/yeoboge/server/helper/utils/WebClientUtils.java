@@ -35,7 +35,8 @@ public class WebClientUtils {
                         HttpStatusCode::is5xxServerError,
                         clientResponse -> Mono.error(new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR))
                 )
-                .bodyToMono(responseDtoClass);
+                .bodyToMono(responseDtoClass)
+                .onErrorResume(throwable -> Mono.empty());
     }
 
     /**
@@ -61,6 +62,7 @@ public class WebClientUtils {
                 ).onStatus(
                         HttpStatusCode::is5xxServerError,
                         clientResponse -> Mono.error(new AppException(CommonErrorCode.INTERNAL_SERVER_ERROR))
-                ).bodyToMono(responseDtoClass);
+                ).bodyToMono(responseDtoClass)
+                .onErrorResume(throwable -> Mono.empty());
     }
 }

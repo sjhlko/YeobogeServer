@@ -21,7 +21,8 @@ import java.util.concurrent.CountDownLatch;
 public class AIIndividualRecommender extends AbstractIndividualRecommender {
     private final String END_POINT = "/recommends";
     private WebClient client;
-    protected RecommendWithGenreRequest requestBody;
+    private RecommendWithGenreRequest requestBody;
+    private RecommendTypes type;
 
     @Builder
     public AIIndividualRecommender(
@@ -34,6 +35,7 @@ public class AIIndividualRecommender extends AbstractIndividualRecommender {
     ) {
         super(repository, type);
         this.client = client;
+        this.type = type;
         this.key = type.getKey() + genreName;
         this.description =  "내가 좋아하는 " + genreName + " 보드게임 🎲";
         this.requestBody = new RecommendWithGenreRequest(userId, genreId);
@@ -52,5 +54,25 @@ public class AIIndividualRecommender extends AbstractIndividualRecommender {
             response.addRecommendations(boardGames, key, description);
             latch.countDown();
         });
+        handleEmptyMono(mono, response, latch);
+    }
+
+    /**
+     * 외부 API 요청 중 에러 발생 시 맞춤 추천 목록 대신
+     * 인기 보드게임을 추천하기 위해 {@link GenreIndividualRecommender}를 대신 호출함.
+     *
+     * @param mono 외부 API를 호출하고 받은 {@link Mono}
+     * @param response {@link IndividualRecommendationResponse}
+     * @param latch 비동기 작업이 완료 될 때까지 대기하기 위한 {@link CountDownLatch}
+     */
+    private void handleEmptyMono(Mono<?> mono, IndividualRecommendationResponse response, CountDownLatch latch) {
+        if (Boolean.TRUE.equals(mono.hasElement().block())) return;
+
+        long genreId = requestBody.genre_id();
+        String genreName = key.substring(type.getKey().length());
+        GenreIndividualRecommender alterRecommender = new GenreIndividualRecommender(
+                repository, type, genreId, genreName
+        );
+        alterRecommender.addRecommendationsToResponse(response, latch);
     }
 }

@@ -10,6 +10,7 @@ import lombok.Builder;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,6 +35,7 @@ public class AIGroupRecommender extends AbstractGroupRecommender {
     @Override
     public void addRecommendationsToResponse(GroupRecommendationResponse response) {
         List<Long> recommendedIds = getRecommendedBoardGamesFromAI();
+        if (recommendedIds.isEmpty()) handleEmptyMono(response);
         List<BoardGameDetailedThumbnailDto> recommendation =
                 repository.getRecommendedBoardGamesForGroup(recommendedIds);
         response.addRecommendations(recommendation);
@@ -53,6 +55,21 @@ public class AIGroupRecommender extends AbstractGroupRecommender {
                 END_POINT
         );
 
-        return mono.block().result();
+        return Boolean.TRUE.equals(mono.hasElement().block())
+                ? mono.block().result()
+                : Collections.emptyList();
+    }
+
+    /**
+     * 외부 API 요청 중 에러 발생 시 맞춤 추천 목록 대신
+     * 인기 보드게임을 추천하기 위해 {@link GenreGroupRecommender}를 대신 호출함.
+     *
+     * @param response {@link GroupRecommendationResponse}
+     */
+    private void handleEmptyMono(GroupRecommendationResponse response) {
+        GenreGroupRecommender alterRecommender = new GenreGroupRecommender(
+                repository, request, recommendableMembers
+        );
+        alterRecommender.addRecommendationsToResponse(response);
     }
 }

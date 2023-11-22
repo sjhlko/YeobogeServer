@@ -70,7 +70,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     ) {
         List<Long> memberIds = request.getGroupMemberId(userId);
         checkValidGroupRequest(userId, request.members());
-        sendPushAlarmForGroupRecommendation(request.members());
+        sendPushAlarmForGroupRecommendation(userId);
 
         List<Long> recommendableMembers = findRecommendableMembers(request.members());
         GroupRecommenderFactory factory = GroupRecommenderFactoryImpl.builder()
@@ -210,9 +210,8 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         if (userPool.get(gpsDto).isEmpty()) userPool.remove(gpsDto);
     }
 
-    private void sendPushAlarmForGroupRecommendation(List<Long> users) {
-        for (Long user : users) {
-            pushAlarmService.sendPushAlarm(user, user,null, PushAlarmType.RATING, 10000);
-        }
+    private void sendPushAlarmForGroupRecommendation(long userId) {
+        int delay = 1000 * 60 * 60 * 24 * 3; // 3 days
+        pushAlarmService.sendPushAlarm(userId, userId,null, PushAlarmType.RATING, delay);
     }
 }

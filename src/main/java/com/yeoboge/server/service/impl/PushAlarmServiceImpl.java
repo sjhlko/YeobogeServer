@@ -58,7 +58,6 @@ public class PushAlarmServiceImpl implements PushAlarmService {
                 HttpResponse<String> response = HttpClient.newHttpClient().send(
                         fcmRequest,
                         HttpResponse.BodyHandlers.ofString());
-                System.out.println(response.body());
             } catch (Exception e) {
                 throw new AppException(PushAlarmErrorCode.SENDING_PUSH_ALARM_ERROR);
             }

@@ -211,6 +211,7 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
     }
 
     private void sendPushAlarmForGroupRecommendation(long userId) {
-        pushAlarmService.sendPushAlarm(userId, userId,null, PushAlarmType.RATING, 10000);
+        int delay = 1000 * 60 * 60 * 24 * 3; // 3 days
+        pushAlarmService.sendPushAlarm(userId, userId,null, PushAlarmType.RATING, delay);
     }
 }

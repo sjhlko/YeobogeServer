@@ -10,6 +10,7 @@ import com.yeoboge.server.domain.entity.BoardGame;
 import com.yeoboge.server.domain.entity.User;
 import com.yeoboge.server.domain.entity.RecommendationHistory;
 import com.yeoboge.server.domain.vo.recommend.GroupRecommendationRequest;
+import com.yeoboge.server.enums.error.ErrorCode;
 import com.yeoboge.server.enums.error.GroupErrorCode;
 import com.yeoboge.server.enums.pushAlarm.PushAlarmType;
 import com.yeoboge.server.handler.AppException;
@@ -178,17 +179,12 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
      * @return 사용자와 매칭된 그룹 구성원들의 {@link UserInfoDto} 리스트
      */
     private List<UserInfoDto> findGroupMembers(long userId, UserGpsDto gpsDto) {
-        Set<Long> usersInSameArea = userPool.get(gpsDto);
-        List<Long> groupIds = friendRepository.findFriendIdsInIdList(userId, usersInSameArea.stream().toList());
-
-        if (groupIds.isEmpty())
-            throw new AppException(GroupErrorCode.NO_GROUP_MEMBER);
-
-        groupIds.add(0, userId);
-        if (groupIds.size() >= 10)
-            throw new AppException(GroupErrorCode.OVER_LIMIT_GROUP_MEMBER);
+        List<Long> usersInSameArea = userPool.get(gpsDto).stream().toList();
+        List<Long> groupIds = friendRepository.findFriendIdsInIdList(userId, usersInSameArea);
+        checkInvalidGroup(userId, groupIds, gpsDto);
 
         List<UserInfoDto> userInfos = new ArrayList<>();
+        groupIds.add(0, userId);
         for (long id : groupIds) {
             User user = userRepository.getById(id);
             userInfos.add(UserInfoDto.of(user));
@@ -208,6 +204,23 @@ public class GroupRecommenderServiceImpl implements GroupRecommenderService {
         usersInSameArea.remove(userId);
         userPool.put(gpsDto, usersInSameArea);
         if (userPool.get(gpsDto).isEmpty()) userPool.remove(gpsDto);
+    }
+
+    /**
+     * 매칭을 요청한 사용자와 실제 매칭된 그룹이 유효한 지 확인함.
+     *
+     * @param userId 매칭을 요청한 사용자 ID
+     * @param groupIds 해당 사용자와 매칭된 그룹원 ID 리스트
+     * @param gpsDto 요청한 사용자의 {@link UserGpsDto}
+     */
+    private void checkInvalidGroup(long userId, List<Long> groupIds, UserGpsDto gpsDto) {
+        if (groupIds.isEmpty() || groupIds.size() >= 10) {
+            ErrorCode code = groupIds.isEmpty()
+                    ? GroupErrorCode.NO_GROUP_MEMBER
+                    : GroupErrorCode.OVER_LIMIT_GROUP_MEMBER;
+            removeFromUserPool(userId, gpsDto);
+            throw new AppException(code);
+        }
     }
 
     private void sendPushAlarmForGroupRecommendation(long userId) {
